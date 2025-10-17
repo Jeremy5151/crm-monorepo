@@ -44,6 +44,14 @@ export default function BrokersPage() {
     url: '',
     headers: JSON.stringify({}, null, 2),
     body: JSON.stringify({}, null, 2),
+    params: {} as Record<string, any>, // Параметры интеграции (partnerId, auth и т.д.)
+    // Password generation settings
+    passwordLength: 8,
+    passwordUseUpper: true,
+    passwordUseLower: true,
+    passwordUseDigits: true,
+    passwordUseSpecial: true,
+    passwordSpecialChars: '!@#$%',
     // Pull API fields
     pullEnabled: false,
     pullUrl: '',
@@ -107,6 +115,14 @@ export default function BrokersPage() {
         url: form.url,
         headers: JSON.parse(form.headers),
         body: form.body,
+        params: form.params,
+        // Password generation settings
+        passwordLength: form.passwordLength,
+        passwordUseUpper: form.passwordUseUpper,
+        passwordUseLower: form.passwordUseLower,
+        passwordUseDigits: form.passwordUseDigits,
+        passwordUseSpecial: form.passwordUseSpecial,
+        passwordSpecialChars: form.passwordSpecialChars,
         // Pull API fields
         pullEnabled: form.pullEnabled,
         pullUrl: form.pullUrl || null,
@@ -143,6 +159,14 @@ export default function BrokersPage() {
         url: form.url,
         headers: JSON.parse(form.headers),
         body: form.body,
+        params: form.params,
+        // Password generation settings
+        passwordLength: form.passwordLength,
+        passwordUseUpper: form.passwordUseUpper,
+        passwordUseLower: form.passwordUseLower,
+        passwordUseDigits: form.passwordUseDigits,
+        passwordUseSpecial: form.passwordUseSpecial,
+        passwordSpecialChars: form.passwordSpecialChars,
         // Pull API fields
         pullEnabled: form.pullEnabled,
         pullUrl: form.pullUrl || null,
@@ -206,6 +230,14 @@ export default function BrokersPage() {
       url: template.url,
       headers: JSON.stringify(parsedHeaders, null, 2),
       body: template.body,
+      params: template.params || {},
+      // Password generation settings
+      passwordLength: template.passwordLength || 8,
+      passwordUseUpper: template.passwordUseUpper !== false,
+      passwordUseLower: template.passwordUseLower !== false,
+      passwordUseDigits: template.passwordUseDigits !== false,
+      passwordUseSpecial: template.passwordUseSpecial !== false,
+      passwordSpecialChars: template.passwordSpecialChars || '!@#$%',
       // Pull fields
       pullEnabled: template.pullEnabled || false,
       pullUrl: template.pullUrl || '',
@@ -246,6 +278,14 @@ export default function BrokersPage() {
       url: '',
       headers: JSON.stringify({}, null, 2),
       body: JSON.stringify({}, null, 2),
+      params: {},
+      // Password generation settings
+      passwordLength: 8,
+      passwordUseUpper: true,
+      passwordUseLower: true,
+      passwordUseDigits: true,
+      passwordUseSpecial: true,
+      passwordSpecialChars: '!@#$%',
       pullEnabled: false,
       pullUrl: '',
       pullMethod: 'POST',
@@ -271,6 +311,14 @@ export default function BrokersPage() {
         method: config.method,
         headers: JSON.stringify(config.headers, null, 2),
         body: JSON.stringify(config.bodyTemplate, null, 2),
+        params: config.params || {},
+        // Password generation defaults from template
+        passwordLength: config.passwordSettings?.length || 8,
+        passwordUseUpper: config.passwordSettings?.useUpper !== false,
+        passwordUseLower: config.passwordSettings?.useLower !== false,
+        passwordUseDigits: config.passwordSettings?.useDigits !== false,
+        passwordUseSpecial: config.passwordSettings?.useSpecial !== false,
+        passwordSpecialChars: config.passwordSettings?.specialChars || '!@#$%',
         // Pull API configuration from template
         pullEnabled: config.pull?.enabled || false,
         pullUrl: config.pull?.url || '',
@@ -460,6 +508,126 @@ export default function BrokersPage() {
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* Integration Parameters */}
+                <div className="border-t pt-6 mt-6">
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">Параметры интеграции</h4>
+                  <p className="text-xs text-gray-500 mb-4">
+                    Эти параметры можно использовать в URL, Headers и Body через макросы, например: ${'${partnerId}'}
+                  </p>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {Object.entries(form.params).map(([key, value]) => (
+                      <div key={key}>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{key}</label>
+                        <div className="flex gap-2">
+                          <input
+                            className="input flex-1"
+                            value={String(value)}
+                            onChange={e => setForm(f => ({
+                              ...f,
+                              params: { ...f.params, [key]: e.target.value }
+                            }))}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newParams = { ...form.params };
+                              delete newParams[key];
+                              setForm(f => ({ ...f, params: newParams }));
+                            }}
+                            className="px-3 py-2 text-sm bg-red-100 text-red-700 rounded-xl hover:bg-red-200"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const key = prompt('Название параметра:');
+                      if (key && !form.params[key]) {
+                        setForm(f => ({ ...f, params: { ...f.params, [key]: '' } }));
+                      }
+                    }}
+                    className="mt-3 px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-xl hover:bg-blue-200"
+                  >
+                    + Добавить параметр
+                  </button>
+                </div>
+
+                {/* Password Generation Settings */}
+                <div className="border-t pt-6 mt-6">
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">Настройки генерации пароля</h4>
+                  <p className="text-xs text-gray-500 mb-4">
+                    Настройки используются при генерации макроса ${'${password}'}
+                  </p>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Длина пароля</label>
+                      <input
+                        type="number"
+                        className="input"
+                        value={form.passwordLength}
+                        onChange={e => setForm(f => ({ ...f, passwordLength: parseInt(e.target.value) || 8 }))}
+                        min="4"
+                        max="32"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={form.passwordUseUpper}
+                          onChange={e => setForm(f => ({ ...f, passwordUseUpper: e.target.checked }))}
+                          className="w-4 h-4 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Заглавные буквы (A-Z)</span>
+                      </label>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={form.passwordUseLower}
+                          onChange={e => setForm(f => ({ ...f, passwordUseLower: e.target.checked }))}
+                          className="w-4 h-4 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Строчные буквы (a-z)</span>
+                      </label>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={form.passwordUseDigits}
+                          onChange={e => setForm(f => ({ ...f, passwordUseDigits: e.target.checked }))}
+                          className="w-4 h-4 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Цифры (0-9)</span>
+                      </label>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={form.passwordUseSpecial}
+                          onChange={e => setForm(f => ({ ...f, passwordUseSpecial: e.target.checked }))}
+                          className="w-4 h-4 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Спецсимволы</span>
+                      </label>
+                    </div>
+                  </div>
+                  {form.passwordUseSpecial && (
+                    <div className="mt-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Какие спецсимволы использовать</label>
+                      <input
+                        className="input"
+                        value={form.passwordSpecialChars}
+                        onChange={e => setForm(f => ({ ...f, passwordSpecialChars: e.target.value }))}
+                        placeholder="!@#$%"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Pull API Settings */}

@@ -26,7 +26,15 @@ export class TemplatesService implements OnModuleInit {
             headers: (t.headers as any) ?? undefined,
             body: t.body ?? undefined,
           },
-          (t.params as any) ?? undefined
+          (t.params as any) ?? undefined,
+          {
+            passwordLength: t.passwordLength,
+            passwordUseUpper: t.passwordUseUpper,
+            passwordUseLower: t.passwordUseLower,
+            passwordUseDigits: t.passwordUseDigits,
+            passwordUseSpecial: t.passwordUseSpecial,
+            passwordSpecialChars: t.passwordSpecialChars
+          }
         ));
         logger.log(`Registered broker template: ${t.code}`);
       }
@@ -50,7 +58,15 @@ export class TemplatesService implements OnModuleInit {
           headers: (template.headers as any) ?? undefined,
           body: template.body ?? undefined,
         },
-        (template.params as any) ?? undefined
+        (template.params as any) ?? undefined,
+        {
+          passwordLength: template.passwordLength,
+          passwordUseUpper: template.passwordUseUpper,
+          passwordUseLower: template.passwordUseLower,
+          passwordUseDigits: template.passwordUseDigits,
+          passwordUseSpecial: template.passwordUseSpecial,
+          passwordSpecialChars: template.passwordSpecialChars
+        }
       ));
       logger.log(`Registered new broker template: ${template.code}`);
     }
@@ -70,7 +86,15 @@ export class TemplatesService implements OnModuleInit {
           headers: (template.headers as any) ?? undefined,
           body: template.body ?? undefined,
         },
-        (template.params as any) ?? undefined
+        (template.params as any) ?? undefined,
+        {
+          passwordLength: template.passwordLength,
+          passwordUseUpper: template.passwordUseUpper,
+          passwordUseLower: template.passwordUseLower,
+          passwordUseDigits: template.passwordUseDigits,
+          passwordUseSpecial: template.passwordUseSpecial,
+          passwordSpecialChars: template.passwordSpecialChars
+        }
       ));
       logger.log(`Re-registered updated broker template: ${template.code}`);
     }

@@ -48,22 +48,50 @@ export type HttpTemplate = {
 };
 
 /**
- * Генерация случайного пароля формата: Aa12345!
+ * Генерация случайного пароля с настройками
  */
-function generatePassword(): string {
-  const chars = 'abcdefghijklmnopqrstuvwxyz';
-  const nums = '0123456789';
-  const special = '!@#$%';
+function generatePassword(settings?: {
+  length?: number;
+  useUpper?: boolean;
+  useLower?: boolean;
+  useDigits?: boolean;
+  useSpecial?: boolean;
+  specialChars?: string;
+}): string {
+  const length = settings?.length || 8;
+  const useUpper = settings?.useUpper !== false;
+  const useLower = settings?.useLower !== false;
+  const useDigits = settings?.useDigits !== false;
+  const useSpecial = settings?.useSpecial !== false;
+  const specialChars = settings?.specialChars || '!@#$%';
   
-  const randomChar = (str: string) => str[Math.floor(Math.random() * str.length)];
-  const randomNum = () => Math.floor(Math.random() * 10);
+  const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const lower = 'abcdefghijklmnopqrstuvwxyz';
+  const digits = '0123456789';
   
-  return (
-    chars[Math.floor(Math.random() * chars.length)].toUpperCase() + // A
-    randomChar(chars) + // a
-    randomNum() + randomNum() + randomNum() + randomNum() + randomNum() + // 12345
-    randomChar(special) // !
-  );
+  let charset = '';
+  if (useUpper) charset += upper;
+  if (useLower) charset += lower;
+  if (useDigits) charset += digits;
+  if (useSpecial) charset += specialChars;
+  
+  if (!charset) charset = lower + digits; // fallback
+  
+  let password = '';
+  
+  // Гарантируем хотя бы по одному символу каждого типа
+  if (useUpper && length > 0) password += upper[Math.floor(Math.random() * upper.length)];
+  if (useLower && length > 1) password += lower[Math.floor(Math.random() * lower.length)];
+  if (useDigits && length > 2) password += digits[Math.floor(Math.random() * digits.length)];
+  if (useSpecial && length > 3) password += specialChars[Math.floor(Math.random() * specialChars.length)];
+  
+  // Дополняем до нужной длины
+  while (password.length < length) {
+    password += charset[Math.floor(Math.random() * charset.length)];
+  }
+  
+  // Перемешиваем символы
+  return password.split('').sort(() => Math.random() - 0.5).join('');
 }
 
 /**
@@ -126,7 +154,15 @@ export function renderTemplate(template: string, lead: Lead, params?: Record<str
     if (trimmedKey === 'password') {
       const attrs = lead.attrs as any;
       if (!attrs?.password) {
-        return generatePassword();
+        const settings = params?._passwordSettings;
+        return generatePassword(settings ? {
+          length: settings.passwordLength,
+          useUpper: settings.passwordUseUpper,
+          useLower: settings.passwordUseLower,
+          useDigits: settings.passwordUseDigits,
+          useSpecial: settings.passwordUseSpecial,
+          specialChars: settings.passwordSpecialChars
+        } : undefined);
       }
     }
     
@@ -143,11 +179,13 @@ export class HttpTemplateAdapter implements BrokerAdapter {
   code: string;
   private tpl: HttpTemplate;
   private params: Record<string, any>;
+  private passwordSettings: any;
   
-  constructor(code: string, tpl: HttpTemplate, params?: Record<string, any>) { 
+  constructor(code: string, tpl: HttpTemplate, params?: Record<string, any>, passwordSettings?: any) { 
     this.code = code;
     this.tpl = tpl;
-    this.params = params || {};
+    this.params = { ...(params || {}), _passwordSettings: passwordSettings };
+    this.passwordSettings = passwordSettings;
   }
   async send(lead: Lead): Promise<BrokerResult> {
     console.log(`[HttpTemplateAdapter] Sending lead ${lead.id} to broker ${this.code}`);

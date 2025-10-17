@@ -161,6 +161,14 @@ model BrokerTemplate {
   body         String?
   params       Json?                         // параметры интеграции (partnerId, auth, funnelId и т.д.)
   
+  // Password generation settings
+  passwordLength    Int?     @default(8)   // длина пароля
+  passwordUseUpper  Boolean? @default(true) // использовать заглавные буквы
+  passwordUseLower  Boolean? @default(true) // использовать строчные буквы
+  passwordUseDigits Boolean? @default(true) // использовать цифры
+  passwordUseSpecial Boolean? @default(true) // использовать спецсимволы
+  passwordSpecialChars String? @default("!@#$%") // какие спецсимволы использовать
+  
   // Pull: получение статусов от брокера
   pullEnabled  Boolean  @default(false)    // включен ли Pull
   pullUrl      String?                      // URL для pull запросов

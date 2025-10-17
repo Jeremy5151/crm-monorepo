@@ -1,9 +1,14 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PrismaClient, Lead } from '@prisma/client';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import fetch from 'node-fetch';
+import * as https from 'https';
 
 const prisma = new PrismaClient();
 const logger = new Logger('StatusPullService');
+
+// Agent для отключения проверки SSL
+const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
 @Injectable()
 export class StatusPullService implements OnModuleInit {
@@ -70,8 +75,9 @@ export class StatusPullService implements OnModuleInit {
           'Content-Type': 'application/json',
           ...(template.pullHeaders || {})
         },
-        body: body
-      });
+        body: body,
+        agent: template.pullUrl.startsWith('https') ? httpsAgent : undefined
+      }) as any;
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);

@@ -65,19 +65,29 @@ export class StatusPullService implements OnModuleInit {
     logger.log(`Pulling status for ${template.code} from ${from.toISOString()} to ${to.toISOString()}`);
 
     try {
-      // Рендерим body с датами
+      // Рендерим URL с параметрами интеграции и датами
+      let pullUrl = this.renderPullUrl(template.pullUrl, from, to, template.params || {});
+      
+      // Рендерим body с датами (для POST запросов)
       const body = this.renderPullBody(template.pullBody, from, to);
       
       // Делаем запрос к брокеру
-      const response = await fetch(template.pullUrl, {
-        method: template.pullMethod || 'POST',
+      const method = template.pullMethod || 'POST';
+      const options: any = {
+        method,
         headers: {
-          'Content-Type': 'application/json',
           ...(template.pullHeaders || {})
         },
-        body: body,
         agent: template.pullUrl.startsWith('https') ? httpsAgent : undefined
-      }) as any;
+      };
+      
+      // Для POST добавляем Content-Type и body
+      if (method === 'POST') {
+        options.headers['Content-Type'] = 'application/json';
+        options.body = body;
+      }
+      
+      const response = await fetch(template.pullUrl, options) as any;
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -100,6 +110,34 @@ export class StatusPullService implements OnModuleInit {
     } catch (error: any) {
       logger.error(`❌ ${template.code}: ${error.message}`);
     }
+  }
+
+  /**
+   * Рендерим URL для pull запроса с параметрами и датами
+   */
+  renderPullUrl(template: string, from: Date, to: Date, params: Record<string, any>): string {
+    if (!template) return template;
+    
+    const formatDate = (date: Date) => {
+      return date.toISOString().replace('T', ' ').slice(0, 19);
+    };
+
+    let result = template;
+    
+    // Подставляем параметры интеграции
+    for (const [key, value] of Object.entries(params)) {
+      const regex = new RegExp(`\\$\\{${key}\\}`, 'g');
+      result = result.replace(regex, String(value || ''));
+    }
+    
+    // Подставляем даты
+    result = result
+      .replace(/\$\{from\}/g, encodeURIComponent(formatDate(from)))
+      .replace(/\$\{to\}/g, encodeURIComponent(formatDate(to)))
+      .replace(/\$\{fromIso\}/g, encodeURIComponent(from.toISOString()))
+      .replace(/\$\{toIso\}/g, encodeURIComponent(to.toISOString()));
+    
+    return result;
   }
 
   /**

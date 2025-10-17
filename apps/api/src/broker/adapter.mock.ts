@@ -42,6 +42,60 @@ export type HttpTemplate = {
   body?: string; // шаблон строки с плейсхолдерами ${...}
 };
 
+/**
+ * Генерация случайного пароля формата: Aa12345!
+ */
+function generatePassword(): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyz';
+  const nums = '0123456789';
+  const special = '!@#$%';
+  
+  const randomChar = (str: string) => str[Math.floor(Math.random() * str.length)];
+  const randomNum = () => Math.floor(Math.random() * 10);
+  
+  return (
+    chars[Math.floor(Math.random() * chars.length)].toUpperCase() + // A
+    randomChar(chars) + // a
+    randomNum() + randomNum() + randomNum() + randomNum() + randomNum() + // 12345
+    randomChar(special) // !
+  );
+}
+
+/**
+ * Извлечение кода страны из телефона
+ * Поддерживает все международные форматы
+ */
+function extractPhonePrefix(phone: string): string {
+  if (!phone) return '';
+  
+  // Убираем все кроме цифр
+  const cleaned = phone.replace(/\D/g, '');
+  if (!cleaned) return '';
+  
+  // Коды стран (самые популярные)
+  const countryCodes: Record<string, number> = {
+    // 4-значные коды
+    '1242': 4, '1246': 4, '1264': 4, '1268': 4, '1284': 4, '1340': 4, '1345': 4, '1441': 4, '1473': 4, '1649': 4, '1664': 4, '1670': 4, '1671': 4, '1684': 4, '1758': 4, '1767': 4, '1784': 4, '1809': 4, '1829': 4, '1849': 4, '1868': 4, '1869': 4, '1876': 4,
+    // 3-значные коды
+    '372': 3, '376': 3, '420': 3, '421': 3, '423': 3,
+    // 2-значные коды
+    '30': 2, '31': 2, '32': 2, '33': 2, '34': 2, '36': 2, '39': 2, '40': 2, '41': 2, '43': 2, '44': 2, '45': 2, '46': 2, '47': 2, '48': 2, '49': 2, '51': 2, '52': 2, '53': 2, '54': 2, '55': 2, '56': 2, '57': 2, '58': 2, '60': 2, '61': 2, '62': 2, '63': 2, '64': 2, '65': 2, '66': 2, '81': 2, '82': 2, '84': 2, '86': 2, '90': 2, '91': 2, '92': 2, '93': 2, '94': 2, '95': 2, '98': 2,
+    // 1-значные коды
+    '1': 1, '7': 1
+  };
+  
+  // Пробуем найти код страны
+  for (let len = 4; len >= 1; len--) {
+    const prefix = cleaned.slice(0, len);
+    if (countryCodes[prefix] === len) {
+      return prefix;
+    }
+  }
+  
+  // Если не нашли - берем первые 1-3 цифры по умолчанию
+  return cleaned.slice(0, Math.min(3, cleaned.length));
+}
+
 export function renderTemplate(template: string, lead: Lead, params?: Record<string, any>): string {
   return template.replace(/\$\{([^}]+)\}/g, (_, key) => {
     const trimmedKey = String(key).trim();
@@ -51,16 +105,23 @@ export function renderTemplate(template: string, lead: Lead, params?: Record<str
       return params[trimmedKey] == null ? '' : String(params[trimmedKey]);
     }
     
+    // Специальная обработка для phonePrefix
+    if (trimmedKey === 'phonePrefix') {
+      return extractPhonePrefix(lead.phone || '');
+    }
+    
+    // Специальная обработка для password - генерируем если нет
+    if (trimmedKey === 'password') {
+      const attrs = lead.attrs as any;
+      if (!attrs?.password) {
+        return generatePassword();
+      }
+    }
+    
     // Потом в lead
     const path = trimmedKey.split('.');
     let val: any = lead as any;
     for (const k of path) val = val?.[k];
-    
-    // Специальная обработка для phonePrefix
-    if (trimmedKey === 'phonePrefix' && lead.phone) {
-      const match = lead.phone.match(/^\+?(\d{1,4})/);
-      return match ? match[1] : '';
-    }
     
     return val == null ? '' : String(val);
   });

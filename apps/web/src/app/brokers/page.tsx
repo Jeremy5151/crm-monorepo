@@ -415,6 +415,8 @@ export default function BrokersPage() {
                         <div><code className="bg-white px-1 rounded">${'{lastName}'}</code> - Фамилия</div>
                         <div><code className="bg-white px-1 rounded">${'{email}'}</code> - Email</div>
                         <div><code className="bg-white px-1 rounded">${'{phone}'}</code> - Телефон</div>
+                        <div><code className="bg-white px-1 rounded">${'{phonePrefix}'}</code> - Код страны (автоопределение)</div>
+                        <div><code className="bg-white px-1 rounded">${'{password}'}</code> - Пароль (автогенерация)</div>
                         <div><code className="bg-white px-1 rounded">${'{country}'}</code> - Страна</div>
                         <div><code className="bg-white px-1 rounded">${'{aff}'}</code> - Affiliate</div>
                         <div><code className="bg-white px-1 rounded">${'{bx}'}</code> - Box</div>
@@ -422,6 +424,7 @@ export default function BrokersPage() {
                         <div><code className="bg-white px-1 rounded">${'{ip}'}</code> - IP адрес</div>
                         <div><code className="bg-white px-1 rounded">${'{lang}'}</code> - Язык</div>
                         <div><code className="bg-white px-1 rounded">${'{url}'}</code> - URL</div>
+                        <div><code className="bg-white px-1 rounded">${'{clickid}'}</code> - Click ID</div>
                         <div><code className="bg-white px-1 rounded">${'{utmSource}'}</code> - UTM Source</div>
                         <div><code className="bg-white px-1 rounded">${'{utmTerm}'}</code> - UTM Term</div>
                         <div><code className="bg-white px-1 rounded">${'{utmCampaign}'}</code> - UTM Campaign</div>

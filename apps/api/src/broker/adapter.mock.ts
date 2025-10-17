@@ -110,6 +110,13 @@ export function renderTemplate(template: string, lead: Lead, params?: Record<str
       return extractPhonePrefix(lead.phone || '');
     }
     
+    // Специальная обработка для phoneNumber (без префикса)
+    if (trimmedKey === 'phoneNumber') {
+      const phone = (lead.phone || '').replace(/\D/g, '');
+      const prefix = extractPhonePrefix(lead.phone || '');
+      return phone.slice(prefix.length);
+    }
+    
     // Специальная обработка для password - генерируем если нет
     if (trimmedKey === 'password') {
       const attrs = lead.attrs as any;
@@ -146,16 +153,21 @@ export class HttpTemplateAdapter implements BrokerAdapter {
       const method = this.tpl.method ?? 'POST';
       const headers: Record<string, string> = { ...(this.tpl.headers ?? {}) };
       
-      // Для POST добавляем Content-Type если не указан
-      if (method === 'POST' && !headers['content-type'] && !headers['Content-Type']) {
-        headers['content-type'] = 'application/json';
-      }
-      
       let body = this.tpl.body ? renderTemplate(this.tpl.body, lead, this.params) : undefined;
       console.log(`[HttpTemplateAdapter] Rendered body:`, body);
       
-      // Проверяем JSON только для POST с body
-      if (method === 'POST' && body && body.trim()) {
+      // Определяем Content-Type
+      const contentType = headers['content-type'] || headers['Content-Type'];
+      const isJson = contentType?.includes('application/json');
+      const isFormUrlEncoded = contentType?.includes('application/x-www-form-urlencoded');
+      
+      // Для POST JSON добавляем Content-Type если не указан
+      if (method === 'POST' && !contentType && body) {
+        headers['content-type'] = 'application/json';
+      }
+      
+      // Проверяем JSON только для JSON body
+      if (isJson && body && body.trim()) {
         try {
           JSON.parse(body);
           console.log(`[HttpTemplateAdapter] Body JSON is valid`);

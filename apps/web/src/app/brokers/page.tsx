@@ -377,6 +377,24 @@ export default function BrokersPage() {
                     </div>
 
                     <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Метод запроса</label>
+                      <CustomSelect
+                        value={form.method}
+                        onChange={(value) => setForm(f => ({ 
+                          ...f, 
+                          method: value,
+                          // Для GET очищаем body
+                          body: value === 'GET' ? '' : f.body
+                        }))}
+                        options={[
+                          { value: 'GET', label: 'GET' },
+                          { value: 'POST', label: 'POST (form-urlencoded)' },
+                          { value: 'POST_JSON', label: 'POST (JSON)' }
+                        ]}
+                      />
+                    </div>
+
+                    <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">URL</label>
                       <input
                         className="input"
@@ -384,13 +402,16 @@ export default function BrokersPage() {
                         onChange={e => setForm(f => ({ ...f, url: e.target.value }))}
                         placeholder="https://example.com/api/endpoint"
                       />
+                      <p className="text-xs text-gray-500 mt-1">
+                        {form.method === 'GET' ? 'Для GET все параметры указываются прямо в URL' : 'URL для отправки запроса'}
+                      </p>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Headers (JSON)</label>
                       <textarea
                         className="input font-mono text-sm"
-                        rows={8}
+                        rows={6}
                         value={form.headers}
                         onChange={e => setForm(f => ({ ...f, headers: e.target.value }))}
                       />
@@ -398,15 +419,20 @@ export default function BrokersPage() {
                   </div>
 
                   <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Body (JSON)</label>
-                      <textarea
-                        className="input font-mono text-sm"
-                        rows={12}
-                        value={form.body}
-                        onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
-                      />
-                    </div>
+                    {form.method !== 'GET' && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Body {form.method === 'POST_JSON' ? '(JSON)' : '(form-urlencoded)'}
+                        </label>
+                        <textarea
+                          className="input font-mono text-sm"
+                          rows={12}
+                          value={form.body || ''}
+                          onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
+                          placeholder={form.method === 'POST_JSON' ? '{\n  "key": "value"\n}' : 'key1=value1&key2=value2'}
+                        />
+                      </div>
+                    )}
 
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <h4 className="text-sm font-medium text-gray-700 mb-2">Доступные макросы:</h4>
@@ -414,9 +440,10 @@ export default function BrokersPage() {
                         <div><code className="bg-white px-1 rounded">${'{firstName}'}</code> - Имя</div>
                         <div><code className="bg-white px-1 rounded">${'{lastName}'}</code> - Фамилия</div>
                         <div><code className="bg-white px-1 rounded">${'{email}'}</code> - Email</div>
-                        <div><code className="bg-white px-1 rounded">${'{phone}'}</code> - Телефон</div>
+                        <div><code className="bg-white px-1 rounded">${'{phone}'}</code> - Телефон (полный)</div>
                         <div><code className="bg-white px-1 rounded">${'{phonePrefix}'}</code> - Код страны (автоопределение)</div>
-                        <div><code className="bg-white px-1 rounded">${'{password}'}</code> - Пароль (автогенерация)</div>
+                        <div><code className="bg-white px-1 rounded">${'{phoneNumber}'}</code> - Номер без кода страны</div>
+                        <div><code className="bg-white px-1 rounded">${'{password}'}</code> - Пароль (автогенерация Aa12345!)</div>
                         <div><code className="bg-white px-1 rounded">${'{country}'}</code> - Страна</div>
                         <div><code className="bg-white px-1 rounded">${'{aff}'}</code> - Affiliate</div>
                         <div><code className="bg-white px-1 rounded">${'{bx}'}</code> - Box</div>

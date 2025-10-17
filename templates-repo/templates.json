@@ -1,0 +1,31 @@
+{
+  "templates": [
+    {
+      "id": "trackbox",
+      "name": "Trackbox",
+      "version": "1.0.0",
+      "description": "Trackbox integration template for lead processing",
+      "category": "broker",
+      "icon": "📊",
+      "tags": ["trackbox", "broker", "leads"]
+    },
+    {
+      "id": "clickfunnels",
+      "name": "ClickFunnels",
+      "version": "1.0.0", 
+      "description": "ClickFunnels integration template",
+      "category": "funnel",
+      "icon": "🎯",
+      "tags": ["clickfunnels", "funnel", "leads"]
+    },
+    {
+      "id": "mailchimp",
+      "name": "MailChimp",
+      "version": "1.0.0",
+      "description": "MailChimp email marketing integration",
+      "category": "email",
+      "icon": "📧",
+      "tags": ["mailchimp", "email", "marketing"]
+    }
+  ]
+}

@@ -1,0 +1,162 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "darwin-arm64"]
+}
+
+model Lead {
+  id        String   @id @default(uuid())
+
+  // Имя (раздельно)
+  firstName String?
+  lastName  String?
+
+  email     String?  @db.VarChar(320)
+  phone     String?  @db.VarChar(50)
+  ip        String?  @db.VarChar(45)
+  country   String?  @db.Char(2)
+
+  // Атрибутика
+  aff       String?                // id аффилиата (ожидаем совпадение с X-API-Key)
+  bx        String?                // код "бокса" (план отправки)
+  funnel    String?                // оффер
+
+  // UTM
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmTerm     String?
+  utmContent  String?
+
+  // Доп
+  clickid     String?
+  comment     String?
+  lang        String?
+  useragent   String?
+  url         String?
+
+  // Служебные поля интеграции с брокером
+  status      LeadStatus @default(NEW)
+  sentAt      DateTime?  @db.Timestamptz(3) 
+  externalId  String?
+  autologinUrl String?
+  brokerResp  Json?                          
+
+  // Произвольные параметры (sub1..sub20 и т.п.)
+  attrs       Json?
+  brokerStatus           String?      
+  brokerStatusChangedAt  DateTime?    
+  statusEvents LeadStatusEvent[] 
+  createdAt   DateTime   @default(now())
+
+  attempts    LeadBrokerAttempt[]
+
+  @@index([createdAt])
+  @@index([status])
+  @@index([email])
+  @@index([phone])
+  @@index([aff])
+  @@index([bx])
+  @@index([utmSource])
+  @@index([utmMedium])
+  @@index([utmCampaign])
+  @@index([externalId])
+  @@index([aff, createdAt])
+  @@index([bx, createdAt])
+}
+
+model LeadBrokerAttempt {
+  id           String   @id @default(cuid())
+  leadId       String
+  lead         Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  broker       String            // код брокера (например: MOCK, BROKER_A)
+  attemptNo    Int               // порядковый номер попытки
+  status       String            // текстовый статус попытки (OK/ERROR/и т.п.)
+  responseCode Int?
+  responseBody String?
+  errorCode    String?
+  durationMs   Int?
+
+  createdAt    DateTime @default(now())
+
+  @@index([leadId, createdAt])
+}
+enum Role {
+  BUYER
+  ADMIN
+  SUPERUSER
+}
+
+enum LeadStatus {
+  NEW
+  SENT
+  FAILED
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  key       String   @unique           // то, что приходит в X-API-Key
+  aff       String                      // id аффилиата
+  name      String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  role Role @default(BUYER)
+
+  @@index([aff])
+}
+
+enum Visibility {
+  SHOW
+  MASK
+  HIDE
+}
+
+model AffSettings {
+  aff              String  @id
+  nameVisibility   Visibility @default(SHOW)
+  emailVisibility  Visibility @default(SHOW)
+  phoneVisibility  Visibility @default(SHOW)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Box {
+  id        String   @id @default(cuid())
+  code      String   @unique           // bx (код бокса)
+  name      String?
+  country   String?  @db.Char(2)       // для инфо/фильтров
+  broker    String                    // например: MOCK, BROKER_A, BROKER_B
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model LeadStatusEvent {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  kind      String   // "brokerStatus" | "crmStatus" ...
+  from      String?
+  to        String?
+  createdAt DateTime @default(now())
+
+  @@index([leadId, createdAt])
+}
+
+model BrokerTemplate {
+  id           String   @id @default(cuid())
+  code         String   @unique            // код брокера, например: TRACKBOX_FR
+  name         String?
+  templateName String?                     // название шаблона, например: Trackbox
+  isActive     Boolean  @default(true)
+  method       String   @default("POST")  // HTTP метод
+  url          String                        // URL с плейсхолдерами
+  headers      Json?
+  body         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

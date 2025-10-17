@@ -1,0 +1,25 @@
+{
+  "columns": {
+    "createdAt": "Date",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "country": "Country",
+    "aff": "Aff",
+    "bx": "Box",
+    "funnel": "Funnel",
+    "status": "Status",
+    "broker": "Broker",
+    "ip": "IP",
+    "utmSource": "utm_source",
+    "utmMedium": "utm_medium",
+    "utmCampaign": "utm_campaign",
+    "utmTerm": "utm_term",
+    "utmContent": "utm_content"
+  },
+  "ui": {
+    "filters": "Filters",
+    "show": "Show",
+    "hide": "Hide"
+  }
+}

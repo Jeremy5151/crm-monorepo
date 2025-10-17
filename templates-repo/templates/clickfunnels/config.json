@@ -1,0 +1,36 @@
+{
+  "id": "clickfunnels",
+  "name": "ClickFunnels",
+  "version": "1.0.0",
+  "description": "ClickFunnels integration template",
+  "urlTemplate": "https://api.clickfunnels.com/v2/contacts",
+  "method": "POST",
+  "headers": {
+    "Authorization": "Bearer ${apiKey}",
+    "Content-Type": "application/json"
+  },
+  "bodyTemplate": {
+    "contact": {
+      "email": "${email}",
+      "first_name": "${firstName}",
+      "last_name": "${lastName}",
+      "phone": "${phone}",
+      "custom_fields": {
+        "country": "${country}",
+        "affiliate": "${aff}",
+        "funnel": "${funnel}",
+        "ip_address": "${ip}"
+      }
+    }
+  },
+  "formFields": [
+    {
+      "name": "apiKey",
+      "label": "API Key",
+      "type": "text",
+      "required": true,
+      "placeholder": "your-api-key",
+      "description": "Get your API key from ClickFunnels settings"
+    }
+  ]
+}

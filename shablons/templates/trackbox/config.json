@@ -1,0 +1,75 @@
+{
+  "id": "trackbox",
+  "name": "Trackbox",
+  "version": "1.0.0",
+  "description": "Trackbox integration template for lead processing",
+  "urlTemplate": "https://${domain}/api/signup/procform",
+  "method": "POST",
+  "headers": {
+    "x-trackbox-username": "${username}",
+    "x-trackbox-password": "${password}",
+    "x-api-key": "${api_key}",
+    "Content-Type": "application/json"
+  },
+  "bodyTemplate": {
+    "ai": "${ai}",
+    "ci": "${ci}",
+    "gi": "${gi}",
+    "userip": "${ip}",
+    "firstname": "${firstName}",
+    "lastname": "${lastName}",
+    "email": "${email}",
+    "password": "${password}",
+    "phone": "${phone}",
+    "so": "${funnel}",
+    "sub": "${aff}",
+    "MPC_1": "${sub1}",
+    "MPC_2": "${sub2}",
+    "MPC_3": "${sub3}",
+    "MPC_4": "${sub4}",
+    "MPC_5": "${sub5}",
+    "MPC_6": "${sub6}",
+    "MPC_7": "${sub7}",
+    "MPC_8": "${sub8}",
+    "MPC_9": "${sub9}",
+    "MPC_10": "${sub10}",
+    "MPC_11": "${sub11}",
+    "MPC_12": "${sub12}",
+    "ad": "${utmSource}",
+    "term": "${utmTerm}",
+    "campaign": "${utmCampaign}",
+    "medium": "${utmMedium}",
+    "lg": "${lang}"
+  },
+  "formFields": [
+    {
+      "name": "domain",
+      "label": "Domain",
+      "type": "text",
+      "required": true,
+      "placeholder": "your-trackbox-domain.com",
+      "description": "Domain of your Trackbox instance"
+    },
+    {
+      "name": "username",
+      "label": "Username",
+      "type": "text",
+      "required": true,
+      "placeholder": "your-username"
+    },
+    {
+      "name": "password",
+      "label": "Password",
+      "type": "password",
+      "required": true,
+      "placeholder": "your-password"
+    },
+    {
+      "name": "apiKey",
+      "label": "API Key",
+      "type": "text",
+      "required": true,
+      "placeholder": "your-api-key"
+    }
+  ]
+}

@@ -43,7 +43,14 @@ export default function BrokersPage() {
     method: 'POST',
     url: '',
     headers: JSON.stringify({}, null, 2),
-    body: JSON.stringify({}, null, 2)
+    body: JSON.stringify({}, null, 2),
+    // Pull API fields
+    pullEnabled: false,
+    pullUrl: '',
+    pullMethod: 'POST',
+    pullHeaders: JSON.stringify({}, null, 2),
+    pullBody: JSON.stringify({}, null, 2),
+    pullInterval: 15
   });
 
 
@@ -99,7 +106,14 @@ export default function BrokersPage() {
         method: form.method,
         url: form.url,
         headers: JSON.parse(form.headers),
-        body: form.body
+        body: form.body,
+        // Pull API fields
+        pullEnabled: form.pullEnabled,
+        pullUrl: form.pullUrl || null,
+        pullMethod: form.pullMethod || 'POST',
+        pullHeaders: form.pullHeaders ? JSON.parse(form.pullHeaders) : null,
+        pullBody: form.pullBody || null,
+        pullInterval: form.pullInterval || 15
       };
       console.log('Отправляем:', payload);
       const result = await apiPost('/v1/templates', payload);
@@ -128,7 +142,14 @@ export default function BrokersPage() {
         method: form.method,
         url: form.url,
         headers: JSON.parse(form.headers),
-        body: form.body
+        body: form.body,
+        // Pull API fields
+        pullEnabled: form.pullEnabled,
+        pullUrl: form.pullUrl || null,
+        pullMethod: form.pullMethod || 'POST',
+        pullHeaders: form.pullHeaders ? JSON.parse(form.pullHeaders) : null,
+        pullBody: form.pullBody || null,
+        pullInterval: form.pullInterval || 15
       };
       console.log('Обновление интеграции:', editingId, payload);
       const result = await apiPatch(`/v1/templates/${editingId}`, payload);
@@ -157,7 +178,7 @@ export default function BrokersPage() {
     }
   }
 
-  function editTemplate(template: Template) {
+  function editTemplate(template: any) {
     setEditingId(template.id);
     setShowAdd(true);
     setStep(2);
@@ -169,6 +190,13 @@ export default function BrokersPage() {
       parsedHeaders = template.headers;
     }
 
+    let parsedPullHeaders: any = {};
+    try {
+      parsedPullHeaders = typeof template.pullHeaders === 'string' ? JSON.parse(template.pullHeaders) : template.pullHeaders || {};
+    } catch (e) {
+      parsedPullHeaders = template.pullHeaders || {};
+    }
+
     setForm({
       code: template.code,
       name: template.name,
@@ -177,7 +205,14 @@ export default function BrokersPage() {
       method: template.method,
       url: template.url,
       headers: JSON.stringify(parsedHeaders, null, 2),
-      body: template.body
+      body: template.body,
+      // Pull fields
+      pullEnabled: template.pullEnabled || false,
+      pullUrl: template.pullUrl || '',
+      pullMethod: template.pullMethod || 'POST',
+      pullHeaders: JSON.stringify(parsedPullHeaders, null, 2),
+      pullBody: template.pullBody || '',
+      pullInterval: template.pullInterval || 15
     });
 
     setSelectedTemplate(template.code.toLowerCase());
@@ -210,7 +245,13 @@ export default function BrokersPage() {
       method: 'POST',
       url: '',
       headers: JSON.stringify({}, null, 2),
-      body: JSON.stringify({}, null, 2)
+      body: JSON.stringify({}, null, 2),
+      pullEnabled: false,
+      pullUrl: '',
+      pullMethod: 'POST',
+      pullHeaders: JSON.stringify({}, null, 2),
+      pullBody: JSON.stringify({}, null, 2),
+      pullInterval: 15
     });
   }
 
@@ -226,7 +267,14 @@ export default function BrokersPage() {
         url: config.urlTemplate,
         method: config.method,
         headers: JSON.stringify(config.headers, null, 2),
-        body: JSON.stringify(config.bodyTemplate, null, 2)
+        body: JSON.stringify(config.bodyTemplate, null, 2),
+        // Pull API configuration from template
+        pullEnabled: config.pull?.enabled || false,
+        pullUrl: config.pull?.url || '',
+        pullMethod: config.pull?.method || 'POST',
+        pullHeaders: config.pull?.headers ? JSON.stringify(config.pull.headers, null, 2) : JSON.stringify({}, null, 2),
+        pullBody: config.pull?.bodyTemplate ? JSON.stringify(config.pull.bodyTemplate, null, 2) : JSON.stringify({}, null, 2),
+        pullInterval: config.pull?.interval || 15
       }));
     }
   }

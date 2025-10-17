@@ -55,3 +55,7 @@ apps/api/prisma/*.db-journal
 # Turbo
 .turbo/
 
+# Temporary files
+temp/
+*.pdf
+

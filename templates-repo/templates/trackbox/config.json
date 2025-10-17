@@ -41,6 +41,24 @@
     "medium": "${utmMedium}",
     "lg": "${lang}"
   },
+  "pull": {
+    "enabled": true,
+    "url": "https://${domain}/api/pull/customers",
+    "method": "POST",
+    "headers": {
+      "x-trackbox-username": "${username}",
+      "x-trackbox-password": "${password}",
+      "x-api-key": "${api_key}",
+      "Content-Type": "application/json"
+    },
+    "bodyTemplate": {
+      "from": "${from}",
+      "to": "${to}",
+      "type": "3"
+    },
+    "interval": 15,
+    "description": "Pull customer statuses and deposits every 15 minutes"
+  },
   "formFields": [
     {
       "name": "domain",

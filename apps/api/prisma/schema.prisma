@@ -153,10 +153,22 @@ model BrokerTemplate {
   name         String?
   templateName String?                     // название шаблона, например: Trackbox
   isActive     Boolean  @default(true)
+  
+  // Push: отправка лидов на брокера
   method       String   @default("POST")  // HTTP метод
   url          String                        // URL с плейсхолдерами
   headers      Json?
   body         String?
+  
+  // Pull: получение статусов от брокера
+  pullEnabled  Boolean  @default(false)    // включен ли Pull
+  pullUrl      String?                      // URL для pull запросов
+  pullMethod   String?  @default("POST")   // HTTP метод для pull
+  pullHeaders  Json?                        // headers для pull
+  pullBody     String?                      // body template для pull
+  pullInterval Int?     @default(15)       // интервал опроса в минутах
+  pullLastSync DateTime?                   // когда последний раз синхронизировали
+  
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }

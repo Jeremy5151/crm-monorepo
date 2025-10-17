@@ -1,4 +1,9 @@
 import type { Lead } from '@prisma/client';
+import fetch from 'node-fetch';
+import * as https from 'https';
+
+// Agent для отключения проверки SSL (для dev/testing)
+const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
 export interface BrokerAdapter {
   code: string;
@@ -180,7 +185,12 @@ export class HttpTemplateAdapter implements BrokerAdapter {
       console.log(`[HttpTemplateAdapter] Sending fetch request...`);
       let resp;
       try {
-        resp = await fetch(url, { method, headers, body });
+        resp = await fetch(url, { 
+          method, 
+          headers, 
+          body,
+          agent: url.startsWith('https') ? httpsAgent : undefined
+        } as any);
       } catch (fetchError: any) {
         console.error(`[HttpTemplateAdapter] Fetch failed:`, fetchError);
         return { type: 'temp_error', code: 500, raw: `Network error: ${fetchError?.message || fetchError}` };

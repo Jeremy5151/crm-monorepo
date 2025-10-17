@@ -192,6 +192,20 @@ export class HttpTemplateAdapter implements BrokerAdapter {
       try {
         const json = JSON.parse(raw);
         
+        // AlgoLead формат: { status: "Success", data: { UserID, RedirectTo, ... } }
+        if (json.status === 'Success' && json.data) {
+          const externalId = String(json.data.UserID || json.data.AccountID || json.data.LoginID || 'EXT');
+          const autologinUrl = json.data.RedirectTo || json.data.BrandAutoLogin;
+          return { type: 'accepted', externalId, autologinUrl, raw };
+        }
+        
+        // AlgoLead ошибка: { status: "Failed", errors: "..." }
+        if (json.status === 'Failed') {
+          const reason = typeof json.errors === 'string' ? json.errors : JSON.stringify(json.errors);
+          return { type: 'rejected', code: 400, raw: reason };
+        }
+        
+        // Trackbox формат
         if (json.status !== undefined) {
           if (json.status === true || json.status === 'true') {
             const externalId = json.addonData?.uniqueid ?? json.uniqueid ?? json.id ?? 'EXT';

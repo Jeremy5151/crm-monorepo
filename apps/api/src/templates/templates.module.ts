@@ -3,8 +3,10 @@ import { TemplatesService } from './templates.service';
 import { TemplatesController } from './templates.controller';
 import { TemplateSyncService } from './template-sync.service';
 import { TemplateSyncController } from './template-sync.controller';
+import { BrokerModule } from '../broker/broker.module';
 
 @Module({
+  imports: [BrokerModule],
   providers: [TemplatesService, TemplateSyncService],
   controllers: [TemplatesController, TemplateSyncController],
   exports: [TemplatesService, TemplateSyncService],

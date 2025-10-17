@@ -259,12 +259,15 @@ export default function BrokersPage() {
     setSelectedTemplate(templateId);
     const config = await loadTemplateConfig(templateId);
     if (config) {
+      // Извлекаем домен из URL для Pull URL
+      const urlWithDomain = config.urlTemplate || '';
+      
       setForm(f => ({
         ...f,
         code: config.id.toUpperCase(),
         name: config.name,
         templateName: config.name,
-        url: config.urlTemplate,
+        url: urlWithDomain,
         method: config.method,
         headers: JSON.stringify(config.headers, null, 2),
         body: JSON.stringify(config.bodyTemplate, null, 2),
@@ -427,6 +430,84 @@ export default function BrokersPage() {
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* Pull API Settings */}
+                <div className="border-t pt-6 mt-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <input
+                      type="checkbox"
+                      checked={form.pullEnabled}
+                      onChange={e => setForm(f => ({ ...f, pullEnabled: e.target.checked }))}
+                      className="w-4 h-4 rounded"
+                    />
+                    <label className="text-sm font-medium text-gray-700">
+                      Включить Pull API (получение статусов от брокера)
+                    </label>
+                  </div>
+
+                  {form.pullEnabled && (
+                    <div className="grid md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded-lg">
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Pull URL</label>
+                          <input
+                            className="input"
+                            value={form.pullUrl || ''}
+                            onChange={e => setForm(f => ({ ...f, pullUrl: e.target.value }))}
+                            placeholder="https://example.com/api/pull/customers"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Интервал опроса (минут)</label>
+                          <input
+                            type="number"
+                            className="input"
+                            value={form.pullInterval || 15}
+                            onChange={e => setForm(f => ({ ...f, pullInterval: parseInt(e.target.value) || 15 }))}
+                            min="5"
+                            max="1440"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Как часто запрашивать обновления (5-1440 мин)</p>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Pull Headers (JSON)</label>
+                          <textarea
+                            className="input font-mono text-sm"
+                            rows={6}
+                            value={form.pullHeaders}
+                            onChange={e => setForm(f => ({ ...f, pullHeaders: e.target.value }))}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Pull Body (JSON)</label>
+                          <textarea
+                            className="input font-mono text-sm"
+                            rows={8}
+                            value={form.pullBody}
+                            onChange={e => setForm(f => ({ ...f, pullBody: e.target.value }))}
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            Доступные макросы: <code>${'{from}'}</code> и <code>${'{to}'}</code> для дат
+                          </p>
+                        </div>
+
+                        <div className="bg-blue-50 p-3 rounded-lg">
+                          <h4 className="text-sm font-medium text-blue-900 mb-2">ℹ️ Pull API</h4>
+                          <p className="text-xs text-blue-700">
+                            Система будет автоматически запрашивать обновления статусов лидов у брокера 
+                            с указанным интервалом. Полученные статусы (DEPOSITOR, FTD, и т.д.) 
+                            будут обновляться в CRM автоматически.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex gap-2">

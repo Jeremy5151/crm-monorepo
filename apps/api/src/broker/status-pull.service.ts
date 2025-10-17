@@ -78,6 +78,7 @@ export class StatusPullService implements OnModuleInit {
       }
 
       const data = await response.json();
+      logger.log(`Response from ${template.code}:`, JSON.stringify(data).slice(0, 500));
       
       // Парсим ответ и обновляем статусы
       const updatedCount = await this.processStatusUpdates(template.code, data);

@@ -159,6 +159,7 @@ model BrokerTemplate {
   url          String                        // URL с плейсхолдерами
   headers      Json?
   body         String?
+  params       Json?                         // параметры интеграции (partnerId, auth, funnelId и т.д.)
   
   // Pull: получение статусов от брокера
   pullEnabled  Boolean  @default(false)    // включен ли Pull

@@ -26,6 +26,15 @@
       "category": "email",
       "icon": "📧",
       "tags": ["mailchimp", "email", "marketing"]
+    },
+    {
+      "id": "algolead",
+      "name": "AlgoLead",
+      "version": "1.0.0",
+      "description": "AlgoLead optimizer-based broker routing with status pulling",
+      "category": "broker",
+      "icon": "🤖",
+      "tags": ["algolead", "broker", "optimizer", "routing"]
     }
   ]
 }

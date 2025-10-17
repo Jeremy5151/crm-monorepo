@@ -42,11 +42,26 @@ export type HttpTemplate = {
   body?: string; // шаблон строки с плейсхолдерами ${...}
 };
 
-export function renderTemplate(template: string, lead: Lead): string {
+export function renderTemplate(template: string, lead: Lead, params?: Record<string, any>): string {
   return template.replace(/\$\{([^}]+)\}/g, (_, key) => {
-    const path = String(key).trim().split('.');
+    const trimmedKey = String(key).trim();
+    
+    // Сначала проверяем в params (параметры интеграции)
+    if (params && trimmedKey in params) {
+      return params[trimmedKey] == null ? '' : String(params[trimmedKey]);
+    }
+    
+    // Потом в lead
+    const path = trimmedKey.split('.');
     let val: any = lead as any;
     for (const k of path) val = val?.[k];
+    
+    // Специальная обработка для phonePrefix
+    if (trimmedKey === 'phonePrefix' && lead.phone) {
+      const match = lead.phone.match(/^\+?(\d{1,4})/);
+      return match ? match[1] : '';
+    }
+    
     return val == null ? '' : String(val);
   });
 }
@@ -54,19 +69,32 @@ export function renderTemplate(template: string, lead: Lead): string {
 export class HttpTemplateAdapter implements BrokerAdapter {
   code: string;
   private tpl: HttpTemplate;
-  constructor(code: string, tpl: HttpTemplate) { this.code = code; this.tpl = tpl; }
+  private params: Record<string, any>;
+  
+  constructor(code: string, tpl: HttpTemplate, params?: Record<string, any>) { 
+    this.code = code;
+    this.tpl = tpl;
+    this.params = params || {};
+  }
   async send(lead: Lead): Promise<BrokerResult> {
     console.log(`[HttpTemplateAdapter] Sending lead ${lead.id} to broker ${this.code}`);
     console.log(`[HttpTemplateAdapter] Template:`, JSON.stringify(this.tpl, null, 2));
     try {
-      const url = renderTemplate(this.tpl.url, lead);
+      const url = renderTemplate(this.tpl.url, lead, this.params);
       console.log(`[HttpTemplateAdapter] Rendered URL:`, url);
       const method = this.tpl.method ?? 'POST';
-      const headers: Record<string, string> = { 'content-type': 'application/json', ...(this.tpl.headers ?? {}) };
-      let body = this.tpl.body ? renderTemplate(this.tpl.body, lead) : undefined;
+      const headers: Record<string, string> = { ...(this.tpl.headers ?? {}) };
+      
+      // Для POST добавляем Content-Type если не указан
+      if (method === 'POST' && !headers['content-type'] && !headers['Content-Type']) {
+        headers['content-type'] = 'application/json';
+      }
+      
+      let body = this.tpl.body ? renderTemplate(this.tpl.body, lead, this.params) : undefined;
       console.log(`[HttpTemplateAdapter] Rendered body:`, body);
       
-      if (body && body.trim()) {
+      // Проверяем JSON только для POST с body
+      if (method === 'POST' && body && body.trim()) {
         try {
           JSON.parse(body);
           console.log(`[HttpTemplateAdapter] Body JSON is valid`);

@@ -1,0 +1,62 @@
+{
+  "id": "algolead",
+  "name": "AlgoLead",
+  "version": "1.0.0",
+  "description": "AlgoLead integration template - optimizer-based lead routing",
+  "urlTemplate": "https://communication.algolead.org/api.php?Service=CreateAccountByOptimizer&PartnerID=${partnerId}&Auth=${auth}&FunnelID=${funnelId}&ClientIP=${ip}&LoginEmail=${email}&LoginPassword=${password}&FirstName=${firstName}&LastName=${lastName}&PhonePrefix=${phonePrefix}&Phone=${phone}&Country=${country}&lang=${lang}&TrackingID=${trackingId}&ClickID=${clickid}&SubCampaignID=${aff}",
+  "method": "GET",
+  "headers": {},
+  "bodyTemplate": null,
+  "pull": {
+    "enabled": true,
+    "url": "https://communication.algolead.org/api.php?Service=AccountsData&PartnerID=${partnerId}&Auth=${auth}&Token=${token}&TrackingID=${trackingId}&CreateTimeFrom=${from}&CreateTimeTo=${to}",
+    "method": "GET",
+    "headers": {},
+    "bodyTemplate": null,
+    "interval": 15,
+    "description": "Pull customer statuses every 15 minutes using AccountsData service"
+  },
+  "formFields": [
+    {
+      "name": "partnerId",
+      "label": "Partner ID",
+      "type": "text",
+      "required": true,
+      "placeholder": "18",
+      "description": "Your Partner ID in AlgoLead"
+    },
+    {
+      "name": "auth",
+      "label": "Auth Token",
+      "type": "text",
+      "required": true,
+      "placeholder": "cea7b36ca61d00d0677a90bc90b2d684",
+      "description": "Authentication token provided by AlgoLead"
+    },
+    {
+      "name": "funnelId",
+      "label": "Funnel ID",
+      "type": "text",
+      "required": true,
+      "placeholder": "600",
+      "description": "Funnel/Landing page ID"
+    },
+    {
+      "name": "trackingId",
+      "label": "Tracking ID",
+      "type": "text",
+      "required": true,
+      "placeholder": "Campaign ID",
+      "description": "Campaign tracking ID"
+    },
+    {
+      "name": "token",
+      "label": "Pull API Token",
+      "type": "text",
+      "required": true,
+      "placeholder": "dc33cdb57d5380965f376a25a024fefd",
+      "description": "Token for Pull API requests"
+    }
+  ]
+}
+

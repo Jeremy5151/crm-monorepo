@@ -514,7 +514,7 @@ export default function BrokersPage() {
                 <div className="border-t pt-6 mt-6">
                   <h4 className="text-sm font-medium text-gray-700 mb-3">Параметры интеграции</h4>
                   <p className="text-xs text-gray-500 mb-4">
-                    Эти параметры можно использовать в URL, Headers и Body через макросы, например: ${'${partnerId}'}
+                    Эти параметры можно использовать в URL, Headers и Body через макросы, например: <code className="bg-gray-100 px-1 rounded">{'${partnerId}'}</code>
                   </p>
                   <div className="grid md:grid-cols-2 gap-4">
                     {Object.entries(form.params).map(([key, value]) => (
@@ -562,7 +562,7 @@ export default function BrokersPage() {
                 <div className="border-t pt-6 mt-6">
                   <h4 className="text-sm font-medium text-gray-700 mb-3">Настройки генерации пароля</h4>
                   <p className="text-xs text-gray-500 mb-4">
-                    Настройки используются при генерации макроса ${'${password}'}
+                    Настройки используются при генерации макроса <code className="bg-gray-100 px-1 rounded">{'${password}'}</code>
                   </p>
                   <div className="grid md:grid-cols-3 gap-4">
                     <div>

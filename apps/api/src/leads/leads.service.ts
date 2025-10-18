@@ -86,11 +86,8 @@ export class LeadsService {
       brokerResp: Prisma.JsonNull,
     };
 
-    if (data.bx) {
-      const box = await prisma.box.findFirst({ where: { code: data.bx, isActive: true } });
-      if (!box) throw new BadRequestException('Unknown or inactive box');
-    }
-
+    // TODO: Integrate box selection logic when sending leads
+    
     return prisma.lead.create({ data });
   }
 

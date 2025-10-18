@@ -125,16 +125,6 @@ model AffSettings {
   updatedAt        DateTime  @updatedAt
 }
 
-model Box {
-  id        String   @id @default(cuid())
-  code      String   @unique           // bx (код бокса)
-  name      String?
-  country   String?  @db.Char(2)       // для инфо/фильтров
-  broker    String                    // например: MOCK, BROKER_A, BROKER_B
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-}
-
 model LeadStatusEvent {
   id        String   @id @default(cuid())
   leadId    String
@@ -178,6 +168,38 @@ model BrokerTemplate {
   pullInterval Int?     @default(15)       // интервал опроса в минутах
   pullLastSync DateTime?                   // когда последний раз синхронизировали
   
+  boxBrokers   BoxBroker[]                 // связь с боксами через приоритеты
+  
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+model Box {
+  id          String   @id @default(cuid())
+  name        String                        // название бокса, например: "EU Premium"
+  country     String?                       // код страны (ISO 2-letter), например: "FR", "DE", null = любая
+  isActive    Boolean  @default(true)       // активен ли бокс
+  
+  brokers     BoxBroker[]                   // брокеры с приоритетами
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([country])
+}
+
+model BoxBroker {
+  id         String   @id @default(cuid())
+  boxId      String
+  brokerId   String
+  priority   Int                            // приоритет от 1 до 10 (1 = самый высокий)
+  
+  box        Box              @relation(fields: [boxId], references: [id], onDelete: Cascade)
+  broker     BrokerTemplate   @relation(fields: [brokerId], references: [id], onDelete: Cascade)
+  
+  createdAt  DateTime @default(now())
+  
+  @@unique([boxId, brokerId])              // один брокер только один раз в боксе
+  @@unique([boxId, priority])              // один приоритет только один раз в боксе
+  @@index([boxId, priority])
 }

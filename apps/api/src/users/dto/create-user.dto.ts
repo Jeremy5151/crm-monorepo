@@ -30,28 +30,4 @@ export class CreateUserDto {
   @IsString()
   parentId?: string;
 
-  // Права доступа
-  @IsOptional()
-  @IsBoolean()
-  canViewBrokers?: boolean;
-
-  @IsOptional()
-  @IsBoolean()
-  canViewBoxes?: boolean;
-
-  @IsOptional()
-  @IsBoolean()
-  canViewUsers?: boolean;
-
-  @IsOptional()
-  @IsBoolean()
-  canViewFullEmail?: boolean;
-
-  @IsOptional()
-  @IsBoolean()
-  canViewFullPhone?: boolean;
-
-  @IsOptional()
-  @IsBoolean()
-  canResendLeads?: boolean;
 }

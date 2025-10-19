@@ -40,7 +40,9 @@ export function CompactBrokerSelector({ onSelect, onCancel }: CompactBrokerSelec
 
   const loadTemplates = async () => {
     try {
-      const response = await fetch('/api/templates');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001'}/v1/templates`, {
+        headers: { 'X-API-Key': process.env.NEXT_PUBLIC_API_KEY || 'superadmin-key' },
+      });
       if (response.ok) {
         const data = await response.json();
         setTemplates(data.filter((t: BrokerTemplate) => t.isActive));

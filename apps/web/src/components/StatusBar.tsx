@@ -98,25 +98,26 @@ export function StatusBar() {
   
   const progressCount = progress.filter(p => p.status === 'success' || p.status === 'error').length;
 
-  if (!isVisible) return null;
+  // Показываем только если есть активные отправки
+  if (!isVisible || progress.length === 0) return null;
 
   return (
-    <div style={{ position: 'absolute', right: '93px', top: 0, bottom: 0, margin: 'auto', display: 'flex', alignItems: 'center' }}>
-      <div className="bg-white border border-gray-300 rounded-lg shadow-sm">
+    <div className="statusbar">
+      <div className="statusbar-content">
         {/* Компактный заголовок */}
         <div 
-          className="px-2 py-1 cursor-pointer hover:bg-gray-50 flex items-center justify-between"
+          className="statusbar-header"
           onClick={() => setIsExpanded(!isExpanded)}
         >
           <div className="flex items-center space-x-2">
-            <div className={`w-2 h-2 rounded-full ${
+            <div className={`statusbar-indicator ${
               hasActiveSending 
-                ? 'bg-blue-500 animate-pulse'
+                ? 'active'
                 : isComplete && hasErrors
-                  ? 'bg-red-500' 
+                  ? 'error' 
                   : isComplete && !hasErrors
-                  ? 'bg-green-500'
-                  : 'bg-gray-400'
+                  ? 'success'
+                  : 'inactive'
             }`} />
             <span className="text-xs font-medium">
               {progressCount}/{totalCount}
@@ -141,8 +142,8 @@ export function StatusBar() {
 
         {/* Развернутый контент */}
         {isExpanded && (
-          <div className="absolute top-full mt-1 w-80 bg-white border border-gray-300 rounded-lg shadow-lg z-50" style={{ left: '50%', transform: 'translateX(-50%)' }}>
-            <div className="border-t border-gray-200 max-h-96 overflow-y-auto" style={{ maxHeight: '400px' }}>
+          <div className="statusbar-expanded">
+            <div className="statusbar-list">
             {progress.length === 0 ? (
               <div className="px-3 py-4 text-sm text-gray-500 text-center">
                 {t('statusbar.no_active_sends')}
@@ -150,15 +151,15 @@ export function StatusBar() {
             ) : (
               <div className="p-3 space-y-3">
                 {progress.map((item) => (
-                  <div key={item.id} className="flex items-start space-x-3">
-                    {getStatusIcon(item.status)}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm font-medium text-gray-900 truncate">
+                  <div key={item.id} className="statusbar-item">
+                    <div className={`statusbar-item-icon ${item.status}`} />
+                    <div className="statusbar-item-content">
+                      <div className="statusbar-item-header">
+                        <div className="statusbar-item-name">
                           {item.leadEmail || item.leadName || t('statusbar.unknown')}
                         </div>
                         <div className="flex items-center space-x-2">
-                          <div className="text-xs text-gray-500">
+                          <div className="statusbar-item-time">
                             {formatTime(item.timestamp)}
                           </div>
                           <button
@@ -171,21 +172,21 @@ export function StatusBar() {
                                 removeProgress(item.id);
                               }
                             }}
-                            className="text-gray-400 hover:text-gray-600 text-xs"
+                            className="statusbar-close"
                             title={item.status === 'waiting' || item.status === 'sending' ? t('statusbar.cancel') : t('statusbar.remove')}
                           >
                             ✕
                           </button>
                         </div>
                       </div>
-                      <div className="text-xs text-gray-600 mt-1">
+                      <div className="statusbar-item-status">
                         {getStatusText(item.status)}
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
+                      <div className="statusbar-item-message">
                         {translateMessage(item.message)}
                       </div>
                       {item.nextAction && (
-                        <div className="text-xs text-blue-600 mt-1">
+                        <div className="statusbar-item-next">
                           {t('statusbar.next_action')}: {formatNextAction(item.nextAction)}
                         </div>
                       )}
@@ -197,10 +198,10 @@ export function StatusBar() {
             </div>
             
             {hasCancellableLeads && (
-              <div className="border-t border-gray-200 p-3">
+              <div className="statusbar-actions">
                 <button
                   onClick={cancelAllSending}
-                  className="w-full text-xs bg-red-100 text-red-600 hover:bg-red-200 px-3 py-2 rounded"
+                  className="statusbar-button cancel"
                 >
                   {t('statusbar.cancel_all')}
                 </button>
@@ -208,10 +209,10 @@ export function StatusBar() {
             )}
             
             {allCompleted && (
-              <div className="border-t border-gray-200 p-3">
+              <div className="statusbar-actions">
                 <button
                   onClick={clearQueue}
-                  className="w-full text-xs bg-gray-100 text-gray-600 hover:bg-gray-200 px-3 py-2 rounded"
+                  className="statusbar-button clear"
                 >
                   {t('statusbar.clear')}
                 </button>

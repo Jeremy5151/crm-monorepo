@@ -66,39 +66,46 @@ export function StatusBarProvider({ children }: { children: ReactNode }) {
   }, [isVisible]);
 
   useEffect(() => {
-    const syncWithServer = async () => {
-      try {
-        const response = await fetch('/api/queue');
-        if (response.ok) {
-          const serverQueue = await response.json();
+    const autoUpdateProgress = () => {
+      setProgress(prev => {
+        const now = new Date();
+        let hasChanges = false;
+        
+        const updatedProgress = prev.map(item => {
+          // Автоматически завершаем отправки через 5 секунд если нет обновлений
+          if (item.status === 'sending' && now.getTime() - item.timestamp.getTime() > 5000) {
+            hasChanges = true;
+            return {
+              ...item,
+              status: 'error' as const,
+              message: 'Timeout - отправка не завершена'
+            };
+          }
           
-          const newProgress = serverQueue.map((serverItem: any) => ({
-            id: `progress-${serverItem.id}`,
-            leadId: serverItem.id,
-            leadName: serverItem.name,
-            leadEmail: serverItem.email,
-            status: serverItem.status,
-            message: serverItem.message,
-            timestamp: new Date(serverItem.timestamp),
-            nextAction: serverItem.nextAction ? new Date(serverItem.nextAction) : undefined,
-          }));
+          // Автоматически скрываем старые завершенные отправки через 30 секунд
+          if ((item.status === 'success' || item.status === 'error' || item.status === 'skipped') && 
+              now.getTime() - item.timestamp.getTime() > 30000) {
+            hasChanges = true;
+            return null;
+          }
           
-          setProgress(newProgress);
-          
-          if (newProgress.length > 0) {
-            setIsVisible(true);
-          } else {
+          return item;
+        }).filter(Boolean) as SendProgress[];
+        
+        if (hasChanges) {
+          // Автоматически скрываем StatusBar если все отправки завершены
+          const hasActiveSending = updatedProgress.some(p => p.status === 'waiting' || p.status === 'sending');
+          if (!hasActiveSending && updatedProgress.length === 0) {
             setIsVisible(false);
           }
+          return updatedProgress;
         }
-      } catch (error) {
-        console.error('Ошибка синхронизации с сервером:', error);
-      }
+        
+        return prev;
+      });
     };
 
-    const interval = setInterval(syncWithServer, 1000);
-    syncWithServer();
-
+    const interval = setInterval(autoUpdateProgress, 1000);
     return () => clearInterval(interval);
   }, []);
 

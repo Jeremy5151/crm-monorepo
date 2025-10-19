@@ -25,8 +25,6 @@ model Lead {
   bx        String?                // код "бокса" (план отправки)
   funnel    String?                // оффер
   
-  // Связь с пользователем
-  userId    String?                // кто создал лид
 
   // UTM
   utmSource   String?
@@ -47,7 +45,11 @@ model Lead {
   sentAt      DateTime?  @db.Timestamptz(3) 
   externalId  String?
   autologinUrl String?
-  brokerResp  Json?                          
+  brokerResp  Json?
+  
+  // Связь с пользователем
+  userId      String?
+  user        User?   @relation("UserLeads", fields: [userId], references: [id], onDelete: SetNull)                          
 
   // Произвольные параметры (sub1..sub20 и т.п.)
   attrs       Json?
@@ -58,8 +60,6 @@ model Lead {
 
   attempts    LeadBrokerAttempt[]
 
-  // Связи
-  user       User? @relation(fields: [userId], references: [id])
   
   @@index([createdAt])
   @@index([status])
@@ -73,7 +73,6 @@ model Lead {
   @@index([externalId])
   @@index([aff, createdAt])
   @@index([bx, createdAt])
-  @@index([userId])
 }
 
 model LeadBrokerAttempt {
@@ -222,65 +221,44 @@ model BoxBroker {
 model CrmSettings {
   id        String   @id @default(cuid())
   timezone  String   @default("UTC")        // глобальный часовой пояс CRM
-  theme     String   @default("light")      // цветовая схема: light, dark, auto
-  language  String   @default("ru")         // язык интерфейса: ru, en
+  theme     String   @default("light")      // Цветовая схема (light/dark/auto)
+  language  String   @default("en")         // Язык интерфейса (ru/en)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
   @@map("crm_settings")
 }
 
-// Система пользователей
 enum UserRole {
   AFFILIATE        // Обычный аффилиат
-  AFFILIATE_MASTER // Мастер аффилиат (может управлять другими аффилиатами)
+  AFFILIATE_MASTER // Мастер аффилиат
   ADMIN            // Администратор
-  SUPERADMIN       // Суперадмин (скрытый, доступ ко всему)
+  SUPERADMIN       // Суперадмин
 }
 
 model User {
   id          String   @id @default(cuid())
   email       String   @unique
   name        String
-  password    String   @default("changeme123") // Пароль для входа в CRM
+  password    String   @default("changeme123")
   role        UserRole @default(AFFILIATE)
   isActive    Boolean  @default(true)
-  
-  // API ключ для аутентификации
   apiKey      String   @unique @default(cuid())
-  
-  // Настройки пользователя
   timezone    String   @default("UTC")
-  language    String   @default("ru")
+  language    String   @default("en")
   
-  // Права доступа
-  canViewBrokers      Boolean @default(false)  // Видеть брокеров/интеграции
-  canViewBoxes        Boolean @default(false)  // Видеть боксы
-  canViewUsers        Boolean @default(false)  // Видеть пользователей
-  canViewFullEmail    Boolean @default(false)  // Показывать полный email
-  canViewFullPhone    Boolean @default(false)  // Показывать полный телефон
-  canResendLeads      Boolean @default(false)  // Переотправлять лиды
-  
-  // Связи
-  createdBy   String?  // кто создал пользователя
-  parentId    String?  // для иерархии (AffiliateMaster -> Affiliate)
-  
-  // Метаданные
+  createdBy   String?
+  parentId    String?
   lastLoginAt DateTime?
+  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  // Связи
-  createdByUser User? @relation("UserCreatedBy", fields: [createdBy], references: [id])
-  createdUsers  User[] @relation("UserCreatedBy")
-  parent        User? @relation("UserHierarchy", fields: [parentId], references: [id])
-  children      User[] @relation("UserHierarchy")
+  parent         User?  @relation("UserToParent", fields: [parentId], references: [id], onDelete: SetNull)
+  children       User[] @relation("UserToParent")
+  createdByUser  User?  @relation("CreatedUsers", fields: [createdBy], references: [id], onDelete: SetNull)
+  createdUsers   User[] @relation("CreatedUsers")
+  leads          Lead[] @relation("UserLeads")
   
-  // Лиды, созданные этим пользователем
-  leads        Lead[]
-  
-  @@index([apiKey])
-  @@index([role])
-  @@index([isActive])
   @@map("users")
 }

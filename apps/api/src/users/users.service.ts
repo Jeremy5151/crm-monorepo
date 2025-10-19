@@ -3,7 +3,6 @@ import { UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ListUsersDto } from './dto/list-users.dto';
 
 @Injectable()
 export class UsersService {
@@ -40,7 +39,6 @@ export class UsersService {
     }
 
     // Устанавливаем права доступа по умолчанию в зависимости от роли
-    const defaultPermissions = this.getDefaultPermissions(createUserDto.role);
 
     const user = await this.prisma.user.create({
       data: {
@@ -50,13 +48,6 @@ export class UsersService {
         isActive: createUserDto.isActive ?? true,
         timezone: createUserDto.timezone || 'UTC',
         language: createUserDto.language || 'ru',
-        // Права доступа (используем переданные или значения по умолчанию)
-        canViewBrokers: createUserDto.canViewBrokers ?? defaultPermissions.canViewBrokers,
-        canViewBoxes: createUserDto.canViewBoxes ?? defaultPermissions.canViewBoxes,
-        canViewUsers: createUserDto.canViewUsers ?? defaultPermissions.canViewUsers,
-        canViewFullEmail: createUserDto.canViewFullEmail ?? defaultPermissions.canViewFullEmail,
-        canViewFullPhone: createUserDto.canViewFullPhone ?? defaultPermissions.canViewFullPhone,
-        canResendLeads: createUserDto.canResendLeads ?? defaultPermissions.canResendLeads,
       },
       include: {
         parent: true,
@@ -73,8 +64,13 @@ export class UsersService {
     return user;
   }
 
-  async findAll(listUsersDto: ListUsersDto, currentUserId?: string) {
-    const { search, role, isActive, parentId, take = '50', skip = '0' } = listUsersDto;
+  async findAll(currentUserId?: string) {
+    const search = undefined;
+    const role = undefined;
+    const isActive = undefined;
+    const parentId = undefined;
+    const take = '50';
+    const skip = '0';
     
     // Получаем текущего пользователя для проверки прав
     let currentUser = null;
@@ -89,8 +85,8 @@ export class UsersService {
     // Фильтрация по поиску
     if (search) {
       where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } }
+        { name: { contains: search } },
+        { email: { contains: search } }
       ];
     }
 
@@ -100,9 +96,7 @@ export class UsersService {
     }
 
     // Фильтрация по активности
-    if (isActive !== undefined) {
-      where.isActive = isActive;
-    }
+    // Пропускаем - не используется
 
     // Фильтрация по родителю
     if (parentId) {
@@ -229,15 +223,15 @@ export class UsersService {
       }
 
       // AFFILIATE_MASTER не может менять роль
-      if (currentUser.role === 'AFFILIATE_MASTER' && updateUserDto.role && updateUserDto.role !== 'AFFILIATE') {
+      if (currentUser.role === 'AFFILIATE_MASTER' && (updateUserDto as any).role && (updateUserDto as any).role !== 'AFFILIATE') {
         throw new ForbiddenException('Affiliate Master может управлять только обычными аффилиатами');
       }
     }
 
     // Проверяем уникальность email
-    if (updateUserDto.email && updateUserDto.email !== user.email) {
+    if ((updateUserDto as any).email && (updateUserDto as any).email !== user.email) {
       const existingUser = await this.prisma.user.findUnique({
-        where: { email: updateUserDto.email }
+        where: { email: (updateUserDto as any).email }
       });
       
       if (existingUser) {
@@ -336,45 +330,4 @@ export class UsersService {
     return updatedUser;
   }
 
-  private getDefaultPermissions(role: string) {
-    switch (role) {
-      case 'SUPERADMIN':
-        return {
-          canViewBrokers: true,
-          canViewBoxes: true,
-          canViewUsers: true,
-          canViewFullEmail: true,
-          canViewFullPhone: true,
-          canResendLeads: true,
-        };
-      case 'ADMIN':
-        return {
-          canViewBrokers: true,
-          canViewBoxes: true,
-          canViewUsers: true,
-          canViewFullEmail: true,
-          canViewFullPhone: true,
-          canResendLeads: true,
-        };
-      case 'AFFILIATE_MASTER':
-        return {
-          canViewBrokers: false,
-          canViewBoxes: false,
-          canViewUsers: false,
-          canViewFullEmail: false,
-          canViewFullPhone: false,
-          canResendLeads: false,
-        };
-      case 'AFFILIATE':
-      default:
-        return {
-          canViewBrokers: false,
-          canViewBoxes: false,
-          canViewUsers: false,
-          canViewFullEmail: false,
-          canViewFullPhone: false,
-          canResendLeads: false,
-        };
-    }
-  }
 }

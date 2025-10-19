@@ -14,14 +14,14 @@ import { AppController } from './app.controller';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
+    AuthModule,
     LeadsModule,
     TemplatesModule,
     BrokerModule,
     BoxesModule,
     SettingsModule,
     UsersModule,
-    AuthModule,
-    PrismaModule
   ],
   controllers: [AppController],
   providers: [DispatchService],

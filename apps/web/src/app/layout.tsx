@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
-import './globals.css';
+import Providers from './Providers';
+import { Navigation } from '@/components/Navigation';
+import { StatusBar } from '@/components/StatusBar';
 
 export const metadata: Metadata = {
   title: 'CRM',
@@ -9,10 +11,19 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="stylesheet" href="/styles.css" />
+      </head>
       <body>
-        <main className="mx-auto max-w-7xl px-3 py-4">
-          {children}
-        </main>
+        <Providers>
+          <div className="app-layout">
+            <Navigation />
+            <main className="main-content">
+              {children}
+            </main>
+            <StatusBar />
+          </div>
+        </Providers>
       </body>
     </html>
   );

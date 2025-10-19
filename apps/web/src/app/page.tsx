@@ -381,13 +381,15 @@ export default function LeadsPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('leads.title')}</h1>
+    <div className="leads-page">
+      <div className="page-header">
+        <h1 className="page-title">{t('leads.title')}</h1>
+      </div>
 
       <LeadsFilterBar columns={cols} onColumns={setCols} leads={allItems} />
 
-      <div className="relative">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="table-container">
+        <div className="table-wrapper">
           <div className="overflow-x-auto">
             <table className="leads-table min-w-full">
             <thead>
@@ -479,56 +481,52 @@ export default function LeadsPage() {
         </div>
         
         {selected.size > 0 && (
-          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
-            <div className="mx-auto max-w-7xl px-3 py-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t('leads.selected')}: {selected.size}
-                  </span>
-                  <button
-                    onClick={() => setSelected(new Set())}
-                    className="flex items-center gap-2 px-3 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 border border-gray-200 transition-colors"
-                  >
-                    <i className="fas fa-times text-sm"></i>
-                    {t('leads.reset_selection')}
-                  </button>
+          <div className="selection-panel">
+            <div className="selection-content">
+              <div className="selection-left">
+                <div className="selection-count">
+                  <span className="count-number">{selected.size}</span>
                 </div>
+                <span className="selection-text">
+                  {t('leads.selected')}
+                </span>
+                <button
+                  onClick={() => setSelected(new Set())}
+                  className="selection-clear"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="selection-actions">
+                <button
+                  onClick={onBulkDelete}
+                  disabled={loading}
+                  className="action-btn action-btn-danger"
+                >
+                  {t('common.delete')}
+                </button>
                 
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={onBulkDelete}
-                    disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2 text-red-700 bg-red-100 rounded-lg hover:bg-red-200 border border-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <i className="fas fa-trash text-sm"></i>
-                    {t('common.delete')}
-                  </button>
-                  
-                  <button
-                    onClick={onBulkClone}
-                    disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2 text-gray-800 bg-yellow-100 rounded-lg hover:bg-yellow-200 border border-yellow-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <i className="fas fa-copy text-sm"></i>
-                    {t('leads.clone')}
-                  </button>
-                  
-                  <button
-                    onClick={onBulkSend}
-                    disabled={loading || !canSend}
-                    className="flex items-center gap-2 px-4 py-2 text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed border border-yellow-500 transition-colors"
-                    title={!canSend ? t('leads.send_tooltip') : ""}
-                  >
-                    <i className="fas fa-paper-plane text-sm"></i>
-                    {t('leads.send')}
-                  </button>
-                </div>
+                <button
+                  onClick={onBulkClone}
+                  disabled={loading}
+                  className="action-btn action-btn-secondary"
+                >
+                  {t('leads.clone')}
+                </button>
+                
+                <button
+                  onClick={onBulkSend}
+                  disabled={loading || !canSend}
+                  className="action-btn action-btn-primary"
+                  title={!canSend ? t('leads.send_tooltip') : ""}
+                >
+                  {t('leads.send')}
+                </button>
               </div>
             </div>
           </div>
         )}
-      </div>
 
 
       {/* Модальные окна */}
@@ -555,6 +553,7 @@ export default function LeadsPage() {
         onCancel={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
         type={confirmDialog.type}
       />
+      </div>
     </div>
   );
 }

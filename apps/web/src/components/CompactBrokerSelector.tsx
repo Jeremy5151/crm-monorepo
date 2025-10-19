@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface BrokerTemplate {
   id: string;
@@ -18,6 +19,7 @@ export function CompactBrokerSelector({ onSelect, onCancel }: CompactBrokerSelec
   const [templates, setTemplates] = useState<BrokerTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBroker, setSelectedBroker] = useState<string>('');
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -60,7 +62,7 @@ export function CompactBrokerSelector({ onSelect, onCancel }: CompactBrokerSelec
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-4">
-          <div className="text-center">Загрузка брокеров...</div>
+          <div className="text-center">{t('common.loading')}</div>
         </div>
       </div>
     );
@@ -69,7 +71,7 @@ export function CompactBrokerSelector({ onSelect, onCancel }: CompactBrokerSelec
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-4 max-w-sm w-full mx-4">
-        <h3 className="text-lg font-semibold mb-3">Выберите брокера</h3>
+        <h3 className="text-lg font-semibold mb-3">{t('boxes.select_broker')}</h3>
         
         <div className="relative" ref={dropdownRef}>
           <button
@@ -80,7 +82,7 @@ export function CompactBrokerSelector({ onSelect, onCancel }: CompactBrokerSelec
             {selectedBroker ? (
               templates.find(t => t.code === selectedBroker)?.name || selectedBroker
             ) : (
-              'Выберите брокера...'
+              t('boxes.select_broker') + '...'
             )}
             <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
               <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,7 +95,7 @@ export function CompactBrokerSelector({ onSelect, onCancel }: CompactBrokerSelec
             <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
               {templates.length === 0 ? (
                 <div className="px-3 py-2 text-gray-500 text-sm">
-                  Нет активных брокеров
+                  {t('brokers.no_active_brokers')}
                 </div>
               ) : (
                 templates.map((template) => (
@@ -118,7 +120,7 @@ export function CompactBrokerSelector({ onSelect, onCancel }: CompactBrokerSelec
             onClick={onCancel}
             className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
           >
-            Отмена
+            {t('common.cancel')}
           </button>
         </div>
       </div>

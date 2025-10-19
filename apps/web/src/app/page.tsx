@@ -9,6 +9,10 @@ import { apiGet, apiPost } from '@/lib/api';
 import { CompactBrokerSelector } from '@/components/CompactBrokerSelector';
 import { SimpleIntervalInput } from '@/components/SimpleIntervalInput';
 import { useStatusBar } from '@/contexts/StatusBarContext';
+import { useTimezone } from '@/contexts/TimezoneContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/contexts/ToastContext';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import {
   ColumnKey,
   TypeBadge,
@@ -17,6 +21,7 @@ import {
   getCellValue,
   columnLabel,
 } from '@/lib/columns';
+import { formatDateInCrmTimezone } from '@/lib/date-utils';
 
 type Lead = {
   id: string;
@@ -56,6 +61,8 @@ const FIRST_DIR: Record<ColumnKey, Dir> = {
 export default function LeadsPage() {
   const { cols, setCols } = useColumnsPref();
   const { params } = useQueryState();
+  const { t } = useLanguage();
+  const { showSuccess, showError } = useToast();
 
   const q = params.get('q') ?? '';
   const status = params.get('status') ?? '';
@@ -72,6 +79,7 @@ export default function LeadsPage() {
   const take = params.get('take') ?? '50';
 
   const [order, setOrder] = useState<Order>(null);
+  const { timezone: crmTimezone } = useTimezone();
   function toggleSort(col: ColumnKey) {
     setOrder(prev => {
       if (!prev || prev.key !== col) {
@@ -99,7 +107,20 @@ export default function LeadsPage() {
   const [showBrokerSelector, setShowBrokerSelector] = useState(false);
   const [showIntervalSelector, setShowIntervalSelector] = useState(false);
   const [selectedBroker, setSelectedBroker] = useState<string>('');
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    type?: 'danger' | 'warning' | 'info';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
   const { showStatusBar, updateProgress } = useStatusBar();
+
 
   const query = useMemo(() => {
     const p = new URLSearchParams();
@@ -169,9 +190,9 @@ export default function LeadsPage() {
   function renderCellPlain(col: ColumnKey, lead: Lead) {
     switch (col) {
       case 'createdAt':
-        return <span>{formatDateTime(lead.createdAt)}</span>;
+        return <span>{formatDateTime(lead.createdAt, crmTimezone)}</span>;
       case 'sentAt':
-        return <span>{formatDateTime(lead.sentAt)}</span>;
+        return <span>{formatDateTime(lead.sentAt, crmTimezone)}</span>;
       case 'type':
         return <TypeBadge value={lead.status} />;
       case 'brokerStatus':
@@ -209,10 +230,23 @@ export default function LeadsPage() {
 
   async function onBulkDelete() {
     if (!selectedIds.length) return;
-    if (!window.confirm(`Удалить ${selectedIds.length} лид(ов)?`)) return;
-    await apiPost('/v1/leads/bulk-delete', { ids: selectedIds });
-    setSelected(new Set());
-    await load();
+    setConfirmDialog({
+      isOpen: true,
+      title: t('leads.delete_confirm_title'),
+      message: t('leads.delete_confirm', { count: selectedIds.length }),
+      type: 'danger',
+      onConfirm: async () => {
+        setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+        try {
+          await apiPost('/v1/leads/bulk-delete', { ids: selectedIds });
+          setSelected(new Set());
+          await load();
+          showSuccess(t('leads.delete_success', { count: selectedIds.length }));
+        } catch (error: any) {
+          showError(t('leads.delete_error'), error?.message || String(error));
+        }
+      }
+    });
   }
 
   function onBulkSend() {
@@ -280,10 +314,23 @@ export default function LeadsPage() {
 
   async function onBulkClone() {
     if (!selectedIds.length) return;
-    if (!window.confirm(`Клонировать ${selectedIds.length} лид(ов)?`)) return;
-    await apiPost('/v1/leads/bulk-clone', { ids: selectedIds });
-    setSelected(new Set());
-    await load();
+    setConfirmDialog({
+      isOpen: true,
+      title: t('leads.clone_confirm_title'),
+      message: t('leads.clone_confirm', { count: selectedIds.length }),
+      type: 'warning',
+      onConfirm: async () => {
+        setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+        try {
+          await apiPost('/v1/leads/bulk-clone', { ids: selectedIds });
+          setSelected(new Set());
+          await load();
+          showSuccess(t('leads.clone_success', { count: selectedIds.length }));
+        } catch (error: any) {
+          showError(t('leads.clone_error'), error?.message || String(error));
+        }
+      }
+    });
   }
 
   function toggleOne(id: string) {
@@ -304,9 +351,38 @@ export default function LeadsPage() {
 
   const linkable = new Set<ColumnKey>(['createdAt', 'name', 'email', 'phone']);
 
+  function getColumnLabel(key: string): string {
+    const labels: Record<string, string> = {
+      createdAt: t('leads.date'),
+      sentAt: t('leads.sent'),
+      name: t('leads.name'),
+      email: t('leads.email'),
+      phone: t('leads.phone'),
+      country: t('leads.country'),
+      aff: t('leads.aff'),
+      bx: t('leads.box'),
+      funnel: t('leads.funnel'),
+      type: t('leads.type'),
+      brokerStatus: t('leads.status'),
+      broker: t('leads.broker'),
+      ip: t('leads.ip'),
+      utmSource: 'utm_source',
+      utmMedium: 'utm_medium',
+      utmCampaign: 'utm_campaign',
+      utmTerm: 'utm_term',
+      utmContent: 'utm_content',
+      clickid: 'clickid',
+      comment: t('leads.comment'),
+      lang: 'lang',
+      useragent: 'useragent',
+      url: t('leads.url'),
+    };
+    return labels[key] || key;
+  }
+
   return (
     <div className="space-y-4">
-      <h1 className="text-3xl font-bold text-gray-900">Лиды</h1>
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('leads.title')}</h1>
 
       <LeadsFilterBar columns={cols} onColumns={setCols} leads={allItems} />
 
@@ -333,7 +409,7 @@ export default function LeadsPage() {
                     onClick={() => toggleSort(c as ColumnKey)}
                   >
                     <div className="flex items-center gap-1">
-                      <span>{columnLabel(c)}</span>
+                      <span>{getColumnLabel(c)}</span>
                       <div className="flex flex-col -space-y-2">
                         <svg viewBox="0 0 12 12" className={`w-3 h-3 ${order?.key === c && order?.dir === 'asc' ? 'text-gray-900' : 'text-gray-400'}`} style={{ fill: order?.key === c && order?.dir === 'asc' ? '#111827' : '#9CA3AF' }}>
                           <path d="M6 3 L3 6 H9 Z" />
@@ -407,15 +483,15 @@ export default function LeadsPage() {
             <div className="mx-auto max-w-7xl px-3 py-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <span className="text-sm font-medium text-gray-700">
-                    Выбрано: {selected.size}
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {t('leads.selected')}: {selected.size}
                   </span>
                   <button
                     onClick={() => setSelected(new Set())}
                     className="flex items-center gap-2 px-3 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 border border-gray-200 transition-colors"
                   >
                     <i className="fas fa-times text-sm"></i>
-                    Сбросить
+                    {t('leads.reset_selection')}
                   </button>
                 </div>
                 
@@ -426,7 +502,7 @@ export default function LeadsPage() {
                     className="flex items-center gap-2 px-4 py-2 text-red-700 bg-red-100 rounded-lg hover:bg-red-200 border border-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <i className="fas fa-trash text-sm"></i>
-                    Удалить
+                    {t('common.delete')}
                   </button>
                   
                   <button
@@ -435,17 +511,17 @@ export default function LeadsPage() {
                     className="flex items-center gap-2 px-4 py-2 text-gray-800 bg-yellow-100 rounded-lg hover:bg-yellow-200 border border-yellow-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <i className="fas fa-copy text-sm"></i>
-                    Клонировать
+                    {t('leads.clone')}
                   </button>
                   
                   <button
                     onClick={onBulkSend}
                     disabled={loading || !canSend}
                     className="flex items-center gap-2 px-4 py-2 text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed border border-yellow-500 transition-colors"
-                    title={!canSend ? "Некоторые лиды уже отправлены. Используйте 'Клонировать' для повторной отправки." : ""}
+                    title={!canSend ? t('leads.send_tooltip') : ""}
                   >
                     <i className="fas fa-paper-plane text-sm"></i>
-                    Отправить на брокера
+                    {t('leads.send')}
                   </button>
                 </div>
               </div>
@@ -470,6 +546,15 @@ export default function LeadsPage() {
           onCancel={() => setShowIntervalSelector(false)}
         />
       )}
+      
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
+        type={confirmDialog.type}
+      />
     </div>
   );
 }

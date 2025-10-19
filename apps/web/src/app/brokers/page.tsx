@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { apiGet, apiPost, apiPatch, apiDelete } from '@/lib/api';
-import CustomSelect from '@/components/CustomSelect';
+import { CustomSelect } from '@/components/CustomSelect';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/contexts/ToastContext';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 type Template = {
   id: string;
@@ -35,6 +38,20 @@ export default function BrokersPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   const [selectedTemplate, setSelectedTemplate] = useState('');
+  const { t } = useLanguage();
+  const { showSuccess, showError } = useToast();
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    type?: 'danger' | 'warning' | 'info';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
   const [form, setForm] = useState({
     code: '',
     name: '',
@@ -135,11 +152,11 @@ export default function BrokersPage() {
       const result = await apiPost('/v1/templates', payload);
       console.log('Результат:', result);
       await loadTemplates();
-      alert('Интеграция добавлена!');
+      showSuccess(t('brokers.created_successfully'));
       resetForm();
     } catch (e: any) {
       console.error('Ошибка добавления:', e);
-      alert('Ошибка: ' + (e?.message || String(e)));
+      showError(t('brokers.create_error'), e?.message || String(e));
     } finally {
       setLoading(false);
     }
@@ -179,27 +196,36 @@ export default function BrokersPage() {
       const result = await apiPatch(`/v1/templates/${editingId}`, payload);
       console.log('Результат обновления:', result);
       await loadTemplates();
-      alert('Интеграция обновлена!');
+      showSuccess(t('brokers.updated_successfully'));
       resetForm();
     } catch (e: any) {
       console.error('Ошибка обновления:', e);
-      alert('Ошибка: ' + (e?.message || String(e)));
+      showError(t('brokers.update_error'), e?.message || String(e));
     } finally {
       setLoading(false);
     }
   }
 
   async function deleteTemplate(id: string) {
-    if (!confirm('Удалить интеграцию?')) return;
-    setLoading(true);
-    try {
-      await apiDelete(`/v1/templates/${id}`);
-      await loadTemplates();
-    } catch (e: any) {
-      alert('Ошибка: ' + (e?.message || String(e)));
-    } finally {
-      setLoading(false);
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: t('brokers.delete_confirm_title'),
+      message: t('brokers.delete_confirm'),
+      type: 'danger',
+      onConfirm: async () => {
+        setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+        setLoading(true);
+        try {
+          await apiDelete(`/v1/templates/${id}`);
+          await loadTemplates();
+          showSuccess(t('brokers.deleted_successfully'));
+        } catch (e: any) {
+          showError(t('brokers.delete_error'), e?.message || String(e));
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
   }
 
   function editTemplate(template: any) {
@@ -251,7 +277,7 @@ export default function BrokersPage() {
   }
 
   function handleManualIntegration() {
-    alert('Ручная интеграция будет реализована позже');
+    showError(t('brokers.manual_integration_not_implemented'));
   }
 
   function handleNext() {
@@ -332,7 +358,7 @@ export default function BrokersPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold text-gray-900">Интеграции</h1>
+      <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{t('brokers.title')}</h1>
 
       <div className="card p-6 space-y-4">
         {!showAdd && (
@@ -342,7 +368,7 @@ export default function BrokersPage() {
               className="px-3 py-2 text-sm rounded-xl bg-yellow-500 text-white hover:bg-yellow-600"
               onClick={() => setShowAdd(true)}
             >
-              Добавить
+{t('brokers.create')}
             </button>
           </div>
         )}
@@ -352,21 +378,22 @@ export default function BrokersPage() {
             {step === 1 && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Название</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.name')}</label>
                   <input
                     className="input"
                     value={form.name}
                     onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                    placeholder="Например: Trackbox NIK"
+                    placeholder={t('brokers.name_example')}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Шаблон</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.template')}</label>
                   <CustomSelect
                     value={selectedTemplate}
                     options={availableTemplates.map(t => ({ value: t.id, label: `${t.icon} ${t.name}` }))}
                     onChange={selectTemplate}
+                    placeholder={t('common.select')}
                   />
                 </div>
 
@@ -376,21 +403,21 @@ export default function BrokersPage() {
                     disabled={!form.name.trim() || !selectedTemplate}
                     className="px-4 py-2 rounded-xl bg-yellow-500 text-white font-medium hover:bg-yellow-600 disabled:opacity-50 transition-colors"
                   >
-                    Далее
+                    {t('common.next')}
                   </button>
                   <button
                     type="button"
                     onClick={handleManualIntegration}
                     className="px-4 py-2 rounded-xl bg-blue-500 text-white font-medium hover:bg-blue-600 transition-colors"
                   >
-                    Ручная интеграция
+                    {t('brokers.manual_integration')}
                   </button>
                   <button
                     type="button"
                     onClick={resetForm}
                     className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200"
                   >
-                    Отмена
+                    {t('common.cancel')}
                   </button>
                 </div>
               </>
@@ -407,25 +434,25 @@ export default function BrokersPage() {
                       <i className="fas fa-arrow-left"></i>
                     </button>
                   )}
-                  <h3 className="text-lg font-medium text-gray-900">
-                    {editingId ? `Редактирование интеграции "${form.name}"` : `Настройка параметров для "${form.name}"`}
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                    {editingId ? `${t('brokers.edit')} "${form.name}"` : `Настройка параметров для "${form.name}"`}
                   </h3>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Название интеграции</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.name')}</label>
                       <input
                         className="input"
                         value={form.name || ''}
                         onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                        placeholder="Например: Trackbox NIK"
+                        placeholder={t('brokers.name_placeholder')}
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Метод запроса</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.method')}</label>
                       <CustomSelect
                         value={form.method}
                         onChange={(value) => setForm(f => ({ 
@@ -443,20 +470,20 @@ export default function BrokersPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">URL</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.url')}</label>
                       <input
                         className="input"
                         value={form.url || ''}
                         onChange={e => setForm(f => ({ ...f, url: e.target.value }))}
-                        placeholder="https://example.com/api/endpoint"
+                        placeholder={t('brokers.url_placeholder')}
                       />
                       <p className="text-xs text-gray-500 mt-1">
-                        {form.method === 'GET' ? 'Для GET все параметры указываются прямо в URL' : 'URL для отправки запроса'}
+                        {form.method === 'GET' ? t('brokers.url_hint_get') : t('brokers.url_hint_post')}
                       </p>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Headers (JSON)</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.headers')}</label>
                       <textarea
                         className="input font-mono text-sm"
                         rows={6}
@@ -469,8 +496,8 @@ export default function BrokersPage() {
                   <div className="space-y-4">
                     {form.method !== 'GET' && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Body {form.method === 'POST_JSON' ? '(JSON)' : '(form-urlencoded)'}
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          {t('brokers.body')} {form.method === 'POST_JSON' ? '(JSON)' : '(form-urlencoded)'}
                         </label>
                         <textarea
                           className="input font-mono text-sm"
@@ -483,23 +510,23 @@ export default function BrokersPage() {
                     )}
 
                     <div className="bg-gray-50 p-3 rounded-lg">
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Доступные макросы:</h4>
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('brokers.available_macros')}</h4>
                       <div className="text-xs text-gray-600 space-y-1">
-                        <div><code className="bg-white px-1 rounded">${'{firstName}'}</code> - Имя</div>
-                        <div><code className="bg-white px-1 rounded">${'{lastName}'}</code> - Фамилия</div>
-                        <div><code className="bg-white px-1 rounded">${'{email}'}</code> - Email</div>
-                        <div><code className="bg-white px-1 rounded">${'{phone}'}</code> - Телефон (полный)</div>
-                        <div><code className="bg-white px-1 rounded">${'{phonePrefix}'}</code> - Код страны (автоопределение)</div>
-                        <div><code className="bg-white px-1 rounded">${'{phoneNumber}'}</code> - Номер без кода страны</div>
-                        <div><code className="bg-white px-1 rounded">${'{password}'}</code> - Пароль (автогенерация Aa12345!)</div>
-                        <div><code className="bg-white px-1 rounded">${'{country}'}</code> - Страна</div>
-                        <div><code className="bg-white px-1 rounded">${'{aff}'}</code> - Affiliate</div>
-                        <div><code className="bg-white px-1 rounded">${'{bx}'}</code> - Box</div>
-                        <div><code className="bg-white px-1 rounded">${'{funnel}'}</code> - Funnel</div>
-                        <div><code className="bg-white px-1 rounded">${'{ip}'}</code> - IP адрес</div>
-                        <div><code className="bg-white px-1 rounded">${'{lang}'}</code> - Язык</div>
-                        <div><code className="bg-white px-1 rounded">${'{url}'}</code> - URL</div>
-                        <div><code className="bg-white px-1 rounded">${'{clickid}'}</code> - Click ID</div>
+                        <div><code className="bg-white px-1 rounded">${'{firstName}'}</code> - {t('brokers.macro.firstName')}</div>
+                        <div><code className="bg-white px-1 rounded">${'{lastName}'}</code> - {t('brokers.macro.lastName')}</div>
+                        <div><code className="bg-white px-1 rounded">${'{email}'}</code> - {t('brokers.macro.email')}</div>
+                        <div><code className="bg-white px-1 rounded">${'{phone}'}</code> - {t('brokers.macro.phone')}</div>
+                        <div><code className="bg-white px-1 rounded">${'{phonePrefix}'}</code> - {t('brokers.macro.phonePrefix')}</div>
+                        <div><code className="bg-white px-1 rounded">${'{phoneNumber}'}</code> - {t('brokers.macro.phoneNumber')}</div>
+                        <div><code className="bg-white px-1 rounded">${'{password}'}</code> - {t('brokers.macro.password')}</div>
+                        <div><code className="bg-white px-1 rounded">${'{country}'}</code> - {t('brokers.macro.country')}</div>
+                        <div><code className="bg-white px-1 rounded">${'{aff}'}</code> - {t('brokers.macro.aff')}</div>
+                        <div><code className="bg-white px-1 rounded">${'{bx}'}</code> - {t('brokers.macro.bx')}</div>
+                        <div><code className="bg-white px-1 rounded">${'{funnel}'}</code> - {t('brokers.macro.funnel')}</div>
+                        <div><code className="bg-white px-1 rounded">${'{ip}'}</code> - {t('brokers.macro.ip')}</div>
+                        <div><code className="bg-white px-1 rounded">${'{lang}'}</code> - {t('brokers.macro.lang')}</div>
+                        <div><code className="bg-white px-1 rounded">${'{url}'}</code> - {t('brokers.macro.url')}</div>
+                        <div><code className="bg-white px-1 rounded">${'{clickid}'}</code> - {t('brokers.macro.clickid')}</div>
                         <div><code className="bg-white px-1 rounded">${'{utmSource}'}</code> - UTM Source</div>
                         <div><code className="bg-white px-1 rounded">${'{utmTerm}'}</code> - UTM Term</div>
                         <div><code className="bg-white px-1 rounded">${'{utmCampaign}'}</code> - UTM Campaign</div>
@@ -512,9 +539,9 @@ export default function BrokersPage() {
 
                 {/* Integration Parameters */}
                 <div className="border-t pt-6 mt-6">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Параметры интеграции</h4>
-                  <p className="text-xs text-gray-500 mb-4">
-                    Эти параметры можно использовать в URL, Headers и Body через макросы, например: <code className="bg-gray-100 px-1 rounded">{'${partnerId}'}</code>
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t('brokers.integration_parameters')}</h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                    {t('brokers.parameters_description')}
                   </p>
                   <div className="grid md:grid-cols-2 gap-4">
                     {Object.entries(form.params).map(([key, value]) => (
@@ -554,19 +581,19 @@ export default function BrokersPage() {
                     }}
                     className="mt-3 px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-xl hover:bg-blue-200"
                   >
-                    + Добавить параметр
+                    {t('brokers.add_parameter')}
                   </button>
                 </div>
 
                 {/* Password Generation Settings */}
                 <div className="border-t pt-6 mt-6">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Настройки генерации пароля</h4>
-                  <p className="text-xs text-gray-500 mb-4">
-                    Настройки используются при генерации макроса <code className="bg-gray-100 px-1 rounded">{'${password}'}</code>
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t('brokers.password_generation_settings')}</h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                    {t('brokers.password_settings_description')}
                   </p>
                   <div className="grid md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Длина пароля</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.password_length')}</label>
                       <input
                         type="number"
                         className="input"
@@ -584,7 +611,7 @@ export default function BrokersPage() {
                           onChange={e => setForm(f => ({ ...f, passwordUseUpper: e.target.checked }))}
                           className="w-4 h-4 rounded"
                         />
-                        <span className="text-sm text-gray-700">Заглавные буквы (A-Z)</span>
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{t('brokers.uppercase_letters')}</span>
                       </label>
                       <label className="flex items-center gap-2">
                         <input
@@ -593,7 +620,7 @@ export default function BrokersPage() {
                           onChange={e => setForm(f => ({ ...f, passwordUseLower: e.target.checked }))}
                           className="w-4 h-4 rounded"
                         />
-                        <span className="text-sm text-gray-700">Строчные буквы (a-z)</span>
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{t('brokers.lowercase_letters')}</span>
                       </label>
                     </div>
                     <div className="space-y-2">
@@ -604,7 +631,7 @@ export default function BrokersPage() {
                           onChange={e => setForm(f => ({ ...f, passwordUseDigits: e.target.checked }))}
                           className="w-4 h-4 rounded"
                         />
-                        <span className="text-sm text-gray-700">Цифры (0-9)</span>
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{t('brokers.digits')}</span>
                       </label>
                       <label className="flex items-center gap-2">
                         <input
@@ -613,13 +640,13 @@ export default function BrokersPage() {
                           onChange={e => setForm(f => ({ ...f, passwordUseSpecial: e.target.checked }))}
                           className="w-4 h-4 rounded"
                         />
-                        <span className="text-sm text-gray-700">Спецсимволы</span>
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{t('brokers.special_chars')}</span>
                       </label>
                     </div>
                   </div>
                   {form.passwordUseSpecial && (
                     <div className="mt-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Какие спецсимволы использовать</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.which_special_chars')}</label>
                       <input
                         className="input"
                         value={form.passwordSpecialChars}
@@ -639,8 +666,8 @@ export default function BrokersPage() {
                       onChange={e => setForm(f => ({ ...f, pullEnabled: e.target.checked }))}
                       className="w-4 h-4 rounded"
                     />
-                    <label className="text-sm font-medium text-gray-700">
-                      Включить Pull API (получение статусов от брокера)
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {t('brokers.enable_pull_api')}
                     </label>
                   </div>
 
@@ -648,7 +675,7 @@ export default function BrokersPage() {
                     <div className="grid md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded-lg">
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Pull URL</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.pull_url')}</label>
                           <input
                             className="input"
                             value={form.pullUrl || ''}
@@ -658,7 +685,7 @@ export default function BrokersPage() {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Интервал опроса (минут)</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.pull_interval')}</label>
                           <input
                             type="number"
                             className="input"
@@ -667,11 +694,11 @@ export default function BrokersPage() {
                             min="5"
                             max="1440"
                           />
-                          <p className="text-xs text-gray-500 mt-1">Как часто запрашивать обновления (5-1440 мин)</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('brokers.pull_interval_description')}</p>
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Pull Headers (JSON)</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.pull_headers')}</label>
                           <textarea
                             className="input font-mono text-sm"
                             rows={6}
@@ -683,24 +710,22 @@ export default function BrokersPage() {
 
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Pull Body (JSON)</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.pull_body')}</label>
                           <textarea
                             className="input font-mono text-sm"
                             rows={8}
                             value={form.pullBody}
                             onChange={e => setForm(f => ({ ...f, pullBody: e.target.value }))}
                           />
-                          <p className="text-xs text-gray-500 mt-1">
-                            Доступные макросы: <code>${'{from}'}</code> и <code>${'{to}'}</code> для дат
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            {t('brokers.pull_macros')}
                           </p>
                         </div>
 
                         <div className="bg-blue-50 p-3 rounded-lg">
-                          <h4 className="text-sm font-medium text-blue-900 mb-2">ℹ️ Pull API</h4>
-                          <p className="text-xs text-blue-700">
-                            Система будет автоматически запрашивать обновления статусов лидов у брокера 
-                            с указанным интервалом. Полученные статусы (DEPOSITOR, FTD, и т.д.) 
-                            будут обновляться в CRM автоматически.
+                          <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">ℹ️ {t('brokers.pull_info')}</h4>
+                          <p className="text-xs text-blue-700 dark:text-blue-300">
+                            {t('brokers.pull_info_description')}
                           </p>
                         </div>
                       </div>
@@ -714,14 +739,14 @@ export default function BrokersPage() {
                     disabled={loading}
                     className="px-4 py-2 rounded-xl bg-yellow-500 text-white font-medium hover:bg-yellow-600 disabled:opacity-50 transition-colors"
                   >
-                    {loading ? (editingId ? 'Обновление...' : 'Добавление...') : (editingId ? 'Обновить интеграцию' : 'Сохранить интеграцию')}
+                    {loading ? (editingId ? t('common.updating') : t('common.adding')) : (editingId ? t('brokers.update_integration') : t('brokers.save_integration'))}
                   </button>
                   <button
                     type="button"
                     onClick={editingId ? resetForm : handleBack}
                     className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200"
                   >
-                    {editingId ? 'Отмена' : 'Назад'}
+                    {editingId ? t('common.cancel') : t('common.back')}
                   </button>
                 </div>
               </>
@@ -730,35 +755,35 @@ export default function BrokersPage() {
         )}
 
         {templates.length === 0 ? (
-          <p className="text-gray-500">Нет созданных интеграций</p>
+          <p className="text-gray-500 dark:text-gray-400">{t('brokers.no_integrations')}</p>
         ) : (
           <div className="space-y-2">
-            {templates.map(t => {
+            {templates.map(template => {
               const getTemplateName = (code: string) => {
                 if (code.startsWith('TRACKBOX')) return 'Trackbox';
                 if (code.startsWith('CLICKFUNNELS')) return 'ClickFunnels';
                 if (code.startsWith('MAILCHIMP')) return 'MailChimp';
-                return 'Неизвестный шаблон';
+                return t('brokers.unknown_template');
               };
               
               return (
-              <div key={t.id} className="flex items-center justify-between border border-gray-200 rounded-xl px-4 py-2">
+              <div key={template.id} className="flex items-center justify-between border border-gray-200 rounded-xl px-4 py-2">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="font-medium text-gray-900 truncate">{t.name}</div>
-                  <div className="text-sm text-gray-500 truncate">{t.templateName || getTemplateName(t.code)}</div>
+                  <div className="font-medium text-gray-900 truncate">{template.name}</div>
+                  <div className="text-sm text-gray-500 truncate">{template.templateName || getTemplateName(template.code)}</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200"
-                    onClick={() => editTemplate(t)}
+                    onClick={() => editTemplate(template)}
                   >
-                    Редактировать
+                    {t('brokers.edit')}
                   </button>
                   <button
                     className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200"
-                    onClick={() => deleteTemplate(t.id)}
+                    onClick={() => deleteTemplate(template.id)}
                   >
-                    Удалить
+                    {t('brokers.delete')}
                   </button>
                 </div>
               </div>
@@ -767,6 +792,15 @@ export default function BrokersPage() {
           </div>
         )}
       </div>
+      
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
+        type={confirmDialog.type}
+      />
     </div>
   );
 }

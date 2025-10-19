@@ -24,6 +24,9 @@ model Lead {
   aff       String?                // id аффилиата (ожидаем совпадение с X-API-Key)
   bx        String?                // код "бокса" (план отправки)
   funnel    String?                // оффер
+  
+  // Связь с пользователем
+  userId    String?                // кто создал лид
 
   // UTM
   utmSource   String?
@@ -55,6 +58,9 @@ model Lead {
 
   attempts    LeadBrokerAttempt[]
 
+  // Связи
+  user       User? @relation(fields: [userId], references: [id])
+  
   @@index([createdAt])
   @@index([status])
   @@index([email])
@@ -67,6 +73,7 @@ model Lead {
   @@index([externalId])
   @@index([aff, createdAt])
   @@index([bx, createdAt])
+  @@index([userId])
 }
 
 model LeadBrokerAttempt {
@@ -177,7 +184,7 @@ model BrokerTemplate {
 model Box {
   id          String   @id @default(cuid())
   name        String                        // название бокса, например: "EU Premium"
-  country     String?                       // код страны (ISO 2-letter), например: "FR", "DE", null = любая
+  countries   String[]                      // коды стран (ISO 2-letter), например: ["FR", "DE"], пустой = любая
   isActive    Boolean  @default(true)       // активен ли бокс
   
   brokers     BoxBroker[]                   // брокеры с приоритетами
@@ -185,7 +192,7 @@ model Box {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  @@index([country])
+  @@index([countries])
 }
 
 model BoxBroker {
@@ -193,6 +200,14 @@ model BoxBroker {
   boxId      String
   brokerId   String
   priority   Int                            // приоритет от 1 до 10 (1 = самый высокий)
+  
+  // Время доставки (опционально)
+  deliveryEnabled Boolean @default(false)   // включена ли доставка по времени
+  deliveryFrom    String?                   // время начала (HH:MM), например: "09:00"
+  deliveryTo      String?                   // время окончания (HH:MM), например: "18:00"
+  
+  // Капа (лимит лидов)
+  leadCap    Int?                           // максимальное количество лидов для этого брокера (null = без лимита)
   
   box        Box              @relation(fields: [boxId], references: [id], onDelete: Cascade)
   broker     BrokerTemplate   @relation(fields: [brokerId], references: [id], onDelete: Cascade)
@@ -202,4 +217,70 @@ model BoxBroker {
   @@unique([boxId, brokerId])              // один брокер только один раз в боксе
   @@unique([boxId, priority])              // один приоритет только один раз в боксе
   @@index([boxId, priority])
+}
+
+model CrmSettings {
+  id        String   @id @default(cuid())
+  timezone  String   @default("UTC")        // глобальный часовой пояс CRM
+  theme     String   @default("light")      // цветовая схема: light, dark, auto
+  language  String   @default("ru")         // язык интерфейса: ru, en
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("crm_settings")
+}
+
+// Система пользователей
+enum UserRole {
+  AFFILIATE        // Обычный аффилиат
+  AFFILIATE_MASTER // Мастер аффилиат (может управлять другими аффилиатами)
+  ADMIN            // Администратор
+  SUPERADMIN       // Суперадмин (скрытый, доступ ко всему)
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String
+  password    String   @default("changeme123") // Пароль для входа в CRM
+  role        UserRole @default(AFFILIATE)
+  isActive    Boolean  @default(true)
+  
+  // API ключ для аутентификации
+  apiKey      String   @unique @default(cuid())
+  
+  // Настройки пользователя
+  timezone    String   @default("UTC")
+  language    String   @default("ru")
+  
+  // Права доступа
+  canViewBrokers      Boolean @default(false)  // Видеть брокеров/интеграции
+  canViewBoxes        Boolean @default(false)  // Видеть боксы
+  canViewUsers        Boolean @default(false)  // Видеть пользователей
+  canViewFullEmail    Boolean @default(false)  // Показывать полный email
+  canViewFullPhone    Boolean @default(false)  // Показывать полный телефон
+  canResendLeads      Boolean @default(false)  // Переотправлять лиды
+  
+  // Связи
+  createdBy   String?  // кто создал пользователя
+  parentId    String?  // для иерархии (AffiliateMaster -> Affiliate)
+  
+  // Метаданные
+  lastLoginAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Связи
+  createdByUser User? @relation("UserCreatedBy", fields: [createdBy], references: [id])
+  createdUsers  User[] @relation("UserCreatedBy")
+  parent        User? @relation("UserHierarchy", fields: [parentId], references: [id])
+  children      User[] @relation("UserHierarchy")
+  
+  // Лиды, созданные этим пользователем
+  leads        Lead[]
+  
+  @@index([apiKey])
+  @@index([role])
+  @@index([isActive])
+  @@map("users")
 }

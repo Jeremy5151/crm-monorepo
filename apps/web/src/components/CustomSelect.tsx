@@ -15,7 +15,7 @@ type Props = {
   className?: string;
 };
 
-export default function CustomSelect({ value, options, onChange, placeholder = 'Выбрать', className = '' }: Props) {
+export function CustomSelect({ value, options, onChange, placeholder = 'Выбрать', className = '' }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 

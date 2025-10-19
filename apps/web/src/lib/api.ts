@@ -1,5 +1,5 @@
 const BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:3001';
-const KEY  = process.env.NEXT_PUBLIC_API_KEY  ?? '';
+const KEY  = process.env.NEXT_PUBLIC_API_KEY  ?? 'superadmin-key';
 
 function joinUrl(base: string, path: string) {
   if (path.startsWith('http')) return path;
@@ -32,7 +32,13 @@ export async function apiPost(path: string, body: unknown) {
     headers: { 'Content-Type': 'application/json', 'X-API-Key': KEY },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) {
+    const errorText = await res.text();
+    const error = new Error(errorText);
+    // Сохраняем оригинальный текст ошибки для парсинга
+    (error as any).originalMessage = errorText;
+    throw error;
+  }
   return res.json();
 }
 

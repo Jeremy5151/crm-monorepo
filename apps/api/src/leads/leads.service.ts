@@ -6,10 +6,17 @@ import { sendToBrokerMock } from '../broker/adapter.mock';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { ListLeadsDto } from './dto/list-leads.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
+import { SettingsService } from '../settings/settings.service';
+import { BoxesService } from '../boxes/boxes.service';
+import { getCurrentTimeInUtc } from '../utils/date-timezone';
 const prisma = new PrismaClient();
 
 @Injectable()
 export class LeadsService {
+  constructor(
+    private settingsService: SettingsService,
+    private boxesService: BoxesService
+  ) {}
   private async assertApiKeyOrThrow(apiKey?: string, affFromPayload?: string) {
     // Временно отключаем проверку API ключа для тестирования
     if (!apiKey) {
@@ -38,6 +45,110 @@ export class LeadsService {
       if (obj[k]) attrs[k] = String(obj[k]);
     }
     return Object.keys(attrs).length ? attrs : undefined;
+  }
+
+  /**
+   * Проверяет, можно ли отправлять лид в текущее время согласно настройкам доставки
+   */
+  private async isDeliveryTimeAllowed(boxBroker: any): Promise<boolean> {
+    // Если время доставки не настроено - можно отправлять всегда
+    if (!boxBroker.deliveryEnabled || !boxBroker.deliveryFrom || !boxBroker.deliveryTo) {
+      return true;
+    }
+
+    try {
+      // Получаем часовой пояс из настроек CRM
+      const settings = await this.settingsService.getSettings();
+      const timezone = settings.timezone || 'UTC';
+
+      // Получаем текущее время в выбранном часовом поясе
+      const now = getCurrentTimeInUtc();
+      const currentTime = now.toLocaleTimeString('en-US', {
+        timeZone: timezone,
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      // Парсим время доставки
+      const [fromHour, fromMin] = boxBroker.deliveryFrom.split(':').map(Number);
+      const [toHour, toMin] = boxBroker.deliveryTo.split(':').map(Number);
+      const [currentHour, currentMin] = currentTime.split(':').map(Number);
+
+      const fromMinutes = fromHour * 60 + fromMin;
+      const toMinutes = toHour * 60 + toMin;
+      const currentMinutes = currentHour * 60 + currentMin;
+
+      // Проверяем, попадает ли текущее время в диапазон доставки
+      return currentMinutes >= fromMinutes && currentMinutes <= toMinutes;
+    } catch (error) {
+      console.error('Ошибка проверки времени доставки:', error);
+      // В случае ошибки разрешаем отправку
+      return true;
+    }
+  }
+
+  /**
+   * Проверяет, не превышена ли капа для брокера
+   */
+  private async isLeadCapExceeded(boxBroker: any): Promise<boolean> {
+    // Если капа не установлена - можно отправлять
+    if (!boxBroker.leadCap) {
+      return false;
+    }
+
+    try {
+      // Подсчитываем количество успешно отправленных лидов на этого брокера
+      const sentCount = await prisma.leadBrokerAttempt.count({
+        where: {
+          broker: boxBroker.brokerId,
+          status: 'accepted'
+        }
+      });
+
+      return sentCount >= boxBroker.leadCap;
+    } catch (error) {
+      console.error('Ошибка проверки капы:', error);
+      // В случае ошибки разрешаем отправку
+      return false;
+    }
+  }
+
+  /**
+   * Выбирает подходящего брокера для лида с учетом времени доставки и капы
+   */
+  private async selectBrokerForLead(lead: any, specifiedBroker?: string): Promise<{ brokerId: string; reason: string } | null> {
+    // Если указан конкретный брокер - используем его
+    if (specifiedBroker) {
+      return { brokerId: specifiedBroker, reason: 'Указан конкретный брокер' };
+    }
+
+    try {
+      // Получаем подходящий бокс для лида
+      const box = await this.boxesService.getBoxForLead(lead.country);
+      if (!box || !box.brokers || box.brokers.length === 0) {
+        return null;
+      }
+
+      // Ищем первого доступного брокера по приоритету
+      for (const boxBroker of box.brokers) {
+        const isTimeAllowed = await this.isDeliveryTimeAllowed(boxBroker);
+        const isCapExceeded = await this.isLeadCapExceeded(boxBroker);
+        
+        if (isTimeAllowed && !isCapExceeded) {
+          return { 
+            brokerId: boxBroker.brokerId, 
+            reason: `Бокс "${box.name}", приоритет ${boxBroker.priority}` 
+          };
+        }
+      }
+
+      // Если ни один брокер не доступен - возвращаем null
+      return null;
+    } catch (error) {
+      console.error('Ошибка выбора брокера:', error);
+      return null;
+    }
   }
 
   async create(dto: CreateLeadDto, apiKey?: string) {
@@ -382,9 +493,12 @@ export class LeadsService {
             LeadsService.updateQueueStatus(id, 'sending', 'Отправляется...');
 
             let res: any;
+            let duration = 0;
             try {
               const adapter = BrokerRegistry.getOrDefault(broker);
+              const t0 = Date.now();
               res = await adapter.send(lead);
+              duration = Date.now() - t0;
             } catch (error: any) {
               res = { 
                 type: 'temp_error', 
@@ -392,13 +506,28 @@ export class LeadsService {
                 raw: `Ошибка отправки: ${error?.message || error}` 
               };
             }
+
+            // Создаем запись о попытке отправки
+            const attempts = await prisma.leadBrokerAttempt.count({ where: { leadId: id } });
+            await prisma.leadBrokerAttempt.create({
+              data: {
+                leadId: id,
+                broker: broker || 'UNKNOWN',
+                attemptNo: attempts + 1,
+                status: res.type,
+                responseCode: 'code' in res ? (res as any).code ?? null : null,
+                responseBody: res.raw ?? null,
+                durationMs: duration,
+                createdAt: getCurrentTimeInUtc(),
+              },
+            });
             
             if (res.type === 'accepted') {
               await prisma.lead.update({
                 where: { id },
                 data: ({
                   status: LeadStatus.SENT,
-                  sentAt: new Date(),
+                  sentAt: getCurrentTimeInUtc(),
                   externalId: (res as any).externalId,
                   brokerResp: res.raw ?? Prisma.JsonNull,
                   ...(res as any).autologinUrl ? { autologinUrl: (res as any).autologinUrl } : {},
@@ -467,11 +596,24 @@ export class LeadsService {
         continue;
       }
 
+      // Выбираем подходящего брокера с учетом времени доставки
+      const brokerSelection = await this.selectBrokerForLead(lead, broker);
+      if (!brokerSelection) {
+        results.push({
+          id,
+          name: lead.firstName || lead.lastName || 'Неизвестно',
+          email: lead.email || '',
+          status: 'skipped',
+          message: 'Нет доступных брокеров в текущее время'
+        });
+        continue;
+      }
+
       let res: any;
       let duration = 0;
       
       try {
-        const adapter = BrokerRegistry.getOrDefault(broker);
+        const adapter = BrokerRegistry.getOrDefault(brokerSelection.brokerId);
         const t0 = Date.now();
         res = await adapter.send(lead);
         duration = Date.now() - t0;
@@ -487,12 +629,13 @@ export class LeadsService {
       await prisma.leadBrokerAttempt.create({
         data: {
           leadId: id,
-          broker: broker ?? 'MOCK',
+          broker: brokerSelection.brokerId,
           attemptNo: attempts + 1,
           status: res.type,
           responseCode: 'code' in res ? (res as any).code ?? null : null,
           responseBody: res.raw ?? null,
           durationMs: duration,
+          createdAt: getCurrentTimeInUtc(),
         },
       });
 
@@ -501,7 +644,7 @@ export class LeadsService {
           where: { id },
           data: ({
             status: LeadStatus.SENT,
-            sentAt: new Date(),
+            sentAt: getCurrentTimeInUtc(),
             externalId: (res as any).externalId,
             brokerResp: res.raw ?? Prisma.JsonNull,
             ...(res as any).autologinUrl ? { autologinUrl: (res as any).autologinUrl } : {},
@@ -513,7 +656,7 @@ export class LeadsService {
           name: lead.firstName || lead.lastName || 'Неизвестно',
           email: lead.email || '',
           status: 'success',
-          message: 'Успешно отправлен на брокера',
+          message: `Успешно отправлен на брокера (${brokerSelection.reason})`,
           brokerResponse: res.raw
         });
         LeadsService.completedResults.set(id, {
@@ -521,7 +664,7 @@ export class LeadsService {
           name: lead.firstName || lead.lastName || 'Неизвестно',
           email: lead.email || '',
           status: 'success',
-          message: 'Успешно отправлен на брокера',
+          message: `Успешно отправлен на брокера (${brokerSelection.reason})`,
           timestamp: new Date(),
         });
       } else if (res.type === 'rejected') {

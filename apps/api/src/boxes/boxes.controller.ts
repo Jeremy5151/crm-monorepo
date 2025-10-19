@@ -18,9 +18,16 @@ export class BoxesController {
   @Post()
   create(@Body() data: {
     name: string;
-    country?: string;
+    countries?: string[];
     isActive?: boolean;
-    brokers: { brokerId: string; priority: number }[];
+    brokers: { 
+      brokerId: string; 
+      priority: number;
+      deliveryEnabled?: boolean;
+      deliveryFrom?: string;
+      deliveryTo?: string;
+      leadCap?: number;
+    }[];
   }) {
     return this.boxesService.create(data);
   }
@@ -30,9 +37,16 @@ export class BoxesController {
     @Param('id') id: string,
     @Body() data: {
       name?: string;
-      country?: string;
+      countries?: string[];
       isActive?: boolean;
-      brokers?: { brokerId: string; priority: number }[];
+      brokers?: { 
+        brokerId: string; 
+        priority: number;
+        deliveryEnabled?: boolean;
+        deliveryFrom?: string;
+        deliveryTo?: string;
+        leadCap?: number;
+      }[];
     }
   ) {
     return this.boxesService.update(id, data);

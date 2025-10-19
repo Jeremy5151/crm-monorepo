@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useStatusBar } from '@/contexts/StatusBarContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function StatusBar() {
   const { isVisible, progress, cancelSending, removeProgress, cancelAllSending, clearQueue } = useStatusBar();
   const [isExpanded, setIsExpanded] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (!isVisible) return;
@@ -38,18 +40,32 @@ export function StatusBar() {
   const getStatusText = (status: 'pending' | 'sending' | 'success' | 'error' | 'waiting' | 'skipped') => {
     switch (status) {
       case 'success':
-        return 'Успешно';
+        return t('statusbar.success');
       case 'error':
-        return 'Ошибка';
+        return t('statusbar.error');
       case 'sending':
-        return 'Отправляется';
+        return t('statusbar.sending');
       case 'waiting':
-        return 'Ожидание';
+        return t('statusbar.waiting');
       case 'skipped':
-        return 'Пропущен';
+        return t('statusbar.skipped');
       default:
-        return 'Ожидает';
+        return t('statusbar.waiting');
     }
+  };
+
+  const translateMessage = (message: string) => {
+    const messageMap: Record<string, string> = {
+      'Отклонён брокером': t('statusbar.rejected_by_broker'),
+      'rejected': t('statusbar.rejected_by_broker'),
+      'success': t('statusbar.success'),
+      'error': t('statusbar.error'),
+      'timeout': t('statusbar.timeout'),
+      'network error': t('statusbar.network_error'),
+      'invalid response': t('statusbar.invalid_response'),
+    };
+    
+    return messageMap[message] || message;
   };
 
   const formatTime = (date: Date) => {
@@ -129,7 +145,7 @@ export function StatusBar() {
             <div className="border-t border-gray-200 max-h-96 overflow-y-auto" style={{ maxHeight: '400px' }}>
             {progress.length === 0 ? (
               <div className="px-3 py-4 text-sm text-gray-500 text-center">
-                Нет активных отправок
+                {t('statusbar.no_active_sends')}
               </div>
             ) : (
               <div className="p-3 space-y-3">
@@ -139,7 +155,7 @@ export function StatusBar() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <div className="text-sm font-medium text-gray-900 truncate">
-                          {item.leadEmail || item.leadName || 'Неизвестно'}
+                          {item.leadEmail || item.leadName || t('statusbar.unknown')}
                         </div>
                         <div className="flex items-center space-x-2">
                           <div className="text-xs text-gray-500">
@@ -148,7 +164,7 @@ export function StatusBar() {
                           <button
                             onClick={() => {
                               if (item.status === 'waiting' || item.status === 'sending') {
-                                if (window.confirm('Вы действительно хотите отменить отправку этого лида?')) {
+                                if (window.confirm(t('statusbar.confirm_cancel'))) {
                                   cancelSending(item.leadId);
                                 }
                               } else {
@@ -156,7 +172,7 @@ export function StatusBar() {
                               }
                             }}
                             className="text-gray-400 hover:text-gray-600 text-xs"
-                            title={item.status === 'waiting' || item.status === 'sending' ? 'Отменить' : 'Удалить'}
+                            title={item.status === 'waiting' || item.status === 'sending' ? t('statusbar.cancel') : t('statusbar.remove')}
                           >
                             ✕
                           </button>
@@ -166,11 +182,11 @@ export function StatusBar() {
                         {getStatusText(item.status)}
                       </div>
                       <div className="text-xs text-gray-500 mt-1">
-                        {item.message}
+                        {translateMessage(item.message)}
                       </div>
                       {item.nextAction && (
                         <div className="text-xs text-blue-600 mt-1">
-                          Следующее действие: {formatNextAction(item.nextAction)}
+                          {t('statusbar.next_action')}: {formatNextAction(item.nextAction)}
                         </div>
                       )}
                     </div>
@@ -186,7 +202,7 @@ export function StatusBar() {
                   onClick={cancelAllSending}
                   className="w-full text-xs bg-red-100 text-red-600 hover:bg-red-200 px-3 py-2 rounded"
                 >
-                  Отменить всё
+                  {t('statusbar.cancel_all')}
                 </button>
               </div>
             )}
@@ -197,7 +213,7 @@ export function StatusBar() {
                   onClick={clearQueue}
                   className="w-full text-xs bg-gray-100 text-gray-600 hover:bg-gray-200 px-3 py-2 rounded"
                 >
-                  Очистить
+                  {t('statusbar.clear')}
                 </button>
               </div>
             )}

@@ -36,18 +36,18 @@ export const DEFAULT_COLUMNS: ColumnKey[] = [...BASE_COLUMNS];
 
 export function columnLabel(key: string): string {
   const map: Record<string, string> = {
-    createdAt: 'Дата',
-    sentAt: 'Дата отправки',
-    name: 'Имя',
-    email: 'Email',
-    phone: 'Телефон',
-    country: 'Country',
-    aff: 'Aff',
-    bx: 'Box',
-    funnel: 'Funnel',
-    type: 'Тип',
-    brokerStatus: 'Статус',
-    broker: 'Брокер',
+    createdAt: 'DATE',
+    sentAt: 'SENT',
+    name: 'NAME',
+    email: 'EMAIL',
+    phone: 'PHONE',
+    country: 'COUNTRY',
+    aff: 'AFF',
+    bx: 'BOX',
+    funnel: 'FUNNEL',
+    type: 'TYPE',
+    brokerStatus: 'STATUS',
+    broker: 'BROKER',
     ip: 'IP',
     utmSource: 'utm_source',
     utmMedium: 'utm_medium',
@@ -65,13 +65,13 @@ export function columnLabel(key: string): string {
   return key;
 }
 
-export function formatDateTime(value?: string | Date | null): string {
+export function formatDateTime(value?: string | Date | null, timezone: string = 'UTC'): string {
   if (!value) return '—';
   const d = typeof value === 'string' ? new Date(value) : value;
   if (Number.isNaN(d.getTime())) return '—';
   return d
     .toLocaleString('ru-RU', {
-      timeZone: 'UTC',
+      timeZone: timezone,
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',

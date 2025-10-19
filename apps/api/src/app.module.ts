@@ -4,6 +4,10 @@ import { LeadsModule } from './leads/leads.module';
 import { TemplatesModule } from './templates/templates.module';
 import { BrokerModule } from './broker/broker.module';
 import { BoxesModule } from './boxes/boxes.module';
+import { SettingsModule } from './settings/settings.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
+import { PrismaModule } from './prisma/prisma.module';
 import { DispatchService } from './dispatcher/dispatch.service';
 import { AppController } from './app.controller';
 
@@ -13,9 +17,13 @@ import { AppController } from './app.controller';
     LeadsModule,
     TemplatesModule,
     BrokerModule,
-    BoxesModule
+    BoxesModule,
+    SettingsModule,
+    UsersModule,
+    AuthModule,
+    PrismaModule
   ],
   controllers: [AppController],
   providers: [DispatchService],
 })
-export class AppModule { }
+export class AppModule {}

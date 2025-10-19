@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useQueryState } from '@/lib/useQueryState';
 import ColumnPicker from '@/components/ColumnPicker';
-import CustomSelect from '@/components/CustomSelect';
+import { CustomSelect } from '@/components/CustomSelect';
+import { useLanguage } from '@/contexts/LanguageContext';
 import type { ColumnKey } from '@/lib/columns';
 
 type Lead = {
@@ -22,37 +23,11 @@ type Props = {
 
 const TYPES = ['', 'NEW', 'SENT', 'REJECTED'];
 
-const TEXTS = {
-  search: 'Search',
-  filters: 'Фильтры',
-  columns: 'Колонки',
-  export: 'Export',
-  reset: 'Сбросить',
-  status: 'Тип',
-  aff: 'Aff',
-  box: 'Box',
-  country: 'Country',
-  funnel: 'Funnel',
-  createdPeriod: 'Период создания',
-  sentPeriod: 'Период отправки',
-  allTime: 'Все время',
-  today: 'Сегодня',
-  thisWeek: 'Текущая неделя',
-  last7Days: 'Последние 7 дней',
-  lastMonth: 'Последний месяц',
-  thisYear: 'Текущий год',
-  custom: 'Ручной выбор',
-  all: 'Все',
-  createdDateRange: 'Диапазон дат создания',
-  sentDateRange: 'Диапазон дат отправки',
-  from: 'От',
-  to: 'До',
-  displayedColumns: 'Отображаемые колонки',
-  clearAllFilters: 'Очистить все фильтры'
-};
+// TEXTS moved to LanguageContext
 
 export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
   const { params, set } = useQueryState();
+  const { t } = useLanguage();
 
   const [showFilters, setShowFilters] = useState(false);
   const [showColumns, setShowColumns] = useState(false);
@@ -114,7 +89,7 @@ export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
             <input 
               type="text" 
               className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-xl text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-300"
-              placeholder={TEXTS.search}
+              placeholder={t('leads.search_placeholder')}
               defaultValue={q} 
               onChange={e => set({ q: e.target.value, cursor: '' })}
             />
@@ -128,7 +103,7 @@ export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
             </svg>
-            {TEXTS.filters}
+            {t('leads.filters')}
           </button>
           
           <button 
@@ -138,12 +113,12 @@ export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
             </svg>
-            {TEXTS.columns}
+            {t('leads.columns')}
           </button>
           
           <button className="px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 text-sm font-medium text-gray-700 flex items-center gap-2 opacity-50 cursor-not-allowed">
             <i className="fas fa-download"></i>
-            {TEXTS.export}
+            {t('leads.export')}
           </button>
         </div>
       </div>
@@ -151,98 +126,98 @@ export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
       {showFilters && (
         <div className="mt-4 pt-4 border-t border-gray-200">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-medium text-gray-700">{TEXTS.filters}</h3>
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('leads.filters')}</h3>
             <button 
               className="px-3 py-1 text-xs font-medium rounded-lg transition-colors flex items-center gap-1 bg-red-100 text-red-600 hover:bg-red-200"
               onClick={() => set({ q: '', status: '', aff: '', bx: '', country: '', funnel: '', createdDateRange: '', sentDateRange: '', createdDateFrom: '', createdDateTo: '', sentDateFrom: '', sentDateTo: '', cursor: '' })}
-              title={TEXTS.clearAllFilters}
+              title={t('leads.clear_all_filters')}
             >
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
-              {TEXTS.reset}
+              {t('leads.reset')}
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{TEXTS.createdPeriod}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('leads.created_period')}</label>
               <CustomSelect
                 value={createdDateRange}
                 options={[
-                  { value: '', label: TEXTS.allTime },
-                  { value: 'today', label: TEXTS.today },
-                  { value: 'week', label: TEXTS.thisWeek },
-                  { value: '7days', label: TEXTS.last7Days },
-                  { value: 'month', label: TEXTS.lastMonth },
-                  { value: 'year', label: TEXTS.thisYear },
-                  { value: 'custom', label: TEXTS.custom },
+                  { value: '', label: t('leads.all_time') },
+                  { value: 'today', label: t('leads.today') },
+                  { value: 'week', label: t('leads.this_week') },
+                  { value: '7days', label: t('leads.last_7_days') },
+                  { value: 'month', label: t('leads.last_month') },
+                  { value: 'year', label: t('leads.this_year') },
+                  { value: 'custom', label: t('leads.custom') },
                 ]}
                 onChange={handleCreatedDateRangeChange}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{TEXTS.sentPeriod}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('leads.sent_period')}</label>
               <CustomSelect
                 value={sentDateRange}
                 options={[
-                  { value: '', label: TEXTS.allTime },
-                  { value: 'today', label: TEXTS.today },
-                  { value: 'week', label: TEXTS.thisWeek },
-                  { value: '7days', label: TEXTS.last7Days },
-                  { value: 'month', label: TEXTS.lastMonth },
-                  { value: 'year', label: TEXTS.thisYear },
-                  { value: 'custom', label: TEXTS.custom },
+                  { value: '', label: t('leads.all_time') },
+                  { value: 'today', label: t('leads.today') },
+                  { value: 'week', label: t('leads.this_week') },
+                  { value: '7days', label: t('leads.last_7_days') },
+                  { value: 'month', label: t('leads.last_month') },
+                  { value: 'year', label: t('leads.this_year') },
+                  { value: 'custom', label: t('leads.custom') },
                 ]}
                 onChange={handleSentDateRangeChange}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{TEXTS.status}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('leads.status')}</label>
               <CustomSelect
                 value={status}
-                options={TYPES.map(s => ({ value: s, label: s || TEXTS.all }))}
+                options={TYPES.map(s => ({ value: s, label: s || t('leads.all') }))}
                 onChange={value => set({ status: value, cursor: '' })}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{TEXTS.aff}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('leads.aff')}</label>
               <CustomSelect
                 value={aff}
                 options={[
-                  { value: '', label: TEXTS.all },
+                  { value: '', label: t('leads.all') },
                   ...uniqueAffs.map((affValue: string) => ({ value: affValue, label: affValue }))
                 ]}
                 onChange={value => set({ aff: value, cursor: '' })}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{TEXTS.box}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('leads.box')}</label>
               <CustomSelect
                 value={bx}
                 options={[
-                  { value: '', label: TEXTS.all },
+                  { value: '', label: t('leads.all') },
                   ...uniqueBoxes.map((boxValue: string) => ({ value: boxValue, label: boxValue }))
                 ]}
                 onChange={value => set({ bx: value, cursor: '' })}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{TEXTS.country}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('leads.country')}</label>
               <CustomSelect
                 value={country}
                 options={[
-                  { value: '', label: TEXTS.all },
+                  { value: '', label: t('leads.all') },
                   ...uniqueCountries.map((countryValue: string) => ({ value: countryValue, label: countryValue }))
                 ]}
                 onChange={value => set({ country: value, cursor: '' })}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{TEXTS.funnel}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('leads.funnel')}</label>
               <CustomSelect
                 value={funnel}
                 options={[
-                  { value: '', label: TEXTS.all },
+                  { value: '', label: t('leads.all') },
                   ...uniqueFunnels.map((funnelValue: string) => ({ value: funnelValue, label: funnelValue }))
                 ]}
                 onChange={value => set({ funnel: value, cursor: '' })}
@@ -255,18 +230,18 @@ export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {showCreatedDateInputs && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{TEXTS.createdDateRange}</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('leads.created_date_range')}</label>
                     <div className="flex gap-2">
                       <input 
                         type="date" 
                         className="input flex-1" 
-                        placeholder={TEXTS.from}
+                        placeholder={t('leads.from')}
                         onChange={e => set({ createdDateFrom: e.target.value, cursor: '' })}
                       />
                       <input 
                         type="date" 
                         className="input flex-1" 
-                        placeholder={TEXTS.to}
+                        placeholder={t('leads.to')}
                         onChange={e => set({ createdDateTo: e.target.value, cursor: '' })}
                       />
                     </div>
@@ -275,18 +250,18 @@ export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
                 
                 {showSentDateInputs && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{TEXTS.sentDateRange}</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('leads.sent_date_range')}</label>
                     <div className="flex gap-2">
                       <input 
                         type="date" 
                         className="input flex-1" 
-                        placeholder={TEXTS.from}
+                        placeholder={t('leads.from')}
                         onChange={e => set({ sentDateFrom: e.target.value, cursor: '' })}
                       />
                       <input 
                         type="date" 
                         className="input flex-1" 
-                        placeholder={TEXTS.to}
+                        placeholder={t('leads.to')}
                         onChange={e => set({ sentDateTo: e.target.value, cursor: '' })}
                       />
                     </div>
@@ -300,7 +275,7 @@ export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
 
       {showColumns && (
         <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="block text-sm font-medium text-gray-700 mb-2">{TEXTS.displayedColumns}</div>
+          <div className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('leads.displayed_columns')}</div>
           <ColumnPicker value={columns} onChange={onColumns} />
         </div>
       )}

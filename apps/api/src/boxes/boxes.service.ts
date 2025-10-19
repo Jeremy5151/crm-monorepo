@@ -43,19 +43,30 @@ export class BoxesService {
 
   async create(data: {
     name: string;
-    country?: string;
+    countries?: string[];
     isActive?: boolean;
-    brokers: { brokerId: string; priority: number }[];
+    brokers: { 
+      brokerId: string; 
+      priority: number;
+      deliveryEnabled?: boolean;
+      deliveryFrom?: string;
+      deliveryTo?: string;
+      leadCap?: number;
+    }[];
   }) {
     const box = await prisma.box.create({
       data: {
         name: data.name,
-        country: data.country || null,
+        countries: data.countries || [],
         isActive: data.isActive ?? true,
         brokers: {
           create: data.brokers.map(b => ({
             brokerId: b.brokerId,
-            priority: b.priority
+            priority: b.priority,
+            deliveryEnabled: b.deliveryEnabled || false,
+            deliveryFrom: b.deliveryFrom || null,
+            deliveryTo: b.deliveryTo || null,
+            leadCap: b.leadCap || null
           }))
         }
       },
@@ -77,9 +88,16 @@ export class BoxesService {
 
   async update(id: string, data: {
     name?: string;
-    country?: string;
+    countries?: string[];
     isActive?: boolean;
-    brokers?: { brokerId: string; priority: number }[];
+    brokers?: { 
+      brokerId: string; 
+      priority: number;
+      deliveryEnabled?: boolean;
+      deliveryFrom?: string;
+      deliveryTo?: string;
+      leadCap?: number;
+    }[];
   }) {
     // Если передали новый список брокеров - удаляем старые и создаем новые
     if (data.brokers) {
@@ -90,12 +108,16 @@ export class BoxesService {
       where: { id },
       data: {
         name: data.name,
-        country: data.country !== undefined ? data.country : undefined,
+        countries: data.countries !== undefined ? data.countries : undefined,
         isActive: data.isActive,
         brokers: data.brokers ? {
           create: data.brokers.map(b => ({
             brokerId: b.brokerId,
-            priority: b.priority
+            priority: b.priority,
+            deliveryEnabled: b.deliveryEnabled || false,
+            deliveryFrom: b.deliveryFrom || null,
+            deliveryTo: b.deliveryTo || null,
+            leadCap: b.leadCap || null
           }))
         } : undefined
       },
@@ -126,11 +148,13 @@ export class BoxesService {
    */
   async getBoxForLead(country?: string): Promise<any | null> {
     if (!country) {
-      // Если страна не указана - берем бокс без страны (универсальный)
+      // Если страна не указана - берем бокс без стран (универсальный)
       return prisma.box.findFirst({
         where: {
           isActive: true,
-          country: null
+          countries: {
+            isEmpty: true
+          }
         },
         include: {
           brokers: {
@@ -149,7 +173,9 @@ export class BoxesService {
     const countryBox = await prisma.box.findFirst({
       where: {
         isActive: true,
-        country: country.toUpperCase()
+        countries: {
+          has: country.toUpperCase()
+        }
       },
       include: {
         brokers: {
@@ -169,7 +195,9 @@ export class BoxesService {
     return prisma.box.findFirst({
       where: {
         isActive: true,
-        country: null
+        countries: {
+          isEmpty: true
+        }
       },
       include: {
         brokers: {

@@ -72,8 +72,8 @@ export function StatusBarProvider({ children }: { children: ReactNode }) {
         let hasChanges = false;
         
         const updatedProgress = prev.map(item => {
-          // Автоматически завершаем отправки через 5 секунд если нет обновлений
-          if (item.status === 'sending' && now.getTime() - item.timestamp.getTime() > 5000) {
+          // Автоматически завершаем отправки через 15 секунд если нет обновлений
+          if (item.status === 'sending' && now.getTime() - item.timestamp.getTime() > 15000) {
             hasChanges = true;
             return {
               ...item,
@@ -82,9 +82,9 @@ export function StatusBarProvider({ children }: { children: ReactNode }) {
             };
           }
           
-          // Автоматически скрываем старые завершенные отправки через 30 секунд
+          // Автоматически скрываем старые завершенные отправки через 10 секунд
           if ((item.status === 'success' || item.status === 'error' || item.status === 'skipped') && 
-              now.getTime() - item.timestamp.getTime() > 30000) {
+              now.getTime() - item.timestamp.getTime() > 10000) {
             hasChanges = true;
             return null;
           }

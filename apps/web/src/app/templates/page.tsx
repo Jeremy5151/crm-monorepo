@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { apiGet, apiPost } from '@/lib/api';
+import { useToast } from '@/contexts/ToastContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type Template = {
   id: string;
@@ -16,6 +18,8 @@ type Template = {
 };
 
 export default function TemplatesPage() {
+  const { showSuccess, showError } = useToast();
+  const { t } = useLanguage();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -84,9 +88,9 @@ export default function TemplatesPage() {
       };
       await apiPost('/v1/templates', payload);
       await loadTemplates();
-      alert('Шаблон добавлен!');
+      showSuccess(t('common.success'), 'Шаблон добавлен!');
     } catch (e: any) {
-      alert('Ошибка: ' + (e?.message || String(e)));
+      showError(t('common.error'), e?.message || String(e));
     } finally {
       setLoading(false);
     }

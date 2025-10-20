@@ -295,19 +295,34 @@ export default function LeadsPage() {
     });
 
     showStatusBar(initialProgress);
-
-    load();
     setSelected(new Set());
 
     try {
-      apiPost('/v1/leads/bulk-send', { 
+      const response = await apiPost('/v1/leads/bulk-send', { 
         ids: selectedIds, 
         broker: brokerCode,
         intervalMinutes: intervalMinutes
-      }).catch((e: any) => {
-        setError(e?.message ?? String(e));
       });
+      
+      // Обновляем прогресс для первого лида
+      if (selectedIds.length > 0) {
+        const firstId = selectedIds[0];
+        updateProgress(`progress-${firstId}`, {
+          status: 'success',
+          message: 'Успешно отправлено'
+        });
+      }
+      
+      await load();
     } catch (e: any) {
+      // Обновляем прогресс для первого лида в случае ошибки
+      if (selectedIds.length > 0) {
+        const firstId = selectedIds[0];
+        updateProgress(`progress-${firstId}`, {
+          status: 'error',
+          message: e?.message || 'Ошибка отправки'
+        });
+      }
       setError(e?.message ?? String(e));
     }
   };
@@ -383,9 +398,6 @@ export default function LeadsPage() {
   return (
     <div className="leads-page">
       <div className="page-container">
-        <div className="page-header">
-          <h1 className="page-title">{t('leads.title')}</h1>
-        </div>
 
       <LeadsFilterBar columns={cols} onColumns={setCols} leads={allItems} />
 

@@ -208,17 +208,18 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-4">
       <div className="page-container">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">{t('users.title')}</h1>
-        <button
-          onClick={() => setShowForm(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          {t('users.create')}
-        </button>
-      </div>
+        <div className="card p-6 space-y-4">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-2xl font-bold text-gray-900">{t('users.title')}</h1>
+            <button
+              onClick={() => setShowForm(true)}
+              className="px-3 py-2 text-sm rounded-xl bg-yellow-500 text-white hover:bg-yellow-600"
+            >
+              {t('users.create')}
+            </button>
+          </div>
 
       {loading && <div className="text-center py-8">{t('common.loading')}</div>}
 
@@ -227,19 +228,19 @@ export default function UsersPage() {
       )}
 
       {!loading && users.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="min-w-full">
-            <thead className="bg-gray-50 dark:bg-gray-700">
+            <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">{t('users.name')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">{t('users.email')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">{t('users.role')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">{t('users.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">{t('users.language')}</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">{t('users.actions')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('users.name')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('users.email')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('users.role')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('users.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('users.language')}</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t('users.actions')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="divide-y divide-gray-200">
               {users.map((user) => (
                 <tr key={user.id}>
                   <td className="px-6 py-4 text-sm">{user.name}</td>
@@ -273,49 +274,58 @@ export default function UsersPage() {
       )}
 
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">
+        <div className="space-y-4 p-6 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-medium text-gray-900">
               {editingId ? t('users.edit') : t('users.create')}
             </h2>
+            <button
+              onClick={cancelEdit}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">{t('users.email')}</label>
+                <label className="block text-sm font-medium text-gray-800 mb-2">{t('users.email')}</label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="user@example.com"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">{t('users.name')}</label>
+                <label className="block text-sm font-medium text-gray-800 mb-2">{t('users.name')}</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder={t('users.name_placeholder')}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">{t('users.password')}</label>
+                <label className="block text-sm font-medium text-gray-800 mb-2">{t('users.password')}</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="flex-1 px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder={editingId ? t('users.password_placeholder_edit') : t('users.password_placeholder')}
                   />
                   <button
                     type="button"
                     onClick={generatePassword}
-                    className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
+                    className="px-3 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
                     title={t('users.generate_password')}
                   >
                     🎲
@@ -323,7 +333,7 @@ export default function UsersPage() {
                   <button
                     type="button"
                     onClick={copyPassword}
-                    className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
+                    className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
                     title={t('users.copy_password')}
                   >
                     📋
@@ -332,7 +342,7 @@ export default function UsersPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">{t('users.role')}</label>
+                <label className="block text-sm font-medium text-gray-800 mb-2">{t('users.role')}</label>
                 <CustomSelect
                   value={formData.role}
                   onChange={(value) => setFormData({ ...formData, role: value })}
@@ -345,7 +355,7 @@ export default function UsersPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">{t('users.language')}</label>
+                <label className="block text-sm font-medium text-gray-800 mb-2">{t('users.language')}</label>
                 <CustomSelect
                   value={formData.language}
                   onChange={(value) => setFormData({ ...formData, language: value })}
@@ -357,7 +367,7 @@ export default function UsersPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">{t('users.timezone')}</label>
+                <label className="block text-sm font-medium text-gray-800 mb-2">{t('users.timezone')}</label>
                 <TimezoneSelector
                   value={formData.timezone}
                   onChange={(value) => setFormData({ ...formData, timezone: value })}
@@ -378,20 +388,21 @@ export default function UsersPage() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={editingId ? updateUser : createUser}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="px-4 py-2 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600"
               >
                 {editingId ? t('common.save') : t('common.create')}
               </button>
               <button
                 onClick={cancelEdit}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200"
               >
                 {t('common.cancel')}
               </button>
             </div>
           </div>
-        </div>
       )}
+        </div>
+      </div>
 
       <ConfirmDialog
         isOpen={confirmDialog.isOpen}
@@ -401,7 +412,6 @@ export default function UsersPage() {
         onCancel={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
         type={confirmDialog.type}
       />
-      </div>
     </div>
   );
 }

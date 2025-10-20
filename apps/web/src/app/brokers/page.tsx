@@ -359,29 +359,25 @@ export default function BrokersPage() {
   return (
     <div className="space-y-4">
       <div className="page-container">
-        <h1 className="text-2xl font-semibold text-gray-900">{t('brokers.title')}</h1>
-
-      <div className="card p-6 space-y-4">
-        {!showAdd && (
-          <div className="flex items-center justify-between">
-            <div></div>
+        <div className="card p-6 space-y-4">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-2xl font-bold text-gray-900">{t('brokers.title')}</h1>
             <button
               className="px-3 py-2 text-sm rounded-xl bg-yellow-500 text-white hover:bg-yellow-600"
               onClick={() => setShowAdd(true)}
             >
-{t('brokers.create')}
+              {t('brokers.create')}
             </button>
           </div>
-        )}
 
         {showAdd && (
           <div className="space-y-4">
             {step === 1 && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.name')}</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.name')}</label>
                   <input
-                    className="input"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={form.name}
                     onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                     placeholder={t('brokers.name_example')}
@@ -389,7 +385,7 @@ export default function BrokersPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.template')}</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.template')}</label>
                   <CustomSelect
                     value={selectedTemplate}
                     options={availableTemplates.map(t => ({ value: t.id, label: `${t.icon} ${t.name}` }))}
@@ -443,9 +439,9 @@ export default function BrokersPage() {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.name')}</label>
+                      <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.name')}</label>
                       <input
-                        className="input"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         value={form.name || ''}
                         onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                         placeholder={t('brokers.name_placeholder')}
@@ -453,7 +449,7 @@ export default function BrokersPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.method')}</label>
+                      <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.method')}</label>
                       <CustomSelect
                         value={form.method}
                         onChange={(value) => setForm(f => ({ 
@@ -471,22 +467,22 @@ export default function BrokersPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.url')}</label>
+                      <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.url')}</label>
                       <input
-                        className="input"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         value={form.url || ''}
                         onChange={e => setForm(f => ({ ...f, url: e.target.value }))}
                         placeholder={t('brokers.url_placeholder')}
                       />
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-600 mt-1">
                         {form.method === 'GET' ? t('brokers.url_hint_get') : t('brokers.url_hint_post')}
                       </p>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.headers')}</label>
+                      <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.headers')}</label>
                       <textarea
-                        className="input font-mono text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         rows={6}
                         value={form.headers}
                         onChange={e => setForm(f => ({ ...f, headers: e.target.value }))}
@@ -497,11 +493,11 @@ export default function BrokersPage() {
                   <div className="space-y-4">
                     {form.method !== 'GET' && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="block text-sm font-medium text-gray-800 mb-2">
                           {t('brokers.body')} {form.method === 'POST_JSON' ? '(JSON)' : '(form-urlencoded)'}
                         </label>
                         <textarea
-                          className="input font-mono text-sm"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           rows={12}
                           value={form.body || ''}
                           onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
@@ -510,9 +506,9 @@ export default function BrokersPage() {
                       </div>
                     )}
 
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('brokers.available_macros')}</h4>
-                      <div className="text-xs text-gray-600 space-y-1">
+                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <h4 className="text-sm font-medium text-gray-800 mb-3">{t('brokers.available_macros')}</h4>
+                      <div className="text-xs text-gray-700 space-y-1">
                         <div><code className="bg-white px-1 rounded">${'{firstName}'}</code> - {t('brokers.macro.firstName')}</div>
                         <div><code className="bg-white px-1 rounded">${'{lastName}'}</code> - {t('brokers.macro.lastName')}</div>
                         <div><code className="bg-white px-1 rounded">${'{email}'}</code> - {t('brokers.macro.email')}</div>
@@ -540,17 +536,17 @@ export default function BrokersPage() {
 
                 {/* Integration Parameters */}
                 <div className="border-t pt-6 mt-6">
-                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t('brokers.integration_parameters')}</h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                  <h4 className="text-sm font-medium text-gray-800 mb-3">{t('brokers.integration_parameters')}</h4>
+                  <p className="text-xs text-gray-700 mb-4">
                     {t('brokers.parameters_description')}
                   </p>
                   <div className="grid md:grid-cols-2 gap-4">
                     {Object.entries(form.params).map(([key, value]) => (
                       <div key={key}>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">{key}</label>
+                        <label className="block text-sm font-medium text-gray-800 mb-2">{key}</label>
                         <div className="flex gap-2">
                           <input
-                            className="input flex-1"
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             value={String(value)}
                             onChange={e => setForm(f => ({
                               ...f,
@@ -588,16 +584,16 @@ export default function BrokersPage() {
 
                 {/* Password Generation Settings */}
                 <div className="border-t pt-6 mt-6">
-                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t('brokers.password_generation_settings')}</h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                  <h4 className="text-sm font-medium text-gray-800 mb-3">{t('brokers.password_generation_settings')}</h4>
+                  <p className="text-xs text-gray-700 mb-4">
                     {t('brokers.password_settings_description')}
                   </p>
                   <div className="grid md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.password_length')}</label>
+                      <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.password_length')}</label>
                       <input
                         type="number"
-                        className="input"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         value={form.passwordLength}
                         onChange={e => setForm(f => ({ ...f, passwordLength: parseInt(e.target.value) || 8 }))}
                         min="4"
@@ -612,7 +608,7 @@ export default function BrokersPage() {
                           onChange={e => setForm(f => ({ ...f, passwordUseUpper: e.target.checked }))}
                           className="w-4 h-4 rounded"
                         />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{t('brokers.uppercase_letters')}</span>
+                        <span className="text-sm font-medium text-gray-800">{t('brokers.uppercase_letters')}</span>
                       </label>
                       <label className="flex items-center gap-2">
                         <input
@@ -621,7 +617,7 @@ export default function BrokersPage() {
                           onChange={e => setForm(f => ({ ...f, passwordUseLower: e.target.checked }))}
                           className="w-4 h-4 rounded"
                         />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{t('brokers.lowercase_letters')}</span>
+                        <span className="text-sm font-medium text-gray-800">{t('brokers.lowercase_letters')}</span>
                       </label>
                     </div>
                     <div className="space-y-2">
@@ -632,7 +628,7 @@ export default function BrokersPage() {
                           onChange={e => setForm(f => ({ ...f, passwordUseDigits: e.target.checked }))}
                           className="w-4 h-4 rounded"
                         />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{t('brokers.digits')}</span>
+                        <span className="text-sm font-medium text-gray-800">{t('brokers.digits')}</span>
                       </label>
                       <label className="flex items-center gap-2">
                         <input
@@ -641,15 +637,15 @@ export default function BrokersPage() {
                           onChange={e => setForm(f => ({ ...f, passwordUseSpecial: e.target.checked }))}
                           className="w-4 h-4 rounded"
                         />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{t('brokers.special_chars')}</span>
+                        <span className="text-sm font-medium text-gray-800">{t('brokers.special_chars')}</span>
                       </label>
                     </div>
                   </div>
                   {form.passwordUseSpecial && (
-                    <div className="mt-3">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.which_special_chars')}</label>
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.which_special_chars')}</label>
                       <input
-                        className="input"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         value={form.passwordSpecialChars}
                         onChange={e => setForm(f => ({ ...f, passwordSpecialChars: e.target.value }))}
                         placeholder="!@#$%"
@@ -667,18 +663,18 @@ export default function BrokersPage() {
                       onChange={e => setForm(f => ({ ...f, pullEnabled: e.target.checked }))}
                       className="w-4 h-4 rounded"
                     />
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label className="text-sm font-medium text-gray-800">
                       {t('brokers.enable_pull_api')}
                     </label>
                   </div>
 
                   {form.pullEnabled && (
-                    <div className="grid md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded-lg">
+                    <div className="grid md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.pull_url')}</label>
+                          <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.pull_url')}</label>
                           <input
-                            className="input"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             value={form.pullUrl || ''}
                             onChange={e => setForm(f => ({ ...f, pullUrl: e.target.value }))}
                             placeholder="https://example.com/api/pull/customers"
@@ -686,22 +682,22 @@ export default function BrokersPage() {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.pull_interval')}</label>
+                          <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.pull_interval')}</label>
                           <input
                             type="number"
-                            className="input"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             value={form.pullInterval || 15}
                             onChange={e => setForm(f => ({ ...f, pullInterval: parseInt(e.target.value) || 15 }))}
                             min="5"
                             max="1440"
                           />
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('brokers.pull_interval_description')}</p>
+                          <p className="text-xs text-gray-700 mt-1">{t('brokers.pull_interval_description')}</p>
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.pull_headers')}</label>
+                          <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.pull_headers')}</label>
                           <textarea
-                            className="input font-mono text-sm"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             rows={6}
                             value={form.pullHeaders}
                             onChange={e => setForm(f => ({ ...f, pullHeaders: e.target.value }))}
@@ -711,21 +707,21 @@ export default function BrokersPage() {
 
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('brokers.pull_body')}</label>
+                          <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.pull_body')}</label>
                           <textarea
-                            className="input font-mono text-sm"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             rows={8}
                             value={form.pullBody}
                             onChange={e => setForm(f => ({ ...f, pullBody: e.target.value }))}
                           />
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          <p className="text-xs text-gray-700 mt-1">
                             {t('brokers.pull_macros')}
                           </p>
                         </div>
 
-                        <div className="bg-blue-50 p-3 rounded-lg">
-                          <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">ℹ️ {t('brokers.pull_info')}</h4>
-                          <p className="text-xs text-blue-700 dark:text-blue-300">
+                        <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                          <h4 className="text-sm font-medium text-blue-900 mb-2">ℹ️ {t('brokers.pull_info')}</h4>
+                          <p className="text-xs text-blue-800">
                             {t('brokers.pull_info_description')}
                           </p>
                         </div>

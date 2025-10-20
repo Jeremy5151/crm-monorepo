@@ -54,6 +54,22 @@ body {
   border: 1px solid #e5e7eb;
 }
 
+.page-title {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,.08);
+  border: 1px solid #e5e7eb;
+  margin-bottom: 1.5rem;
+}
+
+.page-title h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
 /* Таблица лидов */
 .leads-table {
   background: white;

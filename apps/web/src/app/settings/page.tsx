@@ -6,10 +6,12 @@ import { TimezoneSelector } from '@/components/TimezoneSelector';
 import { useTimezone } from '@/contexts/TimezoneContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/contexts/ToastContext';
 import { CustomSelect } from '@/components/CustomSelect';
 
 export default function SettingsPage() {
   const { language, setLanguage, t } = useLanguage();
+  const { showSuccess, showError } = useToast();
   const [settings, setSettings] = useState({ 
     timezone: 'UTC', 
     theme: 'light', 
@@ -35,7 +37,7 @@ export default function SettingsPage() {
       setSettings({ ...data, language }); // Use current language from context
     } catch (e: any) {
       console.error('Ошибка загрузки настроек:', e);
-      alert('Ошибка загрузки настроек: ' + (e?.message || String(e)));
+      showError(t('common.error'), e?.message || String(e));
     }
   }
 
@@ -47,8 +49,7 @@ export default function SettingsPage() {
         theme: settings.theme,
         language: settings.language
       });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      showSuccess(t('settings.saved'));
       
       // Обновляем локальные контексты
       setTheme(settings.theme as any);
@@ -58,7 +59,7 @@ export default function SettingsPage() {
       await forceRefresh();
     } catch (e: any) {
       console.error('Ошибка сохранения настроек:', e);
-      alert('Ошибка сохранения настроек: ' + (e?.message || String(e)));
+      showError(t('common.error'), e?.message || String(e));
     } finally {
       setLoading(false);
     }
@@ -67,13 +68,14 @@ export default function SettingsPage() {
   return (
     <div className="space-y-4">
       <div className="page-container">
-        <h1 className="text-2xl font-semibold text-gray-900">{t('settings.title')}</h1>
-
-      <div className="card p-6 space-y-6">
+        <div className="card p-6 space-y-6">
+          <div className="mb-4">
+            <h1 className="text-2xl font-bold text-gray-900">{t('settings.title')}</h1>
+          </div>
         {/* Часовой пояс */}
         <div>
           <h2 className="text-lg font-medium text-gray-900 mb-4">{t('settings.timezone')}</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          <p className="text-sm text-gray-700 mb-4">
             {t('settings.timezone.description')}
           </p>
           
@@ -88,7 +90,7 @@ export default function SettingsPage() {
         {/* Цветовая схема */}
         <div>
           <h2 className="text-lg font-medium text-gray-900 mb-4">{t('settings.theme')}</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          <p className="text-sm text-gray-700 mb-4">
             {t('settings.theme.description')}
           </p>
           
@@ -109,7 +111,7 @@ export default function SettingsPage() {
         {/* Язык интерфейса */}
         <div>
           <h2 className="text-lg font-medium text-gray-900 mb-4">{t('settings.language')}</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          <p className="text-sm text-gray-700 mb-4">
             {t('settings.language.description')}
           </p>
           

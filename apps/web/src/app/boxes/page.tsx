@@ -99,12 +99,12 @@ export default function BoxesPage() {
 
   async function saveBox() {
     if (!form.name.trim()) {
-      alert('Укажите название бокса');
+      showError(t('common.error'), 'Укажите название бокса');
       return;
     }
 
     if (form.brokers.length === 0) {
-      alert('Добавьте хотя бы одного брокера');
+      showError(t('common.error'), 'Добавьте хотя бы одного брокера');
       return;
     }
 
@@ -112,7 +112,7 @@ export default function BoxesPage() {
     try {
       const payload = {
         name: form.name,
-        country: form.country || null,
+        countries: form.countries,
         isActive: form.isActive,
         brokers: form.brokers
       };
@@ -226,20 +226,22 @@ export default function BoxesPage() {
   return (
     <div className="space-y-4">
       <div className="page-container">
-        <h1 className="text-2xl font-semibold text-gray-900">{t('boxes.title')}</h1>
-
-      <div className="card p-6 space-y-4">
-        {!showAdd && (
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {t('boxes.description_text')}
-            </p>
+        <div className="card p-6 space-y-4">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-2xl font-bold text-gray-900">{t('boxes.title')}</h1>
             <button
               className="px-3 py-2 text-sm rounded-xl bg-yellow-500 text-white hover:bg-yellow-600"
               onClick={() => setShowAdd(true)}
             >
-{t('boxes.create')}
+              {t('boxes.create')}
             </button>
+          </div>
+
+        {!showAdd && (
+          <div>
+            <p className="text-sm text-gray-700">
+              {t('boxes.description_text')}
+            </p>
           </div>
         )}
 
@@ -250,33 +252,29 @@ export default function BoxesPage() {
             </h3>
 
             <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('boxes.name')}</label>
-                    <input
-                      className="input"
-                      value={form.name}
-                      onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                      placeholder={t('boxes.name_placeholder')}
-                    />
-                  </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-800 mb-2">{t('boxes.name')}</label>
+                <input
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={form.name}
+                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  placeholder={t('boxes.name_placeholder')}
+                />
+              </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('boxes.countries')}</label>
+                <label className="block text-sm font-medium text-gray-800 mb-2">{t('boxes.countries')}</label>
                 <CountryMultiSelect
                   value={form.countries}
                   onChange={countries => setForm(f => ({ ...f, countries }))}
                   placeholder={t('boxes.countries_placeholder')}
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {t('boxes.countries_hint')}
-                </p>
               </div>
-
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="text-sm font-medium text-gray-800">
                   {t('boxes.brokers')}
                 </label>
                 <button
@@ -290,7 +288,7 @@ export default function BoxesPage() {
               </div>
 
               {form.brokers.length === 0 && (
-                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+                <p className="text-sm text-gray-600 text-center py-4">
                   {t('boxes.brokers_instruction')}
                 </p>
               )}
@@ -336,7 +334,7 @@ export default function BoxesPage() {
                           onChange={e => updateBroker(index, 'deliveryEnabled', e.target.checked)}
                           className="w-4 h-4 rounded"
                         />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{t('boxes.delivery_time')}</span>
+                        <span className="text-sm font-medium text-gray-800">{t('boxes.delivery_time')}</span>
                       </label>
                       
                       {broker.deliveryEnabled && (
@@ -345,30 +343,30 @@ export default function BoxesPage() {
                             type="time"
                             value={broker.deliveryFrom}
                             onChange={e => updateBroker(index, 'deliveryFrom', e.target.value)}
-                            className="input text-sm w-32"
+                            className="px-3 py-2 border border-gray-300 rounded-md text-sm w-32 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
-                          <span className="text-sm text-gray-500 dark:text-gray-400">{t('boxes.to')}</span>
+                          <span className="text-sm font-medium text-gray-800">—</span>
                           <input
                             type="time"
                             value={broker.deliveryTo}
                             onChange={e => updateBroker(index, 'deliveryTo', e.target.value)}
-                            className="input text-sm w-32"
+                            className="px-3 py-2 border border-gray-300 rounded-md text-sm w-32 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                         </>
                       )}
                     </div>
                     
-                    <div className="flex items-center gap-2 mt-[15px]">
-                      <label className="text-sm text-gray-700 dark:text-gray-300">{t('boxes.lead_cap')}</label>
+                    <div className="flex items-center gap-2 mt-3">
+                      <label className="text-sm font-medium text-gray-800">{t('boxes.lead_cap')}</label>
                       <input
                         type="number"
                         value={broker.leadCap || ''}
                         onChange={e => updateBroker(index, 'leadCap', e.target.value ? parseInt(e.target.value) : null)}
-                        className="input text-sm w-20"
-                        placeholder={t('boxes.lead_cap_unlimited')}
+                        className="px-3 py-2 border border-gray-300 rounded-md text-sm w-24 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="∞"
                         min="1"
                       />
-                      <span className="text-xs text-gray-500 dark:text-gray-400">{t('boxes.lead_cap_hint')}</span>
+                      <span className="text-xs font-medium text-gray-800">{t('boxes.lead_cap_hint')}</span>
                     </div>
                   </div>
                 ))}

@@ -209,8 +209,9 @@ export default function UsersPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">{t('users.title')}</h1>
+      <div className="page-container">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">{t('users.title')}</h1>
         <button
           onClick={() => setShowForm(true)}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -400,6 +401,7 @@ export default function UsersPage() {
         onCancel={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
         type={confirmDialog.type}
       />
+      </div>
     </div>
   );
 }

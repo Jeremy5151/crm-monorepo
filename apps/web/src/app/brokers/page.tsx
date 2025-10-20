@@ -358,7 +358,8 @@ export default function BrokersPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{t('brokers.title')}</h1>
+      <div className="page-container">
+        <h1 className="text-2xl font-semibold text-gray-900">{t('brokers.title')}</h1>
 
       <div className="card p-6 space-y-4">
         {!showAdd && (
@@ -434,7 +435,7 @@ export default function BrokersPage() {
                       <i className="fas fa-arrow-left"></i>
                     </button>
                   )}
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                  <h3 className="text-lg font-medium text-gray-900">
                     {editingId ? `${t('brokers.edit')} "${form.name}"` : `Настройка параметров для "${form.name}"`}
                   </h3>
                 </div>
@@ -801,6 +802,7 @@ export default function BrokersPage() {
         onCancel={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
         type={confirmDialog.type}
       />
+      </div>
     </div>
   );
 }

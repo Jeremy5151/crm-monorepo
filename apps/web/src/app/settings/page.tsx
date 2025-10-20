@@ -9,25 +9,30 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { CustomSelect } from '@/components/CustomSelect';
 
 export default function SettingsPage() {
+  const { language, setLanguage, t } = useLanguage();
   const [settings, setSettings] = useState({ 
     timezone: 'UTC', 
     theme: 'light', 
-    language: 'en' 
+    language: language 
   });
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const { forceRefresh } = useTimezone();
   const { theme, setTheme } = useTheme();
-  const { language, setLanguage, t } = useLanguage();
 
   useEffect(() => {
     loadSettings();
-  }, []);
+  }, [language]);
+
+  // Update settings.language when language context changes
+  useEffect(() => {
+    setSettings(prev => ({ ...prev, language }));
+  }, [language]);
 
   async function loadSettings() {
     try {
       const data = await apiGet('/v1/settings');
-      setSettings(data);
+      setSettings({ ...data, language }); // Use current language from context
     } catch (e: any) {
       console.error('Ошибка загрузки настроек:', e);
       alert('Ошибка загрузки настроек: ' + (e?.message || String(e)));
@@ -61,12 +66,13 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{t('settings.title')}</h1>
+      <div className="page-container">
+        <h1 className="text-2xl font-semibold text-gray-900">{t('settings.title')}</h1>
 
       <div className="card p-6 space-y-6">
         {/* Часовой пояс */}
         <div>
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">{t('settings.timezone')}</h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-4">{t('settings.timezone')}</h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
             {t('settings.timezone.description')}
           </p>
@@ -81,7 +87,7 @@ export default function SettingsPage() {
 
         {/* Цветовая схема */}
         <div>
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">{t('settings.theme')}</h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-4">{t('settings.theme')}</h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
             {t('settings.theme.description')}
           </p>
@@ -102,7 +108,7 @@ export default function SettingsPage() {
 
         {/* Язык интерфейса */}
         <div>
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">{t('settings.language')}</h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-4">{t('settings.language')}</h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
             {t('settings.language.description')}
           </p>
@@ -138,6 +144,7 @@ export default function SettingsPage() {
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

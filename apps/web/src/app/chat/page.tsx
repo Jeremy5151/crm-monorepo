@@ -60,6 +60,7 @@ export default function ChatPage() {
 
   return (
     <div style={{ display: "grid", gridTemplateRows: "1fr auto", height: "calc(100dvh - 2rem)", gap: 12, padding: 12 }}>
+      <div className="page-container">
       <div ref={listRef} style={{ overflowY: "auto", border: "1px solid #e5e7eb", borderRadius: 8, padding: 12 }}>
         {messages.length === 0 ? (
           <p style={{ color: "#6b7280" }}>Новый чат. Спросите что-нибудь…</p>
@@ -91,6 +92,7 @@ export default function ChatPage() {
           {loading ? "Отправка..." : "Отправить"}
         </button>
       </form>
+      </div>
     </div>
   );
 }

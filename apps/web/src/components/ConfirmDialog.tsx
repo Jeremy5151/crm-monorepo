@@ -71,7 +71,7 @@ export function ConfirmDialog({
             )}
           </div>
           <div className="ml-3">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+            <h3 className="text-lg font-medium text-gray-900">
               {title}
             </h3>
           </div>

@@ -225,7 +225,8 @@ export default function BoxesPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{t('boxes.title')}</h1>
+      <div className="page-container">
+        <h1 className="text-2xl font-semibold text-gray-900">{t('boxes.title')}</h1>
 
       <div className="card p-6 space-y-4">
         {!showAdd && (
@@ -244,7 +245,7 @@ export default function BoxesPage() {
 
         {showAdd && (
           <div className="space-y-4 border-b pb-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+            <h3 className="text-lg font-medium text-gray-900">
               {editingId ? t('boxes.edit') : t('boxes.new_box')}
             </h3>
 
@@ -465,6 +466,7 @@ export default function BoxesPage() {
         onCancel={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
         type={confirmDialog.type}
       />
+      </div>
     </div>
   );
 }

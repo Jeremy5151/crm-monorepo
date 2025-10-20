@@ -382,9 +382,10 @@ export default function LeadsPage() {
 
   return (
     <div className="leads-page">
-      <div className="page-header">
-        <h1 className="page-title">{t('leads.title')}</h1>
-      </div>
+      <div className="page-container">
+        <div className="page-header">
+          <h1 className="page-title">{t('leads.title')}</h1>
+        </div>
 
       <LeadsFilterBar columns={cols} onColumns={setCols} leads={allItems} />
 
@@ -553,6 +554,7 @@ export default function LeadsPage() {
         onCancel={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
         type={confirmDialog.type}
       />
+      </div>
       </div>
     </div>
   );

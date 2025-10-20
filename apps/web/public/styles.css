@@ -289,6 +289,12 @@ body {
   /* Основной контейнер страницы лидов */
 }
 
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
 .page-header {
   margin-bottom: 1.5rem;
 }
@@ -440,18 +446,24 @@ body {
   border-bottom: 1px solid #e9ecef;
 }
 
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 2rem;
   height: 64px;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1.5rem;
+  flex: 1;
 }
 
 .logo {
@@ -469,6 +481,8 @@ body {
 .header-nav {
   display: flex;
   gap: 0;
+  justify-content: center;
+  flex: 1;
 }
 
 .nav-item {
@@ -502,6 +516,33 @@ body {
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.header-time {
+  display: flex;
+  align-items: center;
+}
+
+.user-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.user-icon:hover {
+  background-color: #e9ecef;
+  color: #495057;
+  border-color: #dee2e6;
 }
 
 .header-status {

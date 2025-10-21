@@ -203,10 +203,32 @@ export class LeadsService {
   }
 
   async list(dto: ListLeadsDto, apiKey?: string) {
-    await this.assertApiKeyOrThrow(apiKey);
+    const keyData = await this.assertApiKeyOrThrow(apiKey);
     const take = dto.take ?? 50;
 
+    // Получаем пользователя по API ключу для проверки роли
+    const user = await prisma.user.findUnique({
+      where: { apiKey: apiKey || 'none' },
+      include: {
+        children: { select: { id: true } }
+      }
+    });
+
     const where: Prisma.LeadWhereInput = {};
+    
+    // Фильтрация по ролям
+    if (user) {
+      if (user.role === 'AFFILIATE') {
+        // Аффилиат видит только свои лиды
+        where.userId = user.id;
+      } else if (user.role === 'AFFILIATE_MASTER') {
+        // Мастер видит свои лиды + лиды своих детей
+        const childIds = user.children.map(c => c.id);
+        where.userId = { in: [user.id, ...childIds] };
+      }
+      // ADMIN и SUPERADMIN видят все лиды (нет фильтра)
+    }
+
     if (dto.status && dto.status !== 'all') where.status = dto.status as any;
     if (dto.aff) where.aff = dto.aff;
     if (dto.bx) where.bx = dto.bx;

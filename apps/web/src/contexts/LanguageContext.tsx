@@ -82,6 +82,8 @@ const translations = {
     'users.role.affiliate_master': 'Мастер аффилиат',
     'users.role.admin': 'Администратор',
     'users.role.superadmin': 'Суперадмин',
+    'users.parent': 'Родительский пользователь',
+    'users.no_parent': 'Нет родителя',
     
     // Лиды
     'leads.title': 'Лиды',
@@ -484,6 +486,8 @@ const translations = {
     'users.role.affiliate_master': 'Affiliate Master',
     'users.role.admin': 'Admin',
     'users.role.superadmin': 'Superadmin',
+    'users.parent': 'Parent User',
+    'users.no_parent': 'No Parent',
     
     // Leads
     'leads.title': 'Leads',

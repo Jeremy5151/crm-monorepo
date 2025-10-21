@@ -424,6 +424,23 @@ export default function UsersPage() {
                 />
               </div>
 
+              {/* Parent User Selection (для AFFILIATE роли) */}
+              {(formData.role === 'AFFILIATE' || formData.role === 'AFFILIATE_MASTER') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">{t('users.parent')}</label>
+                  <CustomSelect
+                    value={formData.parentId || ''}
+                    onChange={(value) => setFormData({ ...formData, parentId: value || undefined })}
+                    options={[
+                      { value: '', label: t('users.no_parent') },
+                      ...users
+                        .filter(u => u.role === 'AFFILIATE_MASTER' || u.role === 'ADMIN')
+                        .map(u => ({ value: u.id, label: `${u.name} (${u.email})` }))
+                    ]}
+                  />
+                </div>
+              )}
+
               <div className="flex items-center">
                 <input
                   type="checkbox"

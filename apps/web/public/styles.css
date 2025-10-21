@@ -121,20 +121,10 @@ body::after {
   margin: 0;
 }
 
-/* Таблица лидов - Crextio glass effect */
+/* Таблица лидов - Crextio style (inside card) */
 .leads-table {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 16px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.04),
-    0 2px 8px rgba(0, 0, 0, 0.02),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(235, 237, 239, 0.5);
-  position: relative;
-  z-index: 1;
 }
 
 .leads-table thead {

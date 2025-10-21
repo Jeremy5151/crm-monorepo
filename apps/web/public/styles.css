@@ -95,6 +95,7 @@ body::after {
   position: relative;
   z-index: 1;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
 }
 
 .card:hover {
@@ -124,24 +125,8 @@ body::after {
 /* Таблица лидов - Crextio style (inside card) */
 .leads-table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-.leads-table thead th:first-child {
-  border-top-left-radius: 12px;
-}
-
-.leads-table thead th:last-child {
-  border-top-right-radius: 12px;
-}
-
-.leads-table tbody tr:last-child td:first-child {
-  border-bottom-left-radius: 12px;
-}
-
-.leads-table tbody tr:last-child td:last-child {
-  border-bottom-right-radius: 12px;
+  border-radius: 0;
+  overflow: visible;
 }
 
 .leads-table thead {

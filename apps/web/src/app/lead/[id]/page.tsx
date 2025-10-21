@@ -94,16 +94,12 @@ export default function LeadPage() {
   return (
     <div className="p-6 space-y-6">
       <div className="page-container">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-6">
           <button className="btn-primary" onClick={() => router.push('/')}>
             ← {t('common.back')}
           </button>
-          <Link href="/" className="text-sm text-neutral-500 hover:underline">
-            {t('leads.all_leads')}
-          </Link>
+          <h1 className="text-2xl font-semibold">{t('leads.lead_id')} {lead.id}</h1>
         </div>
-
-        <h1 className="text-2xl font-semibold">{t('leads.lead_id')} {lead.id}</h1>
 
       <div className="grid md:grid-cols-2 gap-4">
         <div className="rounded-xl border p-4 space-y-2">
@@ -181,8 +177,8 @@ export default function LeadPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border p-4">
-        <h2 className="text-lg font-medium mb-2">{t('leads.send_attempts')}</h2>
+      <div className="card p-6">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">{t('leads.send_attempts')}</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50">

@@ -102,8 +102,8 @@ export default function BrokersPage() {
       setAvailableTemplates([
         {
           id: 'easyai-market',
-          name: '🤖 EasyAI Market',
-          icon: '🤖',
+          name: 'EasyAI Market',
+          icon: '',
           description: 'EasyAI Market integration',
           tags: ['affiliate', 'leads']
         }

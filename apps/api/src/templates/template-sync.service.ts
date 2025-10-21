@@ -31,7 +31,7 @@ export class TemplateSyncService {
     const localTemplates: ExternalTemplate[] = [
       {
         id: 'easyai-market',
-        name: '🤖 EasyAI Market',
+        name: 'EasyAI Market',
         version: '1.0.0',
         description: 'EasyAI Market affiliate integration with status pulling',
         urlTemplate: 'https://api.stahptdp.com/api/affiliate/leads',
@@ -82,7 +82,7 @@ export class TemplateSyncService {
     if (templateId === 'easyai-market') {
       return {
         id: 'easyai-market',
-        name: '🤖 EasyAI Market',
+        name: 'EasyAI Market',
         version: '1.0.0',
         description: 'EasyAI Market affiliate integration with status pulling',
         urlTemplate: 'https://api.stahptdp.com/api/affiliate/leads',

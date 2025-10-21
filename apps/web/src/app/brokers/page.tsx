@@ -444,7 +444,7 @@ export default function BrokersPage() {
                   <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.template')}</label>
                   <CustomSelect
                     value={selectedTemplate}
-                    options={availableTemplates.map(t => ({ value: t.id, label: `${t.icon} ${t.name}` }))}
+                    options={availableTemplates.map(t => ({ value: t.id, label: `${t.icon || '🔗'} ${t.name}` }))}
                     onChange={selectTemplate}
                     placeholder={t('common.select')}
                   />

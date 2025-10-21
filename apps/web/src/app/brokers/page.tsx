@@ -98,6 +98,16 @@ export default function BrokersPage() {
       setAvailableTemplates(Array.isArray(data) ? data : []);
     } catch (e: any) {
       console.error('Ошибка загрузки доступных шаблонов:', e);
+      // Fallback: локальные шаблоны если API не отвечает
+      setAvailableTemplates([
+        {
+          id: 'easyai-market',
+          name: '🤖 EasyAI Market',
+          icon: '🤖',
+          description: 'EasyAI Market integration',
+          tags: ['affiliate', 'leads']
+        }
+      ]);
     } finally {
       setLoading(false);
     }
@@ -109,6 +119,52 @@ export default function BrokersPage() {
       return config;
     } catch (e: any) {
       console.error('Ошибка загрузки конфигурации шаблона:', e);
+      
+      // Fallback: локальный конфиг для EasyAI Market
+      if (templateId === 'easyai-market') {
+        return {
+          id: 'easyai-market',
+          name: '🤖 EasyAI Market',
+          version: '1.0.0',
+          description: 'EasyAI Market affiliate integration',
+          urlTemplate: 'https://api.stahptdp.com/api/affiliate/leads',
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer {TOKEN}',
+            'Content-Type': 'application/json'
+          },
+          bodyTemplate: {
+            firstName: '${firstName}',
+            lastName: '${lastName}',
+            email: '${email}',
+            phone: '${phone}',
+            country: '${country}',
+            password: '${password}',
+            ip: '${ip}',
+            funnel: '${funnel}',
+            aff: '${aff}'
+          },
+          formFields: [
+            {
+              name: 'TOKEN',
+              label: 'API Bearer Token',
+              type: 'text',
+              required: true,
+              placeholder: 'Enter your EasyAI Market API token'
+            }
+          ],
+          pull: {
+            enabled: true,
+            url: 'https://api.stahptdp.com/api/affiliate/leads',
+            method: 'GET',
+            headers: {
+              'Authorization': 'Bearer {TOKEN}'
+            },
+            interval: 15
+          }
+        };
+      }
+      
       return null;
     }
   }

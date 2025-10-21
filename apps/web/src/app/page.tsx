@@ -102,6 +102,7 @@ export default function LeadsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [items, setItems] = useState<Lead[]>([]);
+  const [total, setTotal] = useState(0);
   const [allItems, setAllItems] = useState<Lead[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showBrokerSelector, setShowBrokerSelector] = useState(false);
@@ -146,6 +147,7 @@ export default function LeadsPage() {
     try {
       const data = await apiGet(`/v1/leads?${query}`);
       setItems(Array.isArray(data.items) ? data.items : []);
+      setTotal(data.total || data.items?.length || 0);
     } catch (e: any) {
       setError(e?.message ?? String(e));
     } finally {
@@ -490,6 +492,29 @@ export default function LeadsPage() {
               )}
             </tbody>
             </table>
+          </div>
+        </div>
+
+        {/* Pagination and stats */}
+        <div className="mt-4 flex items-center justify-between px-4">
+          <div className="text-sm text-gray-600">
+            {t('leads.showing')} <span className="font-semibold text-gray-900">{items.length}</span> {t('leads.of')} <span className="font-semibold text-gray-900">{total}</span> {t('leads.total')}
+          </div>
+          <div className="flex gap-2">
+            {items.length < total && (
+              <button 
+                className="btn-secondary text-sm"
+                onClick={() => {
+                  const newTake = parseInt(take) + 50;
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('take', String(newTake));
+                  window.history.pushState({}, '', url);
+                  load();
+                }}
+              >
+                {t('common.load_more')}
+              </button>
+            )}
           </div>
         </div>
         

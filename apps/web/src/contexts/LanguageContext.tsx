@@ -107,6 +107,10 @@ const translations = {
     'leads.attempt_success': 'Успешно',
     'leads.attempt_failed': 'Неудачно',
     'leads.attempt_pending': 'В ожидании',
+    'leads.showing': 'Показано',
+    'leads.of': 'из',
+    'leads.total': 'всего',
+    'common.load_more': 'Загрузить еще',
     
     // Боксы
     'boxes.title': 'Боксы (планы отправки)',
@@ -505,6 +509,10 @@ const translations = {
     'leads.attempt_success': 'Success',
     'leads.attempt_failed': 'Failed',
     'leads.attempt_pending': 'Pending',
+    'leads.showing': 'Showing',
+    'leads.of': 'of',
+    'leads.total': 'total',
+    'common.load_more': 'Load More',
     
     // Boxes
     'boxes.title': 'Boxes (Shipping Plans)',

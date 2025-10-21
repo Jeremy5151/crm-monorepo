@@ -177,7 +177,7 @@ export default function LeadPage() {
         </div>
       </div>
 
-      <div className="card p-6">
+      <div className="card p-6 mt-6">
         <h2 className="text-lg font-medium text-gray-900 mb-4">{t('leads.send_attempts')}</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

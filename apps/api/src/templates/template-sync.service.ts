@@ -27,20 +27,93 @@ export class TemplateSyncService {
   private readonly TEMPLATES_BASE_URL = 'https://jeremy5151.github.io/shablons';
 
   async getAvailableTemplates(): Promise<ExternalTemplate[]> {
+    // Локальные шаблоны (fallback если GitHub недоступен)
+    const localTemplates: ExternalTemplate[] = [
+      {
+        id: 'easyai-market',
+        name: '🤖 EasyAI Market',
+        version: '1.0.0',
+        description: 'EasyAI Market affiliate integration with status pulling',
+        urlTemplate: 'https://api.stahptdp.com/api/affiliate/leads',
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer {TOKEN}',
+          'Content-Type': 'application/json'
+        },
+        bodyTemplate: {
+          firstName: '${firstName}',
+          lastName: '${lastName}',
+          email: '${email}',
+          phone: '${phone}',
+          country: '${country}',
+          password: '${password}',
+          ip: '${ip}',
+          funnel: '${funnel}',
+          aff: '${aff}'
+        },
+        formFields: [
+          {
+            name: 'TOKEN',
+            label: 'API Bearer Token',
+            type: 'text',
+            required: true,
+            placeholder: 'Enter your EasyAI Market API token'
+          }
+        ]
+      }
+    ];
+
     try {
       const response = await fetch(`${this.TEMPLATES_BASE_URL}/templates.json`);
       if (!response.ok) {
-        throw new Error(`Failed to fetch templates: ${response.statusText}`);
+        logger.warn('GitHub templates unavailable, using local templates');
+        return localTemplates;
       }
       const data = await response.json();
-      return data.templates || [];
+      return [...(data.templates || []), ...localTemplates];
     } catch (error) {
       logger.error('Error fetching available templates:', error);
-      return [];
+      return localTemplates;
     }
   }
 
   async getTemplateConfig(templateId: string): Promise<ExternalTemplate | null> {
+    // Локальный шаблон EasyAI Market
+    if (templateId === 'easyai-market') {
+      return {
+        id: 'easyai-market',
+        name: '🤖 EasyAI Market',
+        version: '1.0.0',
+        description: 'EasyAI Market affiliate integration with status pulling',
+        urlTemplate: 'https://api.stahptdp.com/api/affiliate/leads',
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer {TOKEN}',
+          'Content-Type': 'application/json'
+        },
+        bodyTemplate: {
+          firstName: '${firstName}',
+          lastName: '${lastName}',
+          email: '${email}',
+          phone: '${phone}',
+          country: '${country}',
+          password: '${password}',
+          ip: '${ip}',
+          funnel: '${funnel}',
+          aff: '${aff}'
+        },
+        formFields: [
+          {
+            name: 'TOKEN',
+            label: 'API Bearer Token',
+            type: 'text',
+            required: true,
+            placeholder: 'Enter your EasyAI Market API token'
+          }
+        ]
+      };
+    }
+
     try {
       const response = await fetch(`${this.TEMPLATES_BASE_URL}/templates/${templateId}/config.json`);
       if (!response.ok) {

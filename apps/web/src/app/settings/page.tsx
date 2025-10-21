@@ -132,7 +132,7 @@ export default function SettingsPage() {
           <button
             onClick={saveSettings}
             disabled={loading}
-            className="px-4 py-2 rounded-xl bg-yellow-500 text-white font-medium hover:bg-yellow-600 disabled:opacity-50 transition-colors"
+            className="btn-primary disabled:opacity-50"
           >
             {loading ? t('settings.saving') : t('settings.save')}
           </button>

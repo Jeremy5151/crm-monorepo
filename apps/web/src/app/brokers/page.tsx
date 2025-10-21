@@ -363,7 +363,7 @@ export default function BrokersPage() {
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-gray-900">{t('brokers.title')}</h1>
             <button
-              className="px-3 py-2 text-sm rounded-xl bg-yellow-500 text-white hover:bg-yellow-600"
+              className="btn-primary"
               onClick={() => setShowAdd(true)}
             >
               {t('brokers.create')}
@@ -377,7 +377,7 @@ export default function BrokersPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.name')}</label>
                   <input
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={form.name}
                     onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                     placeholder={t('brokers.name_example')}
@@ -394,25 +394,25 @@ export default function BrokersPage() {
                   />
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <button
                     onClick={handleNext}
                     disabled={!form.name.trim() || !selectedTemplate}
-                    className="px-4 py-2 rounded-xl bg-yellow-500 text-white font-medium hover:bg-yellow-600 disabled:opacity-50 transition-colors"
+                    className="btn-primary disabled:opacity-50"
                   >
                     {t('common.next')}
                   </button>
                   <button
                     type="button"
                     onClick={handleManualIntegration}
-                    className="px-4 py-2 rounded-xl bg-blue-500 text-white font-medium hover:bg-blue-600 transition-colors"
+                    className="btn-secondary"
                   >
                     {t('brokers.manual_integration')}
                   </button>
                   <button
                     type="button"
                     onClick={resetForm}
-                    className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    className="btn-secondary"
                   >
                     {t('common.cancel')}
                   </button>
@@ -441,7 +441,7 @@ export default function BrokersPage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.name')}</label>
                       <input
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         value={form.name || ''}
                         onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                         placeholder={t('brokers.name_placeholder')}
@@ -469,7 +469,7 @@ export default function BrokersPage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.url')}</label>
                       <input
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         value={form.url || ''}
                         onChange={e => setForm(f => ({ ...f, url: e.target.value }))}
                         placeholder={t('brokers.url_placeholder')}
@@ -482,7 +482,7 @@ export default function BrokersPage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.headers')}</label>
                       <textarea
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-xl font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         rows={6}
                         value={form.headers}
                         onChange={e => setForm(f => ({ ...f, headers: e.target.value }))}
@@ -497,7 +497,7 @@ export default function BrokersPage() {
                           {t('brokers.body')} {form.method === 'POST_JSON' ? '(JSON)' : '(form-urlencoded)'}
                         </label>
                         <textarea
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-xl font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           rows={12}
                           value={form.body || ''}
                           onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
@@ -546,7 +546,7 @@ export default function BrokersPage() {
                         <label className="block text-sm font-medium text-gray-800 mb-2">{key}</label>
                         <div className="flex gap-2">
                           <input
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             value={String(value)}
                             onChange={e => setForm(f => ({
                               ...f,
@@ -593,7 +593,7 @@ export default function BrokersPage() {
                       <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.password_length')}</label>
                       <input
                         type="number"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         value={form.passwordLength}
                         onChange={e => setForm(f => ({ ...f, passwordLength: parseInt(e.target.value) || 8 }))}
                         min="4"
@@ -645,7 +645,7 @@ export default function BrokersPage() {
                     <div className="mt-4">
                       <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.which_special_chars')}</label>
                       <input
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         value={form.passwordSpecialChars}
                         onChange={e => setForm(f => ({ ...f, passwordSpecialChars: e.target.value }))}
                         placeholder="!@#$%"
@@ -674,7 +674,7 @@ export default function BrokersPage() {
                         <div>
                           <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.pull_url')}</label>
                           <input
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             value={form.pullUrl || ''}
                             onChange={e => setForm(f => ({ ...f, pullUrl: e.target.value }))}
                             placeholder="https://example.com/api/pull/customers"
@@ -685,7 +685,7 @@ export default function BrokersPage() {
                           <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.pull_interval')}</label>
                           <input
                             type="number"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             value={form.pullInterval || 15}
                             onChange={e => setForm(f => ({ ...f, pullInterval: parseInt(e.target.value) || 15 }))}
                             min="5"
@@ -697,7 +697,7 @@ export default function BrokersPage() {
                         <div>
                           <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.pull_headers')}</label>
                           <textarea
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             rows={6}
                             value={form.pullHeaders}
                             onChange={e => setForm(f => ({ ...f, pullHeaders: e.target.value }))}
@@ -709,7 +709,7 @@ export default function BrokersPage() {
                         <div>
                           <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.pull_body')}</label>
                           <textarea
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             rows={8}
                             value={form.pullBody}
                             onChange={e => setForm(f => ({ ...f, pullBody: e.target.value }))}
@@ -730,18 +730,18 @@ export default function BrokersPage() {
                   )}
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <button
                     onClick={editingId ? updateTemplate : addTemplate}
                     disabled={loading}
-                    className="px-4 py-2 rounded-xl bg-yellow-500 text-white font-medium hover:bg-yellow-600 disabled:opacity-50 transition-colors"
+                    className="btn-primary disabled:opacity-50"
                   >
                     {loading ? (editingId ? t('common.updating') : t('common.adding')) : (editingId ? t('brokers.update_integration') : t('brokers.save_integration'))}
                   </button>
                   <button
                     type="button"
                     onClick={editingId ? resetForm : handleBack}
-                    className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    className="btn-secondary"
                   >
                     {editingId ? t('common.cancel') : t('common.back')}
                   </button>

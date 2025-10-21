@@ -214,7 +214,7 @@ export default function UsersPage() {
             <h1 className="text-2xl font-bold text-gray-900">{t('users.title')}</h1>
             <button
               onClick={() => setShowForm(true)}
-              className="px-3 py-2 text-sm rounded-xl bg-yellow-500 text-white hover:bg-yellow-600"
+              className="btn-primary"
             >
               {t('users.create')}
             </button>
@@ -295,7 +295,7 @@ export default function UsersPage() {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="user@example.com"
                 />
               </div>
@@ -306,7 +306,7 @@ export default function UsersPage() {
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder={t('users.name_placeholder')}
                 />
               </div>
@@ -318,13 +318,13 @@ export default function UsersPage() {
                     type="text"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder={editingId ? t('users.password_placeholder_edit') : t('users.password_placeholder')}
                   />
                   <button
                     type="button"
                     onClick={generatePassword}
-                    className="px-3 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
+                    className="px-3 py-2 bg-blue-100 text-blue-700 rounded-xl hover:bg-blue-200"
                     title={t('users.generate_password')}
                   >
                     🎲
@@ -332,7 +332,7 @@ export default function UsersPage() {
                   <button
                     type="button"
                     onClick={copyPassword}
-                    className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                    className="px-3 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200"
                     title={t('users.copy_password')}
                   >
                     📋
@@ -438,13 +438,13 @@ export default function UsersPage() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={editingId ? updateUser : createUser}
-                className="px-4 py-2 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600"
+                className="btn-primary"
               >
                 {editingId ? t('common.save') : t('common.create')}
               </button>
               <button
                 onClick={cancelEdit}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200"
+                className="btn-secondary"
               >
                 {t('common.cancel')}
               </button>

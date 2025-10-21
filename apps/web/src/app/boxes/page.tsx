@@ -230,7 +230,7 @@ export default function BoxesPage() {
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-gray-900">{t('boxes.title')}</h1>
             <button
-              className="px-3 py-2 text-sm rounded-xl bg-yellow-500 text-white hover:bg-yellow-600"
+              className="btn-primary"
               onClick={() => setShowAdd(true)}
             >
               {t('boxes.create')}
@@ -255,7 +255,7 @@ export default function BoxesPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-800 mb-2">{t('boxes.name')}</label>
                 <input
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                   placeholder={t('boxes.name_placeholder')}
@@ -343,14 +343,14 @@ export default function BoxesPage() {
                             type="time"
                             value={broker.deliveryFrom}
                             onChange={e => updateBroker(index, 'deliveryFrom', e.target.value)}
-                            className="px-3 py-2 border border-gray-300 rounded-md text-sm w-32 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="px-3 py-2 border border-gray-300 rounded-xl text-sm w-32 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                           <span className="text-sm font-medium text-gray-800">—</span>
                           <input
                             type="time"
                             value={broker.deliveryTo}
                             onChange={e => updateBroker(index, 'deliveryTo', e.target.value)}
-                            className="px-3 py-2 border border-gray-300 rounded-md text-sm w-32 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="px-3 py-2 border border-gray-300 rounded-xl text-sm w-32 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                         </>
                       )}
@@ -362,7 +362,7 @@ export default function BoxesPage() {
                         type="number"
                         value={broker.leadCap || ''}
                         onChange={e => updateBroker(index, 'leadCap', e.target.value ? parseInt(e.target.value) : null)}
-                        className="px-3 py-2 border border-gray-300 rounded-md text-sm w-24 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="px-3 py-2 border border-gray-300 rounded-xl text-sm w-24 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="∞"
                         min="1"
                       />
@@ -373,20 +373,20 @@ export default function BoxesPage() {
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <button
                 onClick={saveBox}
                 disabled={loading}
-                className="px-4 py-2 rounded-xl bg-yellow-500 text-white font-medium hover:bg-yellow-600 disabled:opacity-50"
+                className="btn-primary disabled:opacity-50"
               >
-{editingId ? t('common.save') : t('common.create')}
+                {editingId ? t('common.save') : t('common.create')}
               </button>
               <button
                 type="button"
                 onClick={resetForm}
-                className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200"
+                className="btn-secondary"
               >
-{t('common.cancel')}
+                {t('common.cancel')}
               </button>
             </div>
           </div>

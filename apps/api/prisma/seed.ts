@@ -23,10 +23,11 @@ async function main() {
   });
 
   // EasyAI Market Template with Pull API
-  await prisma.template.upsert({
+  await prisma.brokerTemplate.upsert({
     where: { code: 'EASYAI_MARKET' },
     update: {
-      name: '🤖 EasyAI Market',
+      name: 'EasyAI Market',
+      templateName: 'EasyAI Market',
       isActive: true,
       method: 'POST',
       url: 'https://api.easyaimarket.com/api/affiliate/leads',
@@ -45,24 +46,23 @@ async function main() {
         funnel: "${funnel}",
         aff: "${aff}"
       }),
-      pull: {
-        enabled: true,
-        url: 'https://api.easyaimarket.com/api/affiliate/leads',
-        method: 'GET',
-        headers: {
-          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NmQwNWEzMDU4ODE2YzI4MDhjMDgwYyIsImlhdCI6MTc1MTk3NTM3NSwiZXhwIjozNTM1NDg2NzUwfQ.x5QmK_CZOorGcBWd42_CwsbqtXJMz3R3mgaJ97a6rfk"
-        },
-        interval: 15
-      }
+      pullEnabled: true,
+      pullUrl: 'https://api.easyaimarket.com/api/affiliate/leads',
+      pullMethod: 'GET',
+      pullHeaders: {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI2ODZkMDVhMzA1ODgxNmMyODA4YzA4MGMiLCJpYXQiOjE3NTE5NzUzNzUsImV4cCI6MzUzNTQ4Njc1MH0.x5QmK_CZOorGcBWd42_CwsbqtXJMz3R3mgaJ97a6rfk"
+      },
+      pullInterval: 15
     },
     create: {
       code: 'EASYAI_MARKET',
-      name: '🤖 EasyAI Market',
+      name: 'EasyAI Market',
+      templateName: 'EasyAI Market',
       isActive: true,
       method: 'POST',
       url: 'https://api.easyaimarket.com/api/affiliate/leads',
       headers: {
-        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NmQwNWEzMDU4ODE2YzI4MDhjMDgwYyIsImlhdCI6MTc1MTk3NTM3NSwiZXhwIjozNTM1NDg2NzUwfQ.x5QmK_CZOorGcBWd42_CwsbqtXJMz3R3mgaJ97a6rfk",
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI2ODZkMDVhMzA1ODgxNmMyODA4YzA4MGMiLCJpYXQiOjE3NTE5NzUzNzUsImV4cCI6MzUzNTQ4Njc1MH0.x5QmK_CZOorGcBWd42_CwsbqtXJMz3R3mgaJ97a6rfk",
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
@@ -76,15 +76,13 @@ async function main() {
         funnel: "${funnel}",
         aff: "${aff}"
       }),
-      pull: {
-        enabled: true,
-        url: 'https://api.easyaimarket.com/api/affiliate/leads',
-        method: 'GET',
-        headers: {
-          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI2ODZkMDVhMzA1ODgxNmMyODA4YzA4MGMiLCJpYXQiOjE3NTE5NzUzNzUsImV4cCI6MzUzNTQ4Njc1MH0.x5QmK_CZOorGcBWd42_CwsbqtXJMz3R3mgaJ97a6rfk"
-        },
-        interval: 15
-      }
+      pullEnabled: true,
+      pullUrl: 'https://api.easyaimarket.com/api/affiliate/leads',
+      pullMethod: 'GET',
+      pullHeaders: {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI2ODZkMDVhMzA1ODgxNmMyODA4YzA4MGMiLCJpYXQiOjE3NTE5NzUzNzUsImV4cCI6MzUzNTQ4Njc1MH0.x5QmK_CZOorGcBWd42_CwsbqtXJMz3R3mgaJ97a6rfk"
+      },
+      pullInterval: 15
     }
   });
 }

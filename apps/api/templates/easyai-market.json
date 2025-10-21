@@ -1,0 +1,44 @@
+{
+  "code": "EASYAI_MARKET",
+  "name": "EasyAI Market",
+  "templateName": "EasyAI Market",
+  "icon": "🤖",
+  "description": "EasyAI Market affiliate integration with status pulling",
+  "push": {
+    "method": "POST",
+    "url": "https://api.stahptdp.com/api/affiliate/leads",
+    "headers": {
+      "Authorization": "Bearer {TOKEN}",
+      "Content-Type": "application/json"
+    },
+    "bodyTemplate": {
+      "firstName": "${firstName}",
+      "lastName": "${lastName}",
+      "email": "${email}",
+      "phone": "${phone}",
+      "country": "${country}",
+      "password": "${password}",
+      "ip": "${ip}",
+      "funnel": "${funnel}",
+      "aff": "${aff}"
+    }
+  },
+  "pull": {
+    "enabled": true,
+    "url": "https://api.stahptdp.com/api/affiliate/leads",
+    "method": "GET",
+    "headers": {
+      "Authorization": "Bearer {TOKEN}"
+    },
+    "interval": 15,
+    "description": "Get leads status every 15 minutes"
+  },
+  "params": {
+    "TOKEN": {
+      "type": "string",
+      "required": true,
+      "description": "API Bearer Token"
+    }
+  }
+}
+

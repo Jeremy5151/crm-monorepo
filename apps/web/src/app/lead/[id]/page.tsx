@@ -101,8 +101,8 @@ export default function LeadPage() {
           <h1 className="text-2xl font-semibold">{t('leads.lead_id')} {lead.id}</h1>
         </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="rounded-xl border p-4 space-y-2">
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="card p-6 space-y-3">
           <div><b>{t('leads.created')}</b> {formatDateTime(lead.createdAt, crmTimezone)}</div>
           <div><b>{t('leads.sent_to_broker')}</b> {formatDateTime(lead.sentAt, crmTimezone)}</div>
           <div><b>{t('leads.type')}</b> <TypeBadge value={lead.status} /></div>
@@ -131,12 +131,12 @@ export default function LeadPage() {
           <div><b>{t('leads.attrs')}</b> {lead.attrs ? JSON.stringify(lead.attrs) : t('leads.not_sent')}</div>
         </div>
 
-        <div className="rounded-xl border p-4 space-y-4">
-          <div className="flex items-center gap-2">
-            <button onClick={onClone} className="px-4 py-2 rounded-lg bg-neutral-100 hover:bg-neutral-200">
+        <div className="card p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <button onClick={onClone} className="btn-secondary">
               {t('leads.clone')}
             </button>
-            {readOnly && <span className="text-sm text-neutral-500">Лид отправлен: редактирование недоступно</span>}
+            {readOnly && <span className="text-sm text-gray-600">Лид отправлен: редактирование недоступно</span>}
           </div>
 
           <div>

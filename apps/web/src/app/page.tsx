@@ -404,7 +404,7 @@ export default function LeadsPage() {
       <LeadsFilterBar columns={cols} onColumns={setCols} leads={allItems} />
 
       <div className="table-container">
-        <div className="table-wrapper">
+        <div className="card">
           <div className="overflow-x-auto">
             <table className="leads-table min-w-full">
             <thead>

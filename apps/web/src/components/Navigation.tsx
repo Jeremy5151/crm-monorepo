@@ -4,20 +4,27 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTimezone } from '@/contexts/TimezoneContext';
+import { useUser } from '@/contexts/UserContext';
 import { CurrentTime } from './CurrentTime';
 
 export function Navigation() {
   const pathname = usePathname();
   const { t } = useLanguage();
   const { timezone } = useTimezone();
+  const { user } = useUser();
 
-  const navItems = [
-    { href: '/', label: t('nav.leads') },
-    { href: '/boxes', label: t('nav.boxes') },
-    { href: '/brokers', label: t('nav.brokers') },
-    { href: '/users', label: t('nav.users') },
-    { href: '/settings', label: t('nav.settings') },
+  // Определяем доступные пункты меню в зависимости от роли
+  const allNavItems = [
+    { href: '/', label: t('nav.leads'), roles: ['AFFILIATE', 'AFFILIATE_MASTER', 'ADMIN', 'SUPERADMIN'] },
+    { href: '/boxes', label: t('nav.boxes'), roles: ['ADMIN', 'SUPERADMIN'] },
+    { href: '/brokers', label: t('nav.brokers'), roles: ['ADMIN', 'SUPERADMIN'] },
+    { href: '/users', label: t('nav.users'), roles: ['ADMIN', 'SUPERADMIN'] },
+    { href: '/settings', label: t('nav.settings'), roles: ['ADMIN', 'SUPERADMIN'] },
   ];
+
+  const navItems = user 
+    ? allNavItems.filter(item => item.roles.includes(user.role))
+    : allNavItems;
 
   return (
     <header className="app-header">

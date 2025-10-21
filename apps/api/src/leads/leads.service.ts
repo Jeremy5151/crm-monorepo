@@ -9,6 +9,7 @@ import { UpdateLeadDto } from './dto/update-lead.dto';
 import { SettingsService } from '../settings/settings.service';
 import { BoxesService } from '../boxes/boxes.service';
 import { getCurrentTimeInUtc } from '../utils/date-timezone';
+import { applyVisibility } from '../visibility/visibility';
 const prisma = new PrismaClient();
 
 @Injectable()
@@ -324,11 +325,28 @@ export class LeadsService {
       ...(dto.cursor ? { skip: 1, cursor: { id: dto.cursor } } : {}),
     });
 
+    // Применяем маскировку полей для аффилиатов
+    let maskedItems = items;
+    if (user && (user.role === 'AFFILIATE' || user.role === 'AFFILIATE_MASTER')) {
+      // Получаем настройки видимости для каждого аффилиата
+      const affIds = [...new Set(items.map(i => i.aff).filter(Boolean))];
+      const affSettings = await prisma.affSettings.findMany({
+        where: { aff: { in: affIds as string[] } }
+      });
+      
+      const settingsMap = new Map(affSettings.map(s => [s.aff, s]));
+      
+      maskedItems = items.map(item => {
+        const settings = item.aff ? settingsMap.get(item.aff) : null;
+        return applyVisibility(item, settings);
+      });
+    }
+
     // Получаем общее количество лидов для пагинации
     const total = await prisma.lead.count({ where });
 
     const nextCursor = items.length === take ? items[items.length - 1].id : null;
-    return { items, total, nextCursor };
+    return { items: maskedItems, total, nextCursor };
   }
 
   async get(id: string, apiKey?: string) {

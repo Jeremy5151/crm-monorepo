@@ -22,7 +22,7 @@ async function main() {
     create: { code: 'box_fr_1', broker: 'MOCK', isActive: true, country: 'FR', name: 'France Box' },
   });
 
-  // EasyAI Market Template
+  // EasyAI Market Template with Pull API
   await prisma.template.upsert({
     where: { code: 'EASYAI_MARKET' },
     update: {
@@ -44,7 +44,16 @@ async function main() {
         ip: "${ip}",
         funnel: "${funnel}",
         aff: "${aff}"
-      })
+      }),
+      pull: {
+        enabled: true,
+        url: 'https://api.easyaimarket.com/api/affiliate/leads',
+        method: 'GET',
+        headers: {
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NmQwNWEzMDU4ODE2YzI4MDhjMDgwYyIsImlhdCI6MTc1MTk3NTM3NSwiZXhwIjozNTM1NDg2NzUwfQ.x5QmK_CZOorGcBWd42_CwsbqtXJMz3R3mgaJ97a6rfk"
+        },
+        interval: 15
+      }
     },
     create: {
       code: 'EASYAI_MARKET',
@@ -53,7 +62,7 @@ async function main() {
       method: 'POST',
       url: 'https://api.easyaimarket.com/api/affiliate/leads',
       headers: {
-        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI2ODZkMDVhMzA1ODgxNmMyODA4YzA4MGMiLCJpYXQiOjE3NTE5NzUzNzUsImV4cCI6MzUzNTQ4Njc1MH0.x5QmK_CZOorGcBWd42_CwsbqtXJMz3R3mgaJ97a6rfk",
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NmQwNWEzMDU4ODE2YzI4MDhjMDgwYyIsImlhdCI6MTc1MTk3NTM3NSwiZXhwIjozNTM1NDg2NzUwfQ.x5QmK_CZOorGcBWd42_CwsbqtXJMz3R3mgaJ97a6rfk",
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
@@ -66,7 +75,16 @@ async function main() {
         ip: "${ip}",
         funnel: "${funnel}",
         aff: "${aff}"
-      })
+      }),
+      pull: {
+        enabled: true,
+        url: 'https://api.easyaimarket.com/api/affiliate/leads',
+        method: 'GET',
+        headers: {
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI2ODZkMDVhMzA1ODgxNmMyODA4YzA4MGMiLCJpYXQiOjE3NTE5NzUzNzUsImV4cCI6MzUzNTQ4Njc1MH0.x5QmK_CZOorGcBWd42_CwsbqtXJMz3R3mgaJ97a6rfk"
+        },
+        interval: 15
+      }
     }
   });
 }

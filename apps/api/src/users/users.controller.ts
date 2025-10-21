@@ -40,3 +40,4 @@ export class UsersController {
     return this.usersService.regenerateApiKey(id, user.id);
   }
 }
+

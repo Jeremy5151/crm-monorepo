@@ -123,8 +123,25 @@ body::after {
 
 /* Таблица лидов - Crextio style (inside card) */
 .leads-table {
-  border-radius: 12px;
-  overflow: hidden;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.leads-table thead th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.leads-table thead th:last-child {
+  border-top-right-radius: 12px;
+}
+
+.leads-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 12px;
+}
+
+.leads-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 12px;
 }
 
 .leads-table thead {

@@ -95,7 +95,7 @@ export default function LeadPage() {
     <div className="p-6 space-y-6">
       <div className="page-container">
         <div className="flex items-center justify-between">
-          <button className="btn" onClick={() => router.push('/')}>
+          <button className="btn-primary" onClick={() => router.push('/')}>
             ← {t('common.back')}
           </button>
           <Link href="/" className="text-sm text-neutral-500 hover:underline">
@@ -144,9 +144,9 @@ export default function LeadPage() {
           </div>
 
           <div>
-            <label className="block text-sm mb-1">{t('leads.box')}</label>
+            <label className="block text-sm font-medium text-gray-800 mb-2">{t('leads.box')}</label>
             <input
-              className="border rounded-lg p-2 w-full"
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
               defaultValue={lead.bx ?? ''}
               onChange={e => setForm(f => ({ ...f, bx: e.target.value }))}
               placeholder="box_hu_1"
@@ -155,9 +155,9 @@ export default function LeadPage() {
           </div>
 
           <div>
-            <label className="block text-sm mb-1">{t('leads.funnel')}</label>
+            <label className="block text-sm font-medium text-gray-800 mb-2">{t('leads.funnel')}</label>
             <input
-              className="border rounded-lg p-2 w-full"
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
               defaultValue={lead.funnel ?? ''}
               onChange={e => setForm(f => ({ ...f, funnel: e.target.value }))}
               disabled={readOnly}
@@ -165,9 +165,9 @@ export default function LeadPage() {
           </div>
 
           <div>
-            <label className="block text-sm mb-1">{t('leads.comment')}</label>
+            <label className="block text-sm font-medium text-gray-800 mb-2">{t('leads.comment')}</label>
             <textarea
-              className="border rounded-lg p-2 w-full"
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
               defaultValue={lead.comment ?? ''}
               onChange={e => setForm(f => ({ ...f, comment: e.target.value }))}
               rows={4}
@@ -175,7 +175,7 @@ export default function LeadPage() {
             />
           </div>
 
-          <button onClick={onSave} disabled={readOnly} className="px-4 py-2 rounded-lg bg-black text-white disabled:opacity-50">
+          <button onClick={onSave} disabled={readOnly} className="btn-primary w-full disabled:opacity-50">
             {t('leads.save')}
           </button>
         </div>

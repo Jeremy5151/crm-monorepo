@@ -302,8 +302,11 @@ export class LeadsService {
       ...(dto.cursor ? { skip: 1, cursor: { id: dto.cursor } } : {}),
     });
 
+    // Получаем общее количество лидов для пагинации
+    const total = await prisma.lead.count({ where });
+
     const nextCursor = items.length === take ? items[items.length - 1].id : null;
-    return { items, nextCursor };
+    return { items, total, nextCursor };
   }
 
   async get(id: string, apiKey?: string) {

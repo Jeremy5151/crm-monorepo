@@ -174,7 +174,7 @@ export default function ColumnPicker({ value, onChange, isOpen, onClose }: Props
             placeholder={t('leads.search_by_field')}
             value={availableSearch}
             onChange={(e) => setAvailableSearch(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <div className="flex-1 overflow-y-auto border border-gray-200 rounded">
             {filteredHidden.map(k => (
@@ -236,7 +236,7 @@ export default function ColumnPicker({ value, onChange, isOpen, onClose }: Props
             placeholder={t('leads.search_by_field')}
             value={inUseSearch}
             onChange={(e) => setInUseSearch(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <div className="flex-1 overflow-y-auto border border-gray-200 rounded">
             {filteredVisible.map((k, i) => (

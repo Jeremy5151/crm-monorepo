@@ -46,6 +46,7 @@ model Lead {
   externalId  String?
   autologinUrl String?
   brokerResp  Json?
+  broker      String?    // название брокера, на которого был отправлен лид
   
   // Связь с пользователем
   userId      String?

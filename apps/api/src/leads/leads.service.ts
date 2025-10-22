@@ -118,10 +118,18 @@ export class LeadsService {
   /**
    * Выбирает подходящего брокера для лида с учетом времени доставки и капы
    */
-  private async selectBrokerForLead(lead: any, specifiedBroker?: string): Promise<{ brokerId: string; reason: string } | null> {
+  private async selectBrokerForLead(lead: any, specifiedBroker?: string): Promise<{ brokerId: string; reason: string; brokerName: string } | null> {
     // Если указан конкретный брокер - используем его
     if (specifiedBroker) {
-      return { brokerId: specifiedBroker, reason: 'Указан конкретный брокер' };
+      const broker = await prisma.brokerTemplate.findUnique({
+        where: { id: specifiedBroker },
+        select: { name: true }
+      });
+      return { 
+        brokerId: specifiedBroker, 
+        reason: 'Указан конкретный брокер',
+        brokerName: broker?.name || 'Unknown Broker'
+      };
     }
 
     try {
@@ -137,9 +145,14 @@ export class LeadsService {
         const isCapExceeded = await this.isLeadCapExceeded(boxBroker);
         
         if (isTimeAllowed && !isCapExceeded) {
+          const broker = await prisma.brokerTemplate.findUnique({
+            where: { id: boxBroker.brokerId },
+            select: { name: true }
+          });
           return { 
             brokerId: boxBroker.brokerId, 
-            reason: `Бокс "${box.name}", приоритет ${boxBroker.priority}` 
+            reason: `Бокс "${box.name}", приоритет ${boxBroker.priority}`,
+            brokerName: broker?.name || 'Unknown Broker'
           };
         }
       }
@@ -690,6 +703,7 @@ export class LeadsService {
             sentAt: getCurrentTimeInUtc(),
             externalId: (res as any).externalId,
             brokerResp: res.raw ?? Prisma.JsonNull,
+            broker: brokerSelection.brokerName,
             ...(res as any).autologinUrl ? { autologinUrl: (res as any).autologinUrl } : {},
           } as any),
         });

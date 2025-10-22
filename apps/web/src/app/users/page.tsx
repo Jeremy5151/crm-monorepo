@@ -321,12 +321,14 @@ export default function UsersPage() {
                         Permissions
                       </button>
                     )}
-                    <button
-                      onClick={() => deleteUser(user)}
-                      className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200"
-                    >
-                      {t('common.delete')}
-                    </button>
+                    {user.role !== 'SUPERADMIN' && (
+                      <button
+                        onClick={() => deleteUser(user)}
+                        className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200"
+                      >
+                        {t('common.delete')}
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -412,6 +414,7 @@ export default function UsersPage() {
                     { value: 'AFFILIATE', label: 'Affiliate' },
                     { value: 'AFFILIATE_MASTER', label: 'MasterAffiliate' },
                     { value: 'ADMIN', label: 'Admin' },
+                    { value: 'SUPERADMIN', label: 'SuperAdmin' },
                   ]}
                 />
               </div>

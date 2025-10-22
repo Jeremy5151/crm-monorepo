@@ -108,11 +108,19 @@ export class UsersService {
       if (currentUser.role === 'AFFILIATE_MASTER') {
         // Affiliate Master видит только своих детей
         where.parentId = currentUserId;
+        // Скрываем SUPERADMIN от всех
+        where.role = { not: 'SUPERADMIN' };
       } else if (currentUser.role === 'AFFILIATE') {
         // Обычный аффилиат видит только себя
         where.id = currentUserId;
+      } else if (currentUser.role === 'ADMIN') {
+        // ADMIN видит всех кроме SUPERADMIN
+        where.role = { not: 'SUPERADMIN' };
       }
-      // ADMIN и SUPERADMIN видят всех
+      // SUPERADMIN видит всех (включая других SUPERADMIN)
+    } else {
+      // Если пользователь не авторизован, скрываем SUPERADMIN
+      where.role = { not: 'SUPERADMIN' };
     }
 
     const users = await this.prisma.user.findMany({

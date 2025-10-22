@@ -7,6 +7,7 @@ import { BoxesModule } from './boxes/boxes.module';
 import { SettingsModule } from './settings/settings.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { PermissionsModule } from './permissions/permissions.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { DispatchService } from './dispatcher/dispatch.service';
 import { AppController } from './app.controller';
@@ -22,6 +23,7 @@ import { AppController } from './app.controller';
     BoxesModule,
     SettingsModule,
     UsersModule,
+    PermissionsModule,
   ],
   controllers: [AppController],
   providers: [DispatchService],

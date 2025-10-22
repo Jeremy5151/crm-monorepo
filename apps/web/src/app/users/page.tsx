@@ -73,6 +73,12 @@ export default function UsersPage() {
   }
 
   async function createUser() {
+    // Валидация обязательных полей
+    if (!formData.email || !formData.password || !formData.name) {
+      showError(t('common.error'), 'Email, password and name are required');
+      return;
+    }
+
     try {
       await apiPost('/v1/users', formData);
       showSuccess(t('users.create_success'));

@@ -19,6 +19,7 @@ export function Navigation() {
     { href: '/boxes', label: t('nav.boxes'), roles: ['ADMIN', 'SUPERADMIN'] },
     { href: '/brokers', label: t('nav.brokers'), roles: ['ADMIN', 'SUPERADMIN'] },
     { href: '/users', label: t('nav.users'), roles: ['ADMIN', 'SUPERADMIN'] },
+    { href: '/permissions', label: 'Permissions', roles: ['ADMIN', 'SUPERADMIN'] },
     { href: '/settings', label: t('nav.settings'), roles: ['ADMIN', 'SUPERADMIN'] },
   ];
 

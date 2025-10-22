@@ -38,6 +38,17 @@ type Lead = {
   aff: string | null;
   bx: string | null;
   funnel: string | null;
+  ip: string | null;
+  utmSource: string | null;
+  utmMedium: string | null;
+  utmCampaign: string | null;
+  utmTerm: string | null;
+  utmContent: string | null;
+  clickid: string | null;
+  comment: string | null;
+  lang: string | null;
+  useragent: string | null;
+  url: string | null;
 };
 
 type Dir = 'asc' | 'desc';
@@ -217,6 +228,28 @@ export default function LeadsPage() {
         return <span>{lead.funnel || '—'}</span>;
       case 'broker':
         return <span>{lead.broker || '—'}</span>;
+      case 'ip':
+        return <span>{lead.ip || '—'}</span>;
+      case 'utmSource':
+        return <span>{lead.utmSource || '—'}</span>;
+      case 'utmMedium':
+        return <span>{lead.utmMedium || '—'}</span>;
+      case 'utmCampaign':
+        return <span>{lead.utmCampaign || '—'}</span>;
+      case 'utmTerm':
+        return <span>{lead.utmTerm || '—'}</span>;
+      case 'utmContent':
+        return <span>{lead.utmContent || '—'}</span>;
+      case 'clickid':
+        return <span>{lead.clickid || '—'}</span>;
+      case 'comment':
+        return <span>{lead.comment || '—'}</span>;
+      case 'lang':
+        return <span>{lead.lang || '—'}</span>;
+      case 'useragent':
+        return <span>{lead.useragent || '—'}</span>;
+      case 'url':
+        return <span>{lead.url || '—'}</span>;
       default:
         return <span />;
     }

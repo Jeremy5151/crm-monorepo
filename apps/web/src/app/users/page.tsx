@@ -55,6 +55,17 @@ export default function UsersPage() {
     type: 'warning' as 'warning' | 'danger',
     onConfirm: () => {},
   });
+  const [permissionsModal, setPermissionsModal] = useState({
+    isOpen: false,
+    userId: '',
+    userName: '',
+    aff: '',
+  });
+  const [permissionsSettings, setPermissionsSettings] = useState({
+    nameVisibility: 'SHOW' as 'SHOW' | 'MASK' | 'HIDE',
+    emailVisibility: 'SHOW' as 'SHOW' | 'MASK' | 'HIDE',
+    phoneVisibility: 'SHOW' as 'SHOW' | 'MASK' | 'HIDE',
+  });
 
   useEffect(() => {
     loadUsers();
@@ -125,6 +136,44 @@ export default function UsersPage() {
         }
       }
     });
+  }
+
+  async function openPermissionsModal(user: User) {
+    // Получаем aff из email (часть до @)
+    const aff = user.email.split('@')[0];
+    
+    setPermissionsModal({
+      isOpen: true,
+      userId: user.id,
+      userName: user.name,
+      aff,
+    });
+
+    // Загружаем текущие настройки
+    try {
+      const settings = await apiGet(`/v1/permissions/${aff}`);
+      setPermissionsSettings(settings || {
+        nameVisibility: 'SHOW',
+        emailVisibility: 'SHOW',
+        phoneVisibility: 'SHOW',
+      });
+    } catch (e) {
+      setPermissionsSettings({
+        nameVisibility: 'SHOW',
+        emailVisibility: 'SHOW',
+        phoneVisibility: 'SHOW',
+      });
+    }
+  }
+
+  async function savePermissions() {
+    try {
+      await apiPatch(`/v1/permissions/${permissionsModal.aff}`, permissionsSettings);
+      showSuccess('Permissions saved successfully');
+      setPermissionsModal({ isOpen: false, userId: '', userName: '', aff: '' });
+    } catch (error: any) {
+      showError('Error saving permissions', error?.message || String(error));
+    }
   }
 
   async function regenerateApiKey(user: User) {
@@ -264,6 +313,14 @@ export default function UsersPage() {
                     >
                       {t('common.edit')}
                     </button>
+                    {user.role !== 'ADMIN' && user.role !== 'SUPERADMIN' && (
+                      <button
+                        onClick={() => openPermissionsModal(user)}
+                        className="px-3 py-1 text-sm bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200"
+                      >
+                        Permissions
+                      </button>
+                    )}
                     <button
                       onClick={() => deleteUser(user)}
                       className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200"
@@ -485,6 +542,76 @@ export default function UsersPage() {
         onCancel={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
         type={confirmDialog.type}
       />
+
+      {/* Permissions Modal */}
+      {permissionsModal.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">
+              Permissions for {permissionsModal.userName}
+            </h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Affiliate: {permissionsModal.aff}
+            </p>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-800 mb-2">Name Visibility</label>
+                <CustomSelect
+                  value={permissionsSettings.nameVisibility}
+                  onChange={(value) => setPermissionsSettings({ ...permissionsSettings, nameVisibility: value as any })}
+                  options={[
+                    { value: 'SHOW', label: 'Show fully' },
+                    { value: 'MASK', label: 'Mask (J*** D***)' },
+                    { value: 'HIDE', label: 'Hide completely' },
+                  ]}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-800 mb-2">Email Visibility</label>
+                <CustomSelect
+                  value={permissionsSettings.emailVisibility}
+                  onChange={(value) => setPermissionsSettings({ ...permissionsSettings, emailVisibility: value as any })}
+                  options={[
+                    { value: 'SHOW', label: 'Show fully' },
+                    { value: 'MASK', label: 'Mask (jo***@example.com)' },
+                    { value: 'HIDE', label: 'Hide completely' },
+                  ]}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-800 mb-2">Phone Visibility</label>
+                <CustomSelect
+                  value={permissionsSettings.phoneVisibility}
+                  onChange={(value) => setPermissionsSettings({ ...permissionsSettings, phoneVisibility: value as any })}
+                  options={[
+                    { value: 'SHOW', label: 'Show fully' },
+                    { value: 'MASK', label: 'Mask (***45)' },
+                    { value: 'HIDE', label: 'Hide completely' },
+                  ]}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={savePermissions}
+                className="btn-primary"
+              >
+                Save Permissions
+              </button>
+              <button
+                onClick={() => setPermissionsModal({ isOpen: false, userId: '', userName: '', aff: '' })}
+                className="btn-secondary"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

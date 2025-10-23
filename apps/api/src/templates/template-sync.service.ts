@@ -60,6 +60,35 @@ export class TemplateSyncService {
             placeholder: 'Enter your EasyAI Market API token'
           }
         ]
+      },
+      {
+        id: 'altercpa-red',
+        name: 'AlterCPA Red',
+        version: '1.0.0',
+        description: 'AlterCPA Red affiliate network integration for lead submission and status pulling',
+        urlTemplate: 'https://www.altercpa.red/api/tracker/postback.json',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        bodyTemplate: {
+          id: '{TOKEN}',
+          click: '${externalId}',
+          status: '${status}',
+          name: '${firstName} ${lastName}',
+          phone: '${phone}',
+          email: '${email}',
+          comment: '${comment}'
+        },
+        formFields: [
+          {
+            name: 'TOKEN',
+            label: 'API Token',
+            type: 'text',
+            required: true,
+            placeholder: 'Enter your AlterCPA Red API token'
+          }
+        ]
       }
     ];
 
@@ -109,6 +138,39 @@ export class TemplateSyncService {
             type: 'text',
             required: true,
             placeholder: 'Enter your EasyAI Market API token'
+          }
+        ]
+      };
+    }
+
+    // Локальный шаблон AlterCPA Red
+    if (templateId === 'altercpa-red') {
+      return {
+        id: 'altercpa-red',
+        name: 'AlterCPA Red',
+        version: '1.0.0',
+        description: 'AlterCPA Red affiliate network integration for lead submission and status pulling',
+        urlTemplate: 'https://www.altercpa.red/api/tracker/postback.json',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        bodyTemplate: {
+          id: '{TOKEN}',
+          click: '${externalId}',
+          status: '${status}',
+          name: '${firstName} ${lastName}',
+          phone: '${phone}',
+          email: '${email}',
+          comment: '${comment}'
+        },
+        formFields: [
+          {
+            name: 'TOKEN',
+            label: 'API Token',
+            type: 'text',
+            required: true,
+            placeholder: 'Enter your AlterCPA Red API token'
           }
         ]
       };

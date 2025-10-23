@@ -1,0 +1,48 @@
+{
+  "id": "altercpa-red",
+  "name": "AlterCPA Red",
+  "version": "1.0.0",
+  "description": "AlterCPA Red affiliate network integration for lead submission and status pulling",
+  "urlTemplate": "https://www.altercpa.red/api/tracker/postback.json",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/x-www-form-urlencoded"
+  },
+  "bodyTemplate": {
+    "id": "{TOKEN}",
+    "click": "${externalId}",
+    "status": "${status}",
+    "name": "${firstName} ${lastName}",
+    "phone": "${phone}",
+    "email": "${email}",
+    "comment": "${comment}"
+  },
+  "formFields": [
+    {
+      "name": "TOKEN",
+      "label": "API Token",
+      "type": "text",
+      "required": true,
+      "placeholder": "707-cc26c651c2ceb62cc0d333d4f6e8a6ec"
+    }
+  ],
+  "pull": {
+    "enabled": true,
+    "url": "https://www.altercpa.red/api/tracker/leads.json",
+    "method": "GET",
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    "params": {
+      "id": "{TOKEN}"
+    },
+    "interval": 15,
+    "statusMapping": {
+      "new": "NEW",
+      "hold": "PENDING",
+      "approve": "APPROVED",
+      "cancel": "REJECTED",
+      "trash": "TRASH"
+    }
+  }
+}

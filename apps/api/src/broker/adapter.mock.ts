@@ -214,6 +214,22 @@ export class HttpTemplateAdapter implements BrokerAdapter {
         headers['content-type'] = 'application/json';
       }
       
+      // Если body это JSON и нужно form-urlencoded - конвертируем
+      if (isFormUrlEncoded && body && body.trim()) {
+        try {
+          const bodyObj = JSON.parse(body);
+          const params = new URLSearchParams();
+          for (const [key, value] of Object.entries(bodyObj)) {
+            params.append(key, String(value ?? ''));
+          }
+          body = params.toString();
+          console.log(`[HttpTemplateAdapter] Converted JSON to form-urlencoded:`, body);
+        } catch (e) {
+          console.error(`[HttpTemplateAdapter] Failed to convert to form-urlencoded:`, e);
+          // Если не JSON, используем как есть
+        }
+      }
+      
       // Проверяем JSON только для JSON body
       if (isJson && body && body.trim()) {
         try {

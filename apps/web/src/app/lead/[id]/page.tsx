@@ -18,6 +18,9 @@ type Attempt = {
   responseBody: string | null;
   durationMs: number | null;
   createdAt: string;
+  requestUrl?: string | null;
+  requestHeaders?: Record<string, string> | null;
+  requestBody?: string | null;
 };
 
 type Lead = {
@@ -65,6 +68,7 @@ export default function LeadPage() {
 
   const [form, setForm] = useState<{ bx?: string; funnel?: string; comment?: string }>({});
   const [selectedAttempt, setSelectedAttempt] = useState<Attempt | null>(null);
+  const [activeTab, setActiveTab] = useState<'request' | 'response'>('request');
   const { timezone: crmTimezone } = useTimezone();
   const { t } = useLanguage();
 
@@ -233,28 +237,88 @@ export default function LeadPage() {
             </div>
             
             <div className="space-y-4">
-              <div>
-                <strong>{t('leads.date')}:</strong> {formatDateTime(selectedAttempt.createdAt, crmTimezone)}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <strong>{t('leads.date')}:</strong> {formatDateTime(selectedAttempt.createdAt, crmTimezone)}
+                </div>
+                <div>
+                  <strong>{t('leads.broker')}:</strong> {selectedAttempt.broker}
+                </div>
+                <div>
+                  <strong>{t('leads.attempt')}:</strong> #{selectedAttempt.attemptNo}
+                </div>
+                <div>
+                  <strong>{t('leads.status')}:</strong> {selectedAttempt.status}
+                </div>
+                <div>
+                  <strong>{t('leads.response_code')}:</strong> {selectedAttempt.responseCode ?? t('leads.not_sent')}
+                </div>
+                <div>
+                  <strong>{t('leads.execution_time')}:</strong> {selectedAttempt.durationMs ?? t('leads.not_sent')} {t('leads.ms')}
+                </div>
               </div>
-              <div>
-                <strong>{t('leads.broker')}:</strong> {selectedAttempt.broker}
+
+              {/* Tabs for Request/Response */}
+              <div className="mt-6 border-b border-gray-200">
+                <div className="flex gap-4">
+                  <button 
+                    onClick={() => setActiveTab('request')}
+                    className={`px-4 py-2 border-b-2 font-medium ${activeTab === 'request' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-600 hover:text-gray-900'}`}
+                  >
+                    📤 Outgoing Request
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('response')}
+                    className={`px-4 py-2 border-b-2 font-medium ${activeTab === 'response' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-600 hover:text-gray-900'}`}
+                  >
+                    📥 Response
+                  </button>
+                </div>
               </div>
-              <div>
-                <strong>{t('leads.attempt')}:</strong> #{selectedAttempt.attemptNo}
+
+              {/* REQUEST SECTION */}
+              {activeTab === 'request' && (
+              <div className="space-y-3">
+                {selectedAttempt.requestUrl && (
+                  <div>
+                    <strong className="block mb-2">🔗 URL:</strong>
+                    <pre className="p-3 bg-gray-100 rounded-lg text-sm overflow-auto max-h-32 font-mono break-words whitespace-pre-wrap">
+                      {selectedAttempt.requestUrl}
+                    </pre>
+                  </div>
+                )}
+
+                {selectedAttempt.requestHeaders && (
+                  <div>
+                    <strong className="block mb-2">📋 Headers:</strong>
+                    <pre className="p-3 bg-gray-100 rounded-lg text-sm overflow-auto max-h-48 font-mono">
+                      {JSON.stringify(selectedAttempt.requestHeaders, null, 2)}
+                    </pre>
+                  </div>
+                )}
+
+                {selectedAttempt.requestBody && (
+                  <div>
+                    <strong className="block mb-2">📝 Body:</strong>
+                    <pre className="p-3 bg-gray-100 rounded-lg text-sm overflow-auto max-h-48 font-mono break-words whitespace-pre-wrap">
+                      {selectedAttempt.requestBody}
+                    </pre>
+                  </div>
+                )}
+
+                {!selectedAttempt.requestUrl && !selectedAttempt.requestHeaders && !selectedAttempt.requestBody && (
+                  <div className="p-3 bg-gray-50 text-gray-600 rounded">
+                    Request details not available (upgrade to see full request logs)
+                  </div>
+                )}
               </div>
+              )}
+
+              {/* RESPONSE SECTION */}
+              {activeTab === 'response' && (
               <div>
-                <strong>{t('leads.status')}:</strong> {selectedAttempt.status}
-              </div>
-              <div>
-                <strong>{t('leads.response_code')}:</strong> {selectedAttempt.responseCode ?? t('leads.not_sent')}
-              </div>
-              <div>
-                <strong>{t('leads.execution_time')}:</strong> {selectedAttempt.durationMs ?? t('leads.not_sent')} {t('leads.ms')}
-              </div>
-              
-              <div>
-                <strong>{t('leads.full_server_response')}:</strong>
-                <pre className="mt-2 p-4 bg-gray-100 rounded-lg text-sm overflow-auto max-h-96">
+                <strong className="block mb-2">{t('leads.full_server_response')}:</strong>
+                <pre className="p-4 bg-gray-100 rounded-lg text-sm overflow-auto max-h-96 font-mono">
                   {(() => {
                     if (!selectedAttempt.responseBody) return t('leads.no_data');
                     try {
@@ -266,6 +330,7 @@ export default function LeadPage() {
                   })()}
                 </pre>
               </div>
+              )}
             </div>
           </div>
         </div>

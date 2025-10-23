@@ -89,6 +89,11 @@ model LeadBrokerAttempt {
   errorCode    String?
   durationMs   Int?
 
+  // Полный запрос (для debugging)
+  requestUrl   String?           // полный URL с параметрами
+  requestHeaders Json?           // заголовки запроса
+  requestBody  String?           // тело запроса в raw формате
+
   createdAt    DateTime @default(now())
 
   @@index([leadId, createdAt])

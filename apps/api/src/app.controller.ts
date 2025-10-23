@@ -2,9 +2,10 @@ import { Controller, Get } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Store logs in memory (last 1000 entries)
+// Store logs in memory (last 500 entries - full console output)
 const logs: Array<{ timestamp: string; level: string; message: string }> = [];
 const LOG_FILE = path.join(process.cwd(), 'crm-logs.jsonl');
+const MAX_LOGS = 500;
 
 // Load previous logs from file
 function loadLogsFromFile() {
@@ -12,7 +13,7 @@ function loadLogsFromFile() {
     if (fs.existsSync(LOG_FILE)) {
       const data = fs.readFileSync(LOG_FILE, 'utf-8');
       const lines = data.split('\n').filter(line => line.trim());
-      const loaded = lines.slice(-1000).map(line => {
+      const loaded = lines.slice(-MAX_LOGS).map(line => {
         try {
           return JSON.parse(line);
         } catch {
@@ -38,46 +39,73 @@ function appendLogToFile(log: { timestamp: string; level: string; message: strin
 
 loadLogsFromFile();
 
-// Override console.log to capture logs
+// Override console.log to capture ALL output
 const originalLog = console.log;
 const originalError = console.error;
 
 console.log = function(...args: any[]) {
-  const message = args.map(arg => 
-    typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-  ).join(' ');
+  // Convert all args to strings, handling multiline content
+  const message = args.map((arg, i) => {
+    if (typeof arg === 'object') {
+      try {
+        return JSON.stringify(arg, null, 2);
+      } catch {
+        return String(arg);
+      }
+    }
+    return String(arg);
+  }).join(' ');
   
-  const logEntry = {
-    timestamp: new Date().toISOString(),
-    level: 'LOG',
-    message
-  };
-  
-  logs.push(logEntry);
-  appendLogToFile(logEntry);
-  
-  // Keep only last 1000 logs
-  if (logs.length > 1000) logs.shift();
+  // Split multiline messages into separate logs
+  const lines = message.split('\n');
+  lines.forEach(line => {
+    if (line.trim()) {
+      const logEntry = {
+        timestamp: new Date().toISOString(),
+        level: 'LOG',
+        message: line
+      };
+      
+      logs.unshift(logEntry); // Add to front (newest first)
+      appendLogToFile(logEntry);
+      
+      // Keep only last 500 logs
+      if (logs.length > MAX_LOGS) logs.pop();
+    }
+  });
   
   originalLog.apply(console, args);
 };
 
 console.error = function(...args: any[]) {
-  const message = args.map(arg => 
-    typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-  ).join(' ');
+  const message = args.map((arg, i) => {
+    if (typeof arg === 'object') {
+      try {
+        return JSON.stringify(arg, null, 2);
+      } catch {
+        return String(arg);
+      }
+    }
+    return String(arg);
+  }).join(' ');
   
-  const logEntry = {
-    timestamp: new Date().toISOString(),
-    level: 'ERROR',
-    message
-  };
-  
-  logs.push(logEntry);
-  appendLogToFile(logEntry);
-  
-  // Keep only last 1000 logs
-  if (logs.length > 1000) logs.shift();
+  // Split multiline messages into separate logs
+  const lines = message.split('\n');
+  lines.forEach(line => {
+    if (line.trim()) {
+      const logEntry = {
+        timestamp: new Date().toISOString(),
+        level: 'ERROR',
+        message: line
+      };
+      
+      logs.unshift(logEntry); // Add to front (newest first)
+      appendLogToFile(logEntry);
+      
+      // Keep only last 500 logs
+      if (logs.length > MAX_LOGS) logs.pop();
+    }
+  });
   
   originalError.apply(console, args);
 };

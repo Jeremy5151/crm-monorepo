@@ -11,10 +11,27 @@ export enum LogType {
   SYSTEM = 'SYSTEM',
 }
 
-// Store logs in memory (last 500 entries - full console output)
+// Store logs in memory (last 500 entries)
 const logs: Array<{ timestamp: string; level: string; type: LogType; message: string }> = [];
 const LOG_FILE = path.join(process.cwd(), 'crm-logs.jsonl');
 const MAX_LOGS = 500;
+
+// Format timestamp to DD.MM.YYYY HH:mm:ss
+function formatTimestamp(date: Date): string {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
+}
+
+// Compress message to single line
+function compressMessage(message: string): string {
+  // Replace multiple spaces with single space
+  return message.replace(/\s+/g, ' ').trim();
+}
 
 // Load previous logs from file
 function loadLogsFromFile() {
@@ -49,10 +66,10 @@ function writeLogToFile(logEntry: { timestamp: string; level: string; type: LogT
 // Helper to add log
 function addLog(level: string, type: LogType, message: string) {
   const logEntry = {
-    timestamp: new Date().toISOString(),
+    timestamp: formatTimestamp(new Date()),
     level,
     type,
-    message
+    message: compressMessage(message)
   };
   logs.unshift(logEntry); // Add to beginning (newest first)
   if (logs.length > MAX_LOGS) logs.pop();
@@ -66,9 +83,13 @@ const originalLog = console.log;
 const originalError = console.error;
 
 console.log = function(...args: any[]) {
-  const message = args.map(arg => 
-    typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-  ).join(' ');
+  const message = args.map(arg => {
+    if (typeof arg === 'object') {
+      // For objects, stringify without pretty printing to keep it on one line
+      return JSON.stringify(arg, null, 0);
+    }
+    return String(arg);
+  }).join(' ');
   
   // Determine log type based on content
   let logType = LogType.SYSTEM;
@@ -84,9 +105,12 @@ console.log = function(...args: any[]) {
 };
 
 console.error = function(...args: any[]) {
-  const message = args.map(arg => 
-    typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-  ).join(' ');
+  const message = args.map(arg => {
+    if (typeof arg === 'object') {
+      return JSON.stringify(arg, null, 0);
+    }
+    return String(arg);
+  }).join(' ');
   
   let logType = LogType.SYSTEM;
   if (message.includes('OUTGOING REQUEST')) logType = LogType.OUTGOING_REQUEST;

@@ -32,6 +32,10 @@ export class DispatchService implements OnModuleInit {
           responseCode: 'code' in res ? res.code ?? null : null,
           responseBody: res.raw ?? null,
           durationMs: duration,
+          // Request details
+          requestUrl: (res as any).requestUrl ?? null,
+          requestHeaders: (res as any).requestHeaders ? JSON.stringify((res as any).requestHeaders) : null,
+          requestBody: (res as any).requestBody ?? null,
         },
       });
 

@@ -292,7 +292,17 @@ export default function LeadPage() {
                   <div>
                     <strong className="block mb-2">📋 Headers:</strong>
                     <pre className="p-3 bg-gray-100 rounded-lg text-sm overflow-auto max-h-48 font-mono">
-                      {JSON.stringify(selectedAttempt.requestHeaders, null, 2)}
+                      {(() => {
+                        if (!selectedAttempt.requestHeaders) return '';
+                        if (typeof selectedAttempt.requestHeaders === 'string') {
+                          try {
+                            return JSON.stringify(JSON.parse(selectedAttempt.requestHeaders), null, 2);
+                          } catch {
+                            return selectedAttempt.requestHeaders;
+                          }
+                        }
+                        return JSON.stringify(selectedAttempt.requestHeaders, null, 2);
+                      })()}
                     </pre>
                   </div>
                 )}

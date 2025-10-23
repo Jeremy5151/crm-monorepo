@@ -27,10 +27,21 @@ function formatTimestamp(date: Date): string {
   return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
 }
 
-// Compress message to single line
+// Compress message to single line with readable JSON
 function compressMessage(message: string): string {
-  // Replace multiple spaces with single space
-  return message.replace(/\s+/g, ' ').trim();
+  let result = message;
+  
+  // Pretty print objects and arrays in a compact way
+  // Keep the structure readable but on one line
+  result = result.replace(/\{\s+/g, '{ ');
+  result = result.replace(/\s+\}/g, ' }');
+  result = result.replace(/\[\s+/g, '[ ');
+  result = result.replace(/\s+\]/g, ' ]');
+  result = result.replace(/,\s+/g, ', ');
+  result = result.replace(/:\s+/g, ': ');
+  
+  // Remove excessive spaces
+  return result.replace(/\s+/g, ' ').trim();
 }
 
 // Load previous logs from file

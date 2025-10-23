@@ -8,17 +8,7 @@
   "headers": {
     "Content-Type": "application/x-www-form-urlencoded"
   },
-  "bodyTemplate": {
-    "flow": "${flow}",
-    "offer": "${offer}",
-    "ip": "${ip}",
-    "name": "${firstName} ${lastName}",
-    "phone": "${phone}",
-    "email": "${email}",
-    "ua": "${useragent}",
-    "country": "${country}",
-    "comment": "${comment}"
-  },
+  "bodyTemplate": "flow=${flow}&offer=${offer}&ip=${ip}&name=${firstName}%20${lastName}&phone=${phone}&email=${email}&ua=${useragent}&country=${country}&comment=${comment}",
   "formFields": [
     {
       "name": "USER_ID",

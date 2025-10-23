@@ -19,7 +19,7 @@ type Attempt = {
   durationMs: number | null;
   createdAt: string;
   requestUrl?: string | null;
-  requestHeaders?: Record<string, string> | null;
+  requestHeaders?: string | null;
   requestBody?: string | null;
 };
 

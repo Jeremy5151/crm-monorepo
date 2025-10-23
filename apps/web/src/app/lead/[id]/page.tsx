@@ -265,13 +265,13 @@ export default function LeadPage() {
                     onClick={() => setActiveTab('request')}
                     className={`px-4 py-2 border-b-2 font-medium ${activeTab === 'request' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-600 hover:text-gray-900'}`}
                   >
-                    📤 Outgoing Request
+                    Outgoing Request
                   </button>
                   <button 
                     onClick={() => setActiveTab('response')}
                     className={`px-4 py-2 border-b-2 font-medium ${activeTab === 'response' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-600 hover:text-gray-900'}`}
                   >
-                    📥 Response
+                    Response
                   </button>
                 </div>
               </div>
@@ -279,46 +279,23 @@ export default function LeadPage() {
               {/* REQUEST SECTION */}
               {activeTab === 'request' && (
               <div className="space-y-3">
-                {selectedAttempt.requestUrl && (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800 mb-2">
+                    <strong>Full Request Details:</strong>
+                  </p>
+                  <p className="text-sm text-blue-700">
+                    Check the API console logs (terminal) for complete request details including URL, headers, and body. Search for "OUTGOING REQUEST" in the logs.
+                  </p>
+                </div>
+                
+                {selectedAttempt.responseBody && (
                   <div>
-                    <strong className="block mb-2">🔗 URL:</strong>
-                    <pre className="p-3 bg-gray-100 rounded-lg text-sm overflow-auto max-h-32 font-mono break-words whitespace-pre-wrap">
-                      {selectedAttempt.requestUrl}
+                    <strong className="block mb-2">Request Status:</strong>
+                    <pre className="p-3 bg-gray-100 rounded-lg text-sm overflow-auto max-h-32 font-mono">
+                      {`Status: ${selectedAttempt.status}
+Response Code: ${selectedAttempt.responseCode || 'N/A'}
+Duration: ${selectedAttempt.durationMs || 'N/A'}ms`}
                     </pre>
-                  </div>
-                )}
-
-                {selectedAttempt.requestHeaders && (
-                  <div>
-                    <strong className="block mb-2">📋 Headers:</strong>
-                    <pre className="p-3 bg-gray-100 rounded-lg text-sm overflow-auto max-h-48 font-mono">
-                      {(() => {
-                        if (!selectedAttempt.requestHeaders) return '';
-                        if (typeof selectedAttempt.requestHeaders === 'string') {
-                          try {
-                            return JSON.stringify(JSON.parse(selectedAttempt.requestHeaders), null, 2);
-                          } catch {
-                            return selectedAttempt.requestHeaders;
-                          }
-                        }
-                        return JSON.stringify(selectedAttempt.requestHeaders, null, 2);
-                      })()}
-                    </pre>
-                  </div>
-                )}
-
-                {selectedAttempt.requestBody && (
-                  <div>
-                    <strong className="block mb-2">📝 Body:</strong>
-                    <pre className="p-3 bg-gray-100 rounded-lg text-sm overflow-auto max-h-48 font-mono break-words whitespace-pre-wrap">
-                      {selectedAttempt.requestBody}
-                    </pre>
-                  </div>
-                )}
-
-                {!selectedAttempt.requestUrl && !selectedAttempt.requestHeaders && !selectedAttempt.requestBody && (
-                  <div className="p-3 bg-gray-50 text-gray-600 rounded">
-                    Request details not available (upgrade to see full request logs)
                   </div>
                 )}
               </div>

@@ -114,7 +114,7 @@ importers:
         version: 18.3.1(react@18.3.1)
     devDependencies:
       '@types/node':
-        specifier: ^20
+        specifier: ^20.19.21
         version: 20.19.21
       '@types/react':
         specifier: ^18.3.26

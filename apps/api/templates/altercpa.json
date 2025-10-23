@@ -1,0 +1,76 @@
+{
+  "id": "altercpa",
+  "name": "AlterCPA",
+  "version": "1.0.0",
+  "description": "AlterCPA affiliate network integration for lead submission and status pulling",
+  "urlTemplate": "https://www.altercpa.site/api/wm/push.json",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/x-www-form-urlencoded"
+  },
+  "bodyTemplate": {
+    "flow": "${flow}",
+    "offer": "${offer}",
+    "ip": "${ip}",
+    "name": "${firstName} ${lastName}",
+    "phone": "${phone}",
+    "email": "${email}",
+    "ua": "${useragent}",
+    "country": "${country}",
+    "comment": "${comment}"
+  },
+  "authMethod": "query",
+  "authParams": {
+    "id": "{USER_ID}-{API_KEY}"
+  },
+  "formFields": [
+    {
+      "name": "USER_ID",
+      "label": "AlterCPA User ID",
+      "type": "text",
+      "required": true,
+      "placeholder": "e.g., 123456"
+    },
+    {
+      "name": "API_KEY",
+      "label": "AlterCPA API Key",
+      "type": "password",
+      "required": true,
+      "placeholder": "e.g., abc123def456"
+    },
+    {
+      "name": "flow",
+      "label": "Default Flow ID",
+      "type": "text",
+      "required": true,
+      "placeholder": "Flow ID from AlterCPA"
+    },
+    {
+      "name": "offer",
+      "label": "Default Offer ID",
+      "type": "text",
+      "required": true,
+      "placeholder": "Offer ID from AlterCPA"
+    }
+  ],
+  "pull": {
+    "enabled": true,
+    "url": "https://www.altercpa.site/api/ext/list.json",
+    "method": "POST",
+    "authMethod": "query",
+    "authParams": {
+      "id": "{USER_ID}-{API_KEY}"
+    },
+    "bodyParams": {
+      "ids": "${leadIds}"
+    },
+    "interval": 15,
+    "statusMapping": {
+      "wait": "PENDING",
+      "hold": "HOLD",
+      "approve": "APPROVED",
+      "cancel": "REJECTED",
+      "trash": "TRASH"
+    }
+  }
+}

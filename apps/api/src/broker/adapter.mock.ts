@@ -220,6 +220,18 @@ export class HttpTemplateAdapter implements BrokerAdapter {
         }
       }
       
+      // 📋 ПОЛНЫЙ ЗАПРОС (ДО ОТПРАВКИ)
+      console.log(`
+========================================
+📤 OUTGOING REQUEST (${this.code})
+========================================
+Method: ${method}
+URL: ${url}
+Headers: ${JSON.stringify(headers, null, 2)}
+Body: ${body || '(empty)'}
+========================================
+`);
+      
       console.log(`[HttpTemplateAdapter] Sending fetch request...`);
       let resp;
       try {
@@ -234,7 +246,18 @@ export class HttpTemplateAdapter implements BrokerAdapter {
         return { type: 'temp_error', code: 500, raw: `Network error: ${fetchError?.message || fetchError}` };
       }
       const raw = await resp.text();
-      console.log(`[HttpTemplateAdapter] Response status: ${resp.status}, body:`, raw.substring(0, 200));
+      
+      // 📋 ПОЛНЫЙ ОТВЕТ (ПОЛУЧЕННЫЙ)
+      console.log(`
+========================================
+📥 INCOMING RESPONSE (${this.code})
+========================================
+Status: ${resp.status} ${resp.statusText}
+Headers: ${JSON.stringify(Object.fromEntries(resp.headers), null, 2)}
+Body: ${raw}
+========================================
+`);
+      
       if (!resp.ok) return { type: resp.status >= 500 ? 'temp_error' : 'rejected', code: resp.status, raw };
       
       try {

@@ -51,3 +51,56 @@
 {"timestamp":"2025-10-23T15:55:50.567Z","level":"LOG","message":"}"}
 {"timestamp":"2025-10-23T15:55:50.567Z","level":"LOG","message":"Body: {\"status\":\"error\",\"error\":\"access\"}"}
 {"timestamp":"2025-10-23T15:55:50.567Z","level":"LOG","message":"========================================"}
+{"timestamp":"2025-10-23T15:57:55.840Z","level":"LOG","message":"[HttpTemplateAdapter] Sending lead 8e43a89f-773c-451f-82a9-49c5cb63aa2d to broker ALTERCPA"}
+{"timestamp":"2025-10-23T15:57:55.842Z","level":"LOG","message":"[HttpTemplateAdapter] Template: {"}
+{"timestamp":"2025-10-23T15:57:55.842Z","level":"LOG","message":"  \"url\": \"https://www.altercpa.site/api/wm/push.json?id=7-abb3bc721f43ad484c08e5e38f272308\","}
+{"timestamp":"2025-10-23T15:57:55.843Z","level":"LOG","message":"  \"method\": \"POST\","}
+{"timestamp":"2025-10-23T15:57:55.843Z","level":"LOG","message":"  \"headers\": {"}
+{"timestamp":"2025-10-23T15:57:55.843Z","level":"LOG","message":"    \"Content-Type\": \"application/x-www-form-urlencoded\""}
+{"timestamp":"2025-10-23T15:57:55.843Z","level":"LOG","message":"  },"}
+{"timestamp":"2025-10-23T15:57:55.843Z","level":"LOG","message":"  \"body\": \"{\\n  \\\"flow\\\": \\\"9\\\",\\n  \\\"offer\\\": \\\"1\\\",\\n  \\\"ip\\\": \\\"${ip}\\\",\\n  \\\"name\\\": \\\"${firstName} ${lastName}\\\",\\n  \\\"phone\\\": \\\"${phone}\\\",\\n  \\\"email\\\": \\\"${email}\\\",\\n  \\\"ua\\\": \\\"${useragent}\\\",\\n  \\\"country\\\": \\\"${country}\\\",\\n  \\\"comment\\\": \\\"${comment}\\\"\\n}\""}
+{"timestamp":"2025-10-23T15:57:55.843Z","level":"LOG","message":"}"}
+{"timestamp":"2025-10-23T15:57:55.843Z","level":"LOG","message":"[HttpTemplateAdapter] Rendered URL: https://www.altercpa.site/api/wm/push.json?id=7-abb3bc721f43ad484c08e5e38f272308"}
+{"timestamp":"2025-10-23T15:57:55.843Z","level":"LOG","message":"[HttpTemplateAdapter] Rendered body: {"}
+{"timestamp":"2025-10-23T15:57:55.844Z","level":"LOG","message":"  \"flow\": \"9\","}
+{"timestamp":"2025-10-23T15:57:55.844Z","level":"LOG","message":"  \"offer\": \"1\","}
+{"timestamp":"2025-10-23T15:57:55.844Z","level":"LOG","message":"  \"ip\": \"185.20.20.20\","}
+{"timestamp":"2025-10-23T15:57:55.844Z","level":"LOG","message":"  \"name\": \"Carlos Rodriguez\","}
+{"timestamp":"2025-10-23T15:57:55.844Z","level":"LOG","message":"  \"phone\": \"+34612345678\","}
+{"timestamp":"2025-10-23T15:57:55.844Z","level":"LOG","message":"  \"email\": \"carlos.rodriguez.1760726879@example.com\","}
+{"timestamp":"2025-10-23T15:57:55.844Z","level":"LOG","message":"  \"ua\": \"\","}
+{"timestamp":"2025-10-23T15:57:55.844Z","level":"LOG","message":"  \"country\": \"ES\","}
+{"timestamp":"2025-10-23T15:57:55.844Z","level":"LOG","message":"  \"comment\": \"\""}
+{"timestamp":"2025-10-23T15:57:55.845Z","level":"LOG","message":"}"}
+{"timestamp":"2025-10-23T15:57:55.845Z","level":"LOG","message":"[HttpTemplateAdapter] Converted JSON to form-urlencoded: flow=9&offer=1&ip=185.20.20.20&name=Carlos+Rodriguez&phone=%2B34612345678&email=carlos.rodriguez.1760726879%40example.com&ua=&country=ES&comment="}
+{"timestamp":"2025-10-23T15:57:55.845Z","level":"LOG","message":"========================================"}
+{"timestamp":"2025-10-23T15:57:55.845Z","level":"LOG","message":"📤 OUTGOING REQUEST (ALTERCPA)"}
+{"timestamp":"2025-10-23T15:57:55.845Z","level":"LOG","message":"========================================"}
+{"timestamp":"2025-10-23T15:57:55.845Z","level":"LOG","message":"Method: POST"}
+{"timestamp":"2025-10-23T15:57:55.845Z","level":"LOG","message":"URL: https://www.altercpa.site/api/wm/push.json?id=7-abb3bc721f43ad484c08e5e38f272308"}
+{"timestamp":"2025-10-23T15:57:55.845Z","level":"LOG","message":"Headers: {"}
+{"timestamp":"2025-10-23T15:57:55.845Z","level":"LOG","message":"  \"Content-Type\": \"application/x-www-form-urlencoded\""}
+{"timestamp":"2025-10-23T15:57:55.846Z","level":"LOG","message":"}"}
+{"timestamp":"2025-10-23T15:57:55.846Z","level":"LOG","message":"Body: flow=9&offer=1&ip=185.20.20.20&name=Carlos+Rodriguez&phone=%2B34612345678&email=carlos.rodriguez.1760726879%40example.com&ua=&country=ES&comment="}
+{"timestamp":"2025-10-23T15:57:55.846Z","level":"LOG","message":"========================================"}
+{"timestamp":"2025-10-23T15:57:55.846Z","level":"LOG","message":"[HttpTemplateAdapter] Sending fetch request..."}
+{"timestamp":"2025-10-23T15:57:56.058Z","level":"LOG","message":"========================================"}
+{"timestamp":"2025-10-23T15:57:56.058Z","level":"LOG","message":"📥 INCOMING RESPONSE (ALTERCPA)"}
+{"timestamp":"2025-10-23T15:57:56.058Z","level":"LOG","message":"========================================"}
+{"timestamp":"2025-10-23T15:57:56.058Z","level":"LOG","message":"Status: 200 OK"}
+{"timestamp":"2025-10-23T15:57:56.058Z","level":"LOG","message":"Headers: {"}
+{"timestamp":"2025-10-23T15:57:56.059Z","level":"LOG","message":"  \"alt-svc\": \"h3=\\\":443\\\"; ma=86400\","}
+{"timestamp":"2025-10-23T15:57:56.059Z","level":"LOG","message":"  \"cf-cache-status\": \"DYNAMIC\","}
+{"timestamp":"2025-10-23T15:57:56.059Z","level":"LOG","message":"  \"cf-ray\": \"99326ed8ad0de5d6-WAW\","}
+{"timestamp":"2025-10-23T15:57:56.059Z","level":"LOG","message":"  \"connection\": \"close\","}
+{"timestamp":"2025-10-23T15:57:56.059Z","level":"LOG","message":"  \"content-encoding\": \"gzip\","}
+{"timestamp":"2025-10-23T15:57:56.059Z","level":"LOG","message":"  \"content-type\": \"application/json; charset=utf-8\","}
+{"timestamp":"2025-10-23T15:57:56.059Z","level":"LOG","message":"  \"date\": \"Thu, 23 Oct 2025 15:57:56 GMT\","}
+{"timestamp":"2025-10-23T15:57:56.059Z","level":"LOG","message":"  \"nel\": \"{\\\"report_to\\\":\\\"cf-nel\\\",\\\"success_fraction\\\":0.0,\\\"max_age\\\":604800}\","}
+{"timestamp":"2025-10-23T15:57:56.059Z","level":"LOG","message":"  \"report-to\": \"{\\\"group\\\":\\\"cf-nel\\\",\\\"max_age\\\":604800,\\\"endpoints\\\":[{\\\"url\\\":\\\"https://a.nel.cloudflare.com/report/v4?s=Ids0L57jzyqzZCXkB0lqTrVfYzLy2L5sg2SOUv3XQ1k%2FwGawh27Vp9GXED0GaG4HEkE13mJRG9%2BHWBn9fpuGnQS3iKfn%2B6SCpOK0zqxOkDad\\\"}]}\","}
+{"timestamp":"2025-10-23T15:57:56.059Z","level":"LOG","message":"  \"server\": \"cloudflare\","}
+{"timestamp":"2025-10-23T15:57:56.059Z","level":"LOG","message":"  \"transfer-encoding\": \"chunked\","}
+{"timestamp":"2025-10-23T15:57:56.059Z","level":"LOG","message":"  \"vary\": \"accept-encoding\""}
+{"timestamp":"2025-10-23T15:57:56.060Z","level":"LOG","message":"}"}
+{"timestamp":"2025-10-23T15:57:56.060Z","level":"LOG","message":"Body: {\"status\":\"error\",\"error\":\"access\"}"}
+{"timestamp":"2025-10-23T15:57:56.060Z","level":"LOG","message":"========================================"}

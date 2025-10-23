@@ -278,26 +278,61 @@ export default function LeadPage() {
 
               {/* REQUEST SECTION */}
               {activeTab === 'request' && (
-              <div className="space-y-3">
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-blue-800 mb-2">
-                    <strong>Full Request Details:</strong>
-                  </p>
-                  <p className="text-sm text-blue-700">
-                    Check the API console logs (terminal) for complete request details including URL, headers, and body. Search for "OUTGOING REQUEST" in the logs.
-                  </p>
-                </div>
-                
-                {selectedAttempt.responseBody && (
+              <div className="space-y-4">
+                {/* URL */}
+                {selectedAttempt.requestUrl && (
                   <div>
-                    <strong className="block mb-2">Request Status:</strong>
-                    <pre className="p-3 bg-gray-100 rounded-lg text-sm overflow-auto max-h-32 font-mono">
-                      {`Status: ${selectedAttempt.status}
-Response Code: ${selectedAttempt.responseCode || 'N/A'}
-Duration: ${selectedAttempt.durationMs || 'N/A'}ms`}
+                    <strong className="block mb-2">URL:</strong>
+                    <pre className="p-3 bg-gray-100 rounded-lg text-sm overflow-auto max-h-24 font-mono break-all whitespace-pre-wrap">
+                      {selectedAttempt.requestUrl}
                     </pre>
                   </div>
                 )}
+
+                {/* Headers */}
+                {selectedAttempt.requestHeaders && (
+                  <div>
+                    <strong className="block mb-2">Headers:</strong>
+                    <pre className="p-3 bg-gray-100 rounded-lg text-sm overflow-auto max-h-32 font-mono">
+                      {(() => {
+                        try {
+                          const headers = JSON.parse(selectedAttempt.requestHeaders);
+                          return JSON.stringify(headers, null, 2);
+                        } catch {
+                          return selectedAttempt.requestHeaders;
+                        }
+                      })()}
+                    </pre>
+                  </div>
+                )}
+
+                {/* Body */}
+                {selectedAttempt.requestBody && (
+                  <div>
+                    <strong className="block mb-2">Body:</strong>
+                    <pre className="p-3 bg-gray-100 rounded-lg text-sm overflow-auto max-h-32 font-mono">
+                      {selectedAttempt.requestBody}
+                    </pre>
+                  </div>
+                )}
+
+                {!selectedAttempt.requestUrl && !selectedAttempt.requestHeaders && !selectedAttempt.requestBody && (
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      Full request details are being logged. Check the <strong>Logs</strong> page for complete details.
+                    </p>
+                  </div>
+                )}
+                
+                {/* Request Status */}
+                <div>
+                  <strong className="block mb-2">Request Status:</strong>
+                  <pre className="p-3 bg-gray-100 rounded-lg text-sm overflow-auto max-h-24 font-mono">
+                    {`Status: ${selectedAttempt.status}
+Response Code: ${selectedAttempt.responseCode || 'N/A'}
+Duration: ${selectedAttempt.durationMs || 'N/A'}ms`}
+                  </pre>
+                </div>
               </div>
               )}
 

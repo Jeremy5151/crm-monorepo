@@ -3,7 +3,7 @@
   "name": "AlterCPA",
   "version": "1.0.0",
   "description": "AlterCPA affiliate network integration for lead submission and status pulling",
-  "urlTemplate": "https://www.altercpa.site/api/wm/push.json",
+  "urlTemplate": "https://www.altercpa.site/api/wm/push.json?id={USER_ID}-{API_KEY}",
   "method": "POST",
   "headers": {
     "Content-Type": "application/x-www-form-urlencoded"
@@ -19,24 +19,20 @@
     "country": "${country}",
     "comment": "${comment}"
   },
-  "authMethod": "query",
-  "authParams": {
-    "id": "{USER_ID}-{API_KEY}"
-  },
   "formFields": [
     {
       "name": "USER_ID",
       "label": "AlterCPA User ID",
       "type": "text",
       "required": true,
-      "placeholder": "e.g., 123456"
+      "placeholder": "e.g., your_user_id"
     },
     {
       "name": "API_KEY",
       "label": "AlterCPA API Key",
       "type": "password",
       "required": true,
-      "placeholder": "e.g., abc123def456"
+      "placeholder": "e.g., abb3bc721f43ad484c08e5e38f272308"
     },
     {
       "name": "flow",
@@ -55,12 +51,8 @@
   ],
   "pull": {
     "enabled": true,
-    "url": "https://www.altercpa.site/api/ext/list.json",
+    "url": "https://www.altercpa.site/api/ext/list.json?id={USER_ID}-{API_KEY}",
     "method": "POST",
-    "authMethod": "query",
-    "authParams": {
-      "id": "{USER_ID}-{API_KEY}"
-    },
     "bodyParams": {
       "ids": "${leadIds}"
     },

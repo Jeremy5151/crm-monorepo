@@ -27,155 +27,21 @@ export class TemplateSyncService {
   private readonly TEMPLATES_BASE_URL = 'https://jeremy5151.github.io/shablons';
 
   async getAvailableTemplates(): Promise<ExternalTemplate[]> {
-    // Локальные шаблоны (fallback если GitHub недоступен)
-    const localTemplates: ExternalTemplate[] = [
-      {
-        id: 'easyai-market',
-        name: 'EasyAI Market',
-        version: '1.0.0',
-        description: 'EasyAI Market affiliate integration with status pulling',
-        urlTemplate: 'https://api.stahptdp.com/api/affiliate/leads',
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer {TOKEN}',
-          'Content-Type': 'application/json'
-        },
-        bodyTemplate: {
-          firstName: '${firstName}',
-          lastName: '${lastName}',
-          email: '${email}',
-          phone: '${phone}',
-          country: '${country}',
-          password: '${password}',
-          ip: '${ip}',
-          funnel: '${funnel}',
-          aff: '${aff}'
-        },
-        formFields: [
-          {
-            name: 'TOKEN',
-            label: 'API Bearer Token',
-            type: 'text',
-            required: true,
-            placeholder: 'Enter your EasyAI Market API token'
-          }
-        ]
-      },
-      {
-        id: 'altercpa-red',
-        name: 'AlterCPA Red',
-        version: '1.0.0',
-        description: 'AlterCPA Red affiliate network integration for lead submission and status pulling',
-        urlTemplate: 'https://www.altercpa.red/api/tracker/postback.json',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        bodyTemplate: {
-          id: '{TOKEN}',
-          click: '${externalId}',
-          status: '${status}',
-          name: '${firstName} ${lastName}',
-          phone: '${phone}',
-          email: '${email}',
-          comment: '${comment}'
-        },
-        formFields: [
-          {
-            name: 'TOKEN',
-            label: 'API Token',
-            type: 'text',
-            required: true,
-            placeholder: 'Enter your AlterCPA Red API token'
-          }
-        ]
-      }
-    ];
-
     try {
       const response = await fetch(`${this.TEMPLATES_BASE_URL}/templates.json`);
       if (!response.ok) {
-        logger.warn('GitHub templates unavailable, using local templates');
-        return localTemplates;
+        logger.warn('GitHub templates unavailable');
+        return [];
       }
       const data = await response.json();
-      return [...(data.templates || []), ...localTemplates];
+      return data.templates || [];
     } catch (error) {
       logger.error('Error fetching available templates:', error);
-      return localTemplates;
+      return [];
     }
   }
 
   async getTemplateConfig(templateId: string): Promise<ExternalTemplate | null> {
-    // Локальный шаблон EasyAI Market
-    if (templateId === 'easyai-market') {
-      return {
-        id: 'easyai-market',
-        name: 'EasyAI Market',
-        version: '1.0.0',
-        description: 'EasyAI Market affiliate integration with status pulling',
-        urlTemplate: 'https://api.stahptdp.com/api/affiliate/leads',
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer {TOKEN}',
-          'Content-Type': 'application/json'
-        },
-        bodyTemplate: {
-          firstName: '${firstName}',
-          lastName: '${lastName}',
-          email: '${email}',
-          phone: '${phone}',
-          country: '${country}',
-          password: '${password}',
-          ip: '${ip}',
-          funnel: '${funnel}',
-          aff: '${aff}'
-        },
-        formFields: [
-          {
-            name: 'TOKEN',
-            label: 'API Bearer Token',
-            type: 'text',
-            required: true,
-            placeholder: 'Enter your EasyAI Market API token'
-          }
-        ]
-      };
-    }
-
-    // Локальный шаблон AlterCPA Red
-    if (templateId === 'altercpa-red') {
-      return {
-        id: 'altercpa-red',
-        name: 'AlterCPA Red',
-        version: '1.0.0',
-        description: 'AlterCPA Red affiliate network integration for lead submission and status pulling',
-        urlTemplate: 'https://www.altercpa.red/api/tracker/postback.json',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        bodyTemplate: {
-          id: '{TOKEN}',
-          click: '${externalId}',
-          status: '${status}',
-          name: '${firstName} ${lastName}',
-          phone: '${phone}',
-          email: '${email}',
-          comment: '${comment}'
-        },
-        formFields: [
-          {
-            name: 'TOKEN',
-            label: 'API Token',
-            type: 'text',
-            required: true,
-            placeholder: 'Enter your AlterCPA Red API token'
-          }
-        ]
-      };
-    }
-
     try {
       const response = await fetch(`${this.TEMPLATES_BASE_URL}/templates/${templateId}/config.json`);
       if (!response.ok) {

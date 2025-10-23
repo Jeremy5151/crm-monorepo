@@ -657,7 +657,7 @@ const translations = {
     'leads.country': 'Country',
     'leads.funnel': 'Funnel',
     'leads.created_period': 'Creation Period',
-    'leads.sent_period': 'Submission Period',
+    'leads.sent_period': 'Sent At',
     'leads.all_time': 'All time',
     'leads.today': 'Today',
     'leads.this_week': 'This week',

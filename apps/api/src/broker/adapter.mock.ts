@@ -23,9 +23,9 @@ export class BrokerRegistry {
 }
 
 export type BrokerResult =
-  | { type: 'accepted'; externalId: string; autologinUrl?: string; raw?: string }
-  | { type: 'rejected'; code?: number; raw?: string }
-  | { type: 'temp_error'; code?: number; raw?: string };
+  | { type: 'accepted'; externalId: string; autologinUrl?: string; raw?: string; requestUrl?: string; requestHeaders?: Record<string, string>; requestBody?: string }
+  | { type: 'rejected'; code?: number; raw?: string; requestUrl?: string; requestHeaders?: Record<string, string>; requestBody?: string }
+  | { type: 'temp_error'; code?: number; raw?: string; requestUrl?: string; requestHeaders?: Record<string, string>; requestBody?: string };
 
 export async function sendToBrokerMock(lead: Lead): Promise<BrokerResult> {
   const delay = 200 + Math.floor(Math.random() * 400);
@@ -190,13 +190,18 @@ export class HttpTemplateAdapter implements BrokerAdapter {
   async send(lead: Lead): Promise<BrokerResult> {
     console.log(`[HttpTemplateAdapter] Sending lead ${lead.id} to broker ${this.code}`);
     console.log(`[HttpTemplateAdapter] Template:`, JSON.stringify(this.tpl, null, 2));
+    
+    let url = '';
+    let headers: Record<string, string> = {};
+    let body: string | undefined = undefined;
+    
     try {
-      const url = renderTemplate(this.tpl.url, lead, this.params);
+      url = renderTemplate(this.tpl.url, lead, this.params);
       console.log(`[HttpTemplateAdapter] Rendered URL:`, url);
       const method = this.tpl.method ?? 'POST';
-      const headers: Record<string, string> = { ...(this.tpl.headers ?? {}) };
+      headers = { ...(this.tpl.headers ?? {}) };
       
-      let body = this.tpl.body ? renderTemplate(this.tpl.body, lead, this.params) : undefined;
+      body = this.tpl.body ? renderTemplate(this.tpl.body, lead, this.params) : undefined;
       console.log(`[HttpTemplateAdapter] Rendered body:`, body);
       
       // Определяем Content-Type
@@ -258,7 +263,7 @@ Body: ${raw}
 ========================================
 `);
       
-      if (!resp.ok) return { type: resp.status >= 500 ? 'temp_error' : 'rejected', code: resp.status, raw };
+      if (!resp.ok) return { type: resp.status >= 500 ? 'temp_error' : 'rejected', code: resp.status, raw, requestUrl: url, requestHeaders: headers, requestBody: body };
       
       try {
         const json = JSON.parse(raw);
@@ -267,13 +272,13 @@ Body: ${raw}
         if (json.status === 'Success' && json.data) {
           const externalId = String(json.data.UserID || json.data.AccountID || json.data.LoginID || 'EXT');
           const autologinUrl = json.data.RedirectTo || json.data.BrandAutoLogin;
-          return { type: 'accepted', externalId, autologinUrl, raw };
+          return { type: 'accepted', externalId, autologinUrl, raw, requestUrl: url, requestHeaders: headers, requestBody: body };
         }
         
         // AlgoLead ошибка: { status: "Failed", errors: "..." }
         if (json.status === 'Failed') {
           const reason = typeof json.errors === 'string' ? json.errors : JSON.stringify(json.errors);
-          return { type: 'rejected', code: 400, raw: reason };
+          return { type: 'rejected', code: 400, raw: reason, requestUrl: url, requestHeaders: headers, requestBody: body };
         }
         
         // Trackbox формат
@@ -281,30 +286,30 @@ Body: ${raw}
           if (json.status === true || json.status === 'true') {
             const externalId = json.addonData?.uniqueid ?? json.uniqueid ?? json.id ?? 'EXT';
             const autologinUrl = json.addonData?.brokerUrl ?? json.brokerUrl ?? json.login_url;
-            return { type: 'accepted', externalId: String(externalId), autologinUrl, raw };
+            return { type: 'accepted', externalId: String(externalId), autologinUrl, raw, requestUrl: url, requestHeaders: headers, requestBody: body };
           } else {
             const reason = json.data ?? json.message ?? 'Rejected by broker';
-            return { type: 'rejected', code: 400, raw: reason };
+            return { type: 'rejected', code: 400, raw: reason, requestUrl: url, requestHeaders: headers, requestBody: body };
           }
         }
         
         if (json.user_id || json.customer_id || json.id) {
           const externalId = String(json.user_id ?? json.customer_id ?? json.id ?? 'EXT');
           const autologinUrl = json.login_url ?? json.autologin ?? json.autologin_url;
-          return { type: 'accepted', externalId, autologinUrl, raw };
+          return { type: 'accepted', externalId, autologinUrl, raw, requestUrl: url, requestHeaders: headers, requestBody: body };
         }
         
         if (json.externalId || json.external_id) {
-          return { type: 'accepted', externalId: String(json.externalId ?? json.external_id), autologinUrl: json.autologinUrl ?? json.autologin_url, raw };
+          return { type: 'accepted', externalId: String(json.externalId ?? json.external_id), autologinUrl: json.autologinUrl ?? json.autologin_url, raw, requestUrl: url, requestHeaders: headers, requestBody: body };
         }
         
-        return { type: 'accepted', externalId: 'EXT', raw };
+        return { type: 'accepted', externalId: 'EXT', raw, requestUrl: url, requestHeaders: headers, requestBody: body };
       } catch {
-        return { type: 'accepted', externalId: 'EXT', raw };
+        return { type: 'accepted', externalId: 'EXT', raw, requestUrl: url, requestHeaders: headers, requestBody: body };
       }
     } catch (error) {
       console.error(`[HttpTemplateAdapter] Request failed:`, error);
-      return { type: 'temp_error', code: 500, raw: `Request failed: ${error}` };
+      return { type: 'temp_error', code: 500, raw: `Request failed: ${error}`, requestUrl: url, requestHeaders: headers, requestBody: body };
     }
   }
 }

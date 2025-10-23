@@ -20,6 +20,7 @@ export function Navigation() {
     { href: '/brokers', label: t('nav.brokers'), roles: ['ADMIN', 'SUPERADMIN'] },
     { href: '/users', label: t('nav.users'), roles: ['ADMIN', 'SUPERADMIN'] },
     { href: '/settings', label: t('nav.settings'), roles: ['ADMIN', 'SUPERADMIN'] },
+    { href: '/logs', label: 'Logs', roles: ['ADMIN', 'SUPERADMIN'] },
   ];
 
   const navItems = user 

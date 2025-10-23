@@ -25,14 +25,14 @@
       "label": "AlterCPA User ID",
       "type": "text",
       "required": true,
-      "placeholder": "e.g., your_user_id"
+      "placeholder": "e.g., 123456"
     },
     {
       "name": "API_KEY",
       "label": "AlterCPA API Key",
       "type": "password",
       "required": true,
-      "placeholder": "e.g., abb3bc721f43ad484c08e5e38f272308"
+      "placeholder": "e.g., abc123def456"
     },
     {
       "name": "flow",

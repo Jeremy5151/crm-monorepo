@@ -417,6 +417,22 @@ const translations = {
     'users.can_view_full_email': 'Показывать полный email',
     'users.can_view_full_phone': 'Показывать полный телефон',
     'users.can_resend_leads': 'Переотправлять лиды',
+    
+    // Логи
+    'logs.title': 'Логи системы',
+    'logs.auto_refresh': 'Автообновление',
+    'logs.search': 'Поиск логов...',
+    'logs.clear': 'Очистить',
+    'logs.all_logs': 'Все логи',
+    'logs.incoming_leads': 'Входящие лиды',
+    'logs.outgoing_requests': 'Отправка лидов',
+    'logs.status_pulls': 'Получение статусов',
+    'logs.auth_logs': 'Вход в систему',
+    'logs.system': 'Система',
+    'logs.showing': 'Показано',
+    'logs.of': 'из',
+    'logs.total': 'всего',
+    'logs.no_logs': 'Нет логов для отображения',
   },
   en: {
     // Common
@@ -821,6 +837,22 @@ const translations = {
     'users.can_view_full_email': 'Show full email',
     'users.can_view_full_phone': 'Show full phone',
     'users.can_resend_leads': 'Resend leads',
+    
+    // Logs
+    'logs.title': 'System Logs',
+    'logs.auto_refresh': 'Auto-refresh',
+    'logs.search': 'Search logs...',
+    'logs.clear': 'Clear',
+    'logs.all_logs': 'All Logs',
+    'logs.incoming_leads': 'Incoming Leads',
+    'logs.outgoing_requests': 'Sending Leads',
+    'logs.status_pulls': 'Receiving Statuses',
+    'logs.auth_logs': 'Authentication Logs',
+    'logs.system': 'System',
+    'logs.showing': 'Showing',
+    'logs.of': 'of',
+    'logs.total': 'total',
+    'logs.no_logs': 'No logs to display',
   }
 };
 

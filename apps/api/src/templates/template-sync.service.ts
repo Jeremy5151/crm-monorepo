@@ -24,7 +24,7 @@ export interface ExternalTemplate {
 
 @Injectable()
 export class TemplateSyncService {
-  private readonly TEMPLATES_BASE_URL = 'https://jeremy5151.github.io/shablons';
+  private readonly TEMPLATES_BASE_URL = 'https://raw.githubusercontent.com/Jeremy5151/shablons/main';
 
   async getAvailableTemplates(): Promise<ExternalTemplate[]> {
     try {

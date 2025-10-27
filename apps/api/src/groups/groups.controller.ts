@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { GroupsService } from './groups.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
@@ -29,7 +29,7 @@ export class GroupsController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: any) {
+  findOne(@Param('id') id: string, @CurrentUser() user: any) {
     if (!['ADMIN', 'SUPERADMIN'].includes(user.role)) {
       throw new Error('Недостаточно прав');
     }
@@ -38,7 +38,7 @@ export class GroupsController {
   }
 
   @Put(':id')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() body: { name?: string; description?: string; isActive?: boolean }, @CurrentUser() user: any) {
+  update(@Param('id') id: string, @Body() body: { name?: string; description?: string; isActive?: boolean }, @CurrentUser() user: any) {
     if (!['ADMIN', 'SUPERADMIN'].includes(user.role)) {
       throw new Error('Недостаточно прав');
     }
@@ -47,7 +47,7 @@ export class GroupsController {
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: any) {
+  remove(@Param('id') id: string, @CurrentUser() user: any) {
     if (!['ADMIN', 'SUPERADMIN'].includes(user.role)) {
       throw new Error('Недостаточно прав');
     }
@@ -56,7 +56,7 @@ export class GroupsController {
   }
 
   @Post(':id/users/:userId')
-  addUser(@Param('id', ParseUUIDPipe) id: string, @Param('userId', ParseUUIDPipe) userId: string, @CurrentUser() user: any) {
+  addUser(@Param('id') id: string, @Param('userId') userId: string, @CurrentUser() user: any) {
     if (!['ADMIN', 'SUPERADMIN'].includes(user.role)) {
       throw new Error('Недостаточно прав');
     }
@@ -65,7 +65,7 @@ export class GroupsController {
   }
 
   @Delete(':id/users/:userId')
-  removeUser(@Param('id', ParseUUIDPipe) id: string, @Param('userId', ParseUUIDPipe) userId: string, @CurrentUser() user: any) {
+  removeUser(@Param('id') id: string, @Param('userId') userId: string, @CurrentUser() user: any) {
     if (!['ADMIN', 'SUPERADMIN'].includes(user.role)) {
       throw new Error('Недостаточно прав');
     }

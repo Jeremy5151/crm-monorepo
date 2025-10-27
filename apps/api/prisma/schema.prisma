@@ -260,11 +260,41 @@ model User {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  parent         User?  @relation("UserToParent", fields: [parentId], references: [id], onDelete: SetNull)
-  children       User[] @relation("UserToParent")
-  createdByUser  User?  @relation("CreatedUsers", fields: [createdBy], references: [id], onDelete: SetNull)
-  createdUsers   User[] @relation("CreatedUsers")
-  leads          Lead[] @relation("UserLeads")
+  parent         User?   @relation("UserToParent", fields: [parentId], references: [id], onDelete: SetNull)
+  children       User[]  @relation("UserToParent")
+  createdByUser  User?   @relation("CreatedUsers", fields: [createdBy], references: [id], onDelete: SetNull)
+  createdUsers   User[]  @relation("CreatedUsers")
+  leads          Lead[]  @relation("UserLeads")
+  groups         GroupToUser[]
   
   @@map("users")
+}
+
+model Group {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  description String?
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  users       GroupToUser[]
+  
+  @@map("groups")
+}
+
+model GroupToUser {
+  id       String @id @default(cuid())
+  groupId String
+  userId   String
+  
+  group    Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user     User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+  @@map("group_to_user")
 }

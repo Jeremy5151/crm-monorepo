@@ -211,7 +211,14 @@ export class LeadsService {
       brokerResp: Prisma.JsonNull,
     };
 
-    // TODO: Integrate box selection logic when sending leads
+    // Добавляем связи с группами, если указаны
+    if (dto.groupIds && dto.groupIds.length > 0) {
+      data.groups = {
+        create: dto.groupIds.map(groupId => ({
+          group: { connect: { id: groupId } }
+        }))
+      };
+    }
     
     return prisma.lead.create({ data });
   }
@@ -224,21 +231,37 @@ export class LeadsService {
     const user = await prisma.user.findUnique({
       where: { apiKey: apiKey || 'none' },
       include: {
-        children: { select: { id: true } }
+        children: { select: { id: true } },
+        groups: {
+          select: { id: true, group: { select: { id: true } } }
+        }
       }
     });
 
     const where: Prisma.LeadWhereInput = {};
     
-    // Фильтрация по ролям
+    // Фильтрация по ролям и группам
     if (user) {
-      if (user.role === 'AFFILIATE') {
-        // Аффилиат видит только свои лиды
-        where.userId = user.id;
-      } else if (user.role === 'AFFILIATE_MASTER') {
-        // Мастер видит свои лиды + лиды своих детей
-        const childIds = user.children.map(c => c.id);
-        where.userId = { in: [user.id, ...childIds] };
+      // Получаем ID групп пользователя
+      const userGroupIds = user.groups.map(g => g.group.id);
+      
+      if (user.role === 'AFFILIATE' || user.role === 'AFFILIATE_MASTER') {
+        // Если у пользователя есть группы, показываем только лиды из его групп (или без групп)
+        if (userGroupIds.length > 0) {
+          where.OR = [
+            { groups: { some: { groupId: { in: userGroupIds } } } },
+            { groups: { none: {} } } // Лиды без групп
+          ];
+        }
+        
+        // AFFILIATE видит только свои лиды (добавляем дополнительную фильтрацию)
+        if (user.role === 'AFFILIATE') {
+          where.userId = user.id;
+        } else if (user.role === 'AFFILIATE_MASTER') {
+          // Мастер видит лиды своих детей тоже
+          const childIds = user.children.map(c => c.id);
+          where.userId = { in: [user.id, ...childIds] };
+        }
       }
       // ADMIN и SUPERADMIN видят все лиды (нет фильтра)
     }

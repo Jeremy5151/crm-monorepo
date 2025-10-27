@@ -60,6 +60,7 @@ model Lead {
   createdAt   DateTime   @default(now())
 
   attempts    LeadBrokerAttempt[]
+  groups      GroupToLead[]
 
   
   @@index([createdAt])
@@ -279,6 +280,7 @@ model Group {
   updatedAt   DateTime      @updatedAt
   
   users       GroupToUser[]
+  leads       GroupToLead[]
   
   @@map("groups")
 }
@@ -297,4 +299,20 @@ model GroupToUser {
   @@index([groupId])
   @@index([userId])
   @@map("group_to_user")
+}
+
+model GroupToLead {
+  id       String @id @default(cuid())
+  groupId String
+  leadId  String
+  
+  group    Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  lead     Lead  @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([groupId, leadId])
+  @@index([groupId])
+  @@index([leadId])
+  @@map("group_to_lead")
 }

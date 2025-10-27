@@ -122,4 +122,10 @@ export class CreateLeadDto {
   @ApiProperty({ required: false }) @IsOptional() @IsString() sub18?: string;
   @ApiProperty({ required: false }) @IsOptional() @IsString() sub19?: string;
   @ApiProperty({ required: false }) @IsOptional() @IsString() sub20?: string;
+
+  // Groups (для назначения лида на группы)
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString({ each: true })
+  groupIds?: string[];
 }

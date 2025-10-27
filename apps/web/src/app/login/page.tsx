@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/contexts/ToastContext';
+import { useUser } from '@/contexts/UserContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -11,6 +12,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const { showToast } = useToast();
+  const { refreshUser } = useUser();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +43,10 @@ export default function LoginPage() {
       localStorage.setItem('apiToken', data.user.apiKey);
       localStorage.setItem('user', JSON.stringify(data.user));
       
-      showToast('Login successful!', 'success');
+      // Refresh user context with new data
+      await refreshUser();
+      
+      showToast(`Welcome back, ${data.user.name}!`, 'success');
       setTimeout(() => {
         router.push('/');
       }, 500);

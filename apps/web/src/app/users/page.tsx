@@ -17,7 +17,6 @@ interface User {
   apiKey: string;
   timezone: string;
   language: string;
-  parentId: string | null;
   createdAt: string;
 }
 
@@ -29,7 +28,6 @@ interface CreateUserData {
   isActive: boolean;
   timezone: string;
   language: string;
-  parentId?: string;
 }
 
 interface Group {
@@ -78,6 +76,7 @@ export default function UsersPage() {
     nameVisibility: 'SHOW' as 'SHOW' | 'MASK' | 'HIDE',
     emailVisibility: 'SHOW' as 'SHOW' | 'MASK' | 'HIDE',
     phoneVisibility: 'SHOW' as 'SHOW' | 'MASK' | 'HIDE',
+    canViewGroupLeads: false,
   });
   const [groups, setGroups] = useState<Group[]>([]);
   const [showGroupForm, setShowGroupForm] = useState(false);
@@ -250,12 +249,14 @@ export default function UsersPage() {
         nameVisibility: 'SHOW',
         emailVisibility: 'SHOW',
         phoneVisibility: 'SHOW',
+        canViewGroupLeads: false,
       });
     } catch (e) {
       setPermissionsSettings({
         nameVisibility: 'SHOW',
         emailVisibility: 'SHOW',
         phoneVisibility: 'SHOW',
+        canViewGroupLeads: false,
       });
     }
   }
@@ -299,7 +300,6 @@ export default function UsersPage() {
       isActive: user.isActive,
       timezone: user.timezone,
       language: user.language,
-      parentId: user.parentId || undefined,
     });
     setShowForm(true);
   }
@@ -598,23 +598,6 @@ export default function UsersPage() {
                 />
               </div>
 
-              {/* Parent User Selection (для AFFILIATE роли) */}
-              {(formData.role === 'AFFILIATE' || formData.role === 'AFFILIATE_MASTER') && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-800 mb-2">{t('users.parent')}</label>
-                  <CustomSelect
-                    value={formData.parentId || ''}
-                    onChange={(value) => setFormData({ ...formData, parentId: value || undefined })}
-                    options={[
-                      { value: '', label: t('users.no_parent') },
-                      ...users
-                        .filter(u => u.role === 'AFFILIATE_MASTER' || u.role === 'ADMIN')
-                        .map(u => ({ value: u.id, label: `${u.name} (${u.email})` }))
-                    ]}
-                  />
-                </div>
-              )}
-
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -703,6 +686,23 @@ export default function UsersPage() {
                     { value: 'HIDE', label: 'Hide completely' },
                   ]}
                 />
+              </div>
+
+              <div className="pt-4 border-t border-gray-200">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={permissionsSettings.canViewGroupLeads}
+                    onChange={(e) => setPermissionsSettings({ ...permissionsSettings, canViewGroupLeads: e.target.checked })}
+                    className="mr-2 w-4 h-4 rounded border-gray-300 text-yellow-600 focus:ring-yellow-500"
+                  />
+                  <span className="text-sm font-medium text-gray-800">
+                    Can view all leads in group
+                  </span>
+                </label>
+                <p className="text-xs text-gray-500 mt-1 ml-6">
+                  Allow this user to view leads from other users in their groups
+                </p>
               </div>
             </div>
 

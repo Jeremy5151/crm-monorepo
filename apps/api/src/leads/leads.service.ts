@@ -364,15 +364,61 @@ export class LeadsService {
     // Применяем маскировку полей для аффилиатов
     let maskedItems = items;
     if (user && (user.role === 'AFFILIATE' || user.role === 'AFFILIATE_MASTER')) {
-      // Получаем настройки видимости для каждого аффилиата
-      const affIds = [...new Set(items.map(i => i.aff).filter(Boolean))];
-      const affSettings = await prisma.affSettings.findMany({
-        where: { aff: { in: affIds as string[] } }
+      // Получаем группы пользователя с настройками видимости (одним запросом)
+      const userGroupIds = (await prisma.groupToUser.findMany({
+        where: { userId: user.id },
+        select: { groupId: true }
+      })).map(g => g.groupId);
+      
+      // Получаем все настройки групп пользователя (одним запросом)
+      const userGroupsSettings = userGroupIds.length > 0 ? await prisma.group.findMany({
+        where: { id: { in: userGroupIds } },
+        select: { id: true, nameVisibility: true, emailVisibility: true, phoneVisibility: true }
+      }) : [];
+      
+      const groupsSettingsMap = new Map(userGroupsSettings.map(g => [g.id, g]));
+      
+      // Получаем группы для всех лидов (одним запросом)
+      const leadIds = items.map(i => i.id);
+      const leadGroups = leadIds.length > 0 ? await prisma.groupToLead.findMany({
+        where: { leadId: { in: leadIds } },
+        select: { leadId: true, groupId: true }
+      }) : [];
+      
+      // Группируем по лидам
+      const leadGroupsMap = new Map<string, string[]>();
+      leadGroups.forEach(lg => {
+        const existing = leadGroupsMap.get(lg.leadId) || [];
+        existing.push(lg.groupId);
+        leadGroupsMap.set(lg.leadId, existing);
       });
       
+      // Получаем настройки видимости для аффилиатов (одним запросом)
+      const affIds = [...new Set(items.map(i => i.aff).filter(Boolean))];
+      const affSettings = affIds.length > 0 ? await prisma.affSettings.findMany({
+        where: { aff: { in: affIds as string[] } }
+      }) : [];
       const settingsMap = new Map(affSettings.map(s => [s.aff, s]));
       
       maskedItems = items.map(item => {
+        // Проверяем, есть ли у лида группа, в которой состоит пользователь
+        const itemGroupIds = leadGroupsMap.get(item.id) || [];
+        const relevantGroupId = itemGroupIds.find(gid => userGroupIds.includes(gid));
+        
+        if (relevantGroupId) {
+          // Используем настройки группы
+          const groupSettings = groupsSettingsMap.get(relevantGroupId);
+          if (groupSettings) {
+            const settings = {
+              nameVisibility: groupSettings.nameVisibility,
+              emailVisibility: groupSettings.emailVisibility,
+              phoneVisibility: groupSettings.phoneVisibility,
+            };
+            return applyVisibility(item, settings as any);
+          }
+        }
+        
+        // Если лид не привязан к группе пользователя, используем стандартную логику с affSettings
         const settings = item.aff ? settingsMap.get(item.aff) : null;
         return applyVisibility(item, settings);
       });

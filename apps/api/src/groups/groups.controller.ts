@@ -38,7 +38,7 @@ export class GroupsController {
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() body: { name?: string; description?: string; isActive?: boolean }, @CurrentUser() user: any) {
+  update(@Param('id') id: string, @Body() body: { name?: string; description?: string; isActive?: boolean; nameVisibility?: 'SHOW' | 'MASK' | 'HIDE'; emailVisibility?: 'SHOW' | 'MASK' | 'HIDE'; phoneVisibility?: 'SHOW' | 'MASK' | 'HIDE' }, @CurrentUser() user: any) {
     if (!['ADMIN', 'SUPERADMIN'].includes(user.role)) {
       throw new Error('Недостаточно прав');
     }

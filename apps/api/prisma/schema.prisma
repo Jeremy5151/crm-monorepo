@@ -276,6 +276,12 @@ model Group {
   name        String        @unique
   description String?
   isActive    Boolean       @default(true)
+  
+  // Поля видимости данных
+  nameVisibility   Visibility @default(SHOW)
+  emailVisibility  Visibility @default(SHOW)
+  phoneVisibility  Visibility @default(SHOW)
+  
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   

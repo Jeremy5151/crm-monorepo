@@ -77,7 +77,7 @@ export class GroupsService {
     return group;
   }
 
-  async update(id: string, data: { name?: string; description?: string; isActive?: boolean }) {
+  async update(id: string, data: { name?: string; description?: string; isActive?: boolean; nameVisibility?: 'SHOW' | 'MASK' | 'HIDE'; emailVisibility?: 'SHOW' | 'MASK' | 'HIDE'; phoneVisibility?: 'SHOW' | 'MASK' | 'HIDE' }) {
     const existing = await this.prisma.group.findUnique({
       where: { id }
     });

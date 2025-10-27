@@ -29,7 +29,6 @@ export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
   const { params, set } = useQueryState();
   const { t } = useLanguage();
 
-  const [showFilters, setShowFilters] = useState(false);
   const [showColumns, setShowColumns] = useState(false);
   const [showCreatedDateInputs, setShowCreatedDateInputs] = useState(false);
   const [showSentDateInputs, setShowSentDateInputs] = useState(false);
@@ -96,16 +95,6 @@ export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
         </div>
         
         <div className="flex items-center gap-2">
-          <button 
-            className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 ${showFilters ? 'bg-gray-200 text-gray-900' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-            </svg>
-            {t('leads.filters')}
-          </button>
-          
           <div className="relative">
             <button 
               data-columns-button
@@ -135,8 +124,7 @@ export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
         </div>
       </div>
       
-      {showFilters && (
-        <div className="mt-4 pt-4 border-t border-gray-200">
+      <div className="mt-4 pt-4 border-t border-gray-200">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('leads.filters')}</h3>
             <button 
@@ -283,7 +271,6 @@ export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
             </div>
           )}
         </div>
-      )}
 
     </div>
   );

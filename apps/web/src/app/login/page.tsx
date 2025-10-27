@@ -48,8 +48,10 @@ export default function LoginPage() {
       
       showToast(`Welcome back, ${data.user.name}!`, 'success');
       
-      // Redirect immediately
-      router.push('/');
+      // Wait a bit for context to update, then redirect
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1000);
     } catch (error: any) {
       showToast('Login failed: ' + error.message, 'error');
     } finally {

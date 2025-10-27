@@ -6,8 +6,8 @@
     "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start -p 3000",
-    "compile:scss": "sass src/custom.scss public/custom.css --no-source-map",
-    "watch:scss": "sass --watch src:public --no-source-map"
+    "compile:scss": "npx sass src/custom.scss public/custom.css --no-source-map",
+    "watch:scss": "npx sass --watch src/custom.scss:public/custom.css --no-source-map"
   },
   "dependencies": {
     "next": "14.2.33",

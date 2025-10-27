@@ -32,6 +32,19 @@ interface CreateUserData {
   parentId?: string;
 }
 
+interface Group {
+  id: string;
+  name: string;
+  description?: string;
+  users: Array<{ userId: string }>;
+  createdAt: string;
+}
+
+interface CreateGroupData {
+  name: string;
+  description?: string;
+}
+
 export default function UsersPage() {
   const { t } = useLanguage();
   const { showSuccess, showError } = useToast();
@@ -66,10 +79,91 @@ export default function UsersPage() {
     emailVisibility: 'SHOW' as 'SHOW' | 'MASK' | 'HIDE',
     phoneVisibility: 'SHOW' as 'SHOW' | 'MASK' | 'HIDE',
   });
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [showGroupForm, setShowGroupForm] = useState(false);
+  const [groupFormData, setGroupFormData] = useState<CreateGroupData>({
+    name: '',
+    description: '',
+  });
+  const [userGroupsModal, setUserGroupsModal] = useState({
+    isOpen: false,
+    userId: '',
+    userName: '',
+    currentGroupIds: [] as string[],
+  });
 
   useEffect(() => {
     loadUsers();
+    loadGroups();
   }, []);
+
+  async function loadGroups() {
+    try {
+      const data = await apiGet('/v1/groups');
+      setGroups(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Error loading groups:', error);
+    }
+  }
+
+  async function createGroup() {
+    if (!groupFormData.name.trim()) {
+      showError('Group name is required');
+      return;
+    }
+
+    try {
+      await apiPost('/v1/groups', groupFormData);
+      showSuccess('Group created successfully');
+      setShowGroupForm(false);
+      setGroupFormData({ name: '', description: '' });
+      loadGroups();
+    } catch (error: any) {
+      showError('Error creating group', error?.message || String(error));
+    }
+  }
+
+  async function openUserGroupsModal(user: User) {
+    // Получаем текущие группы пользователя
+    const userGroupIds = groups
+      .filter(g => g.users.some(u => u.userId === user.id))
+      .map(g => g.id);
+
+    setUserGroupsModal({
+      isOpen: true,
+      userId: user.id,
+      userName: user.name,
+      currentGroupIds: userGroupIds,
+    });
+  }
+
+  async function addUserToGroup(groupId: string) {
+    try {
+      await apiPost(`/v1/groups/${groupId}/users/${userGroupsModal.userId}`, {});
+      showSuccess('User added to group');
+      loadGroups();
+      setUserGroupsModal(prev => ({
+        ...prev,
+        currentGroupIds: [...prev.currentGroupIds, groupId],
+      }));
+    } catch (error: any) {
+      showError('Error adding user to group', error?.message || String(error));
+    }
+  }
+
+  async function removeUserFromGroup(groupId: string) {
+    try {
+      await apiDelete(`/v1/groups/${groupId}/users/${userGroupsModal.userId}`);
+      showSuccess('User removed from group');
+      loadGroups();
+      setUserGroupsModal(prev => ({
+        ...prev,
+        currentGroupIds: prev.currentGroupIds.filter(id => id !== groupId),
+      }));
+    } catch (error: any) {
+      showError('Error removing user from group', error?.message || String(error));
+    }
+  }
 
   async function loadUsers() {
     try {
@@ -267,12 +361,20 @@ export default function UsersPage() {
         <div className="card p-6 space-y-4">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-gray-900">{t('users.title')}</h1>
-            <button
-              onClick={() => setShowForm(true)}
-              className="btn-primary"
-            >
-              {t('users.create')}
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowGroupForm(true)}
+                className="btn-secondary"
+              >
+                Create Group
+              </button>
+              <button
+                onClick={() => setShowForm(true)}
+                className="btn-primary"
+              >
+                {t('users.create')}
+              </button>
+            </div>
           </div>
 
       {loading && <div className="text-center py-8">{t('common.loading')}</div>}
@@ -321,6 +423,12 @@ export default function UsersPage() {
                         Permissions
                       </button>
                     )}
+                    <button
+                      onClick={() => openUserGroupsModal(user)}
+                      className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200"
+                    >
+                      Groups
+                    </button>
                     {user.role !== 'SUPERADMIN' && (
                       <button
                         onClick={() => deleteUser(user)}
@@ -610,6 +718,115 @@ export default function UsersPage() {
                 className="btn-secondary"
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Group Modal */}
+      {showGroupForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Create Group</h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-800 mb-2">Group Name</label>
+                <input
+                  type="text"
+                  value={groupFormData.name}
+                  onChange={(e) => setGroupFormData({ ...groupFormData, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter group name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-800 mb-2">Description (optional)</label>
+                <textarea
+                  value={groupFormData.description}
+                  onChange={(e) => setGroupFormData({ ...groupFormData, description: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter description"
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={createGroup}
+                className="btn-primary"
+              >
+                Create Group
+              </button>
+              <button
+                onClick={() => {
+                  setShowGroupForm(false);
+                  setGroupFormData({ name: '', description: '' });
+                }}
+                className="btn-secondary"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* User Groups Modal */}
+      {userGroupsModal.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-lg mx-4">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">
+              Groups for {userGroupsModal.userName}
+            </h2>
+            
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {groups.length === 0 ? (
+                <p className="text-gray-500 text-center py-4">No groups available. Create a group first.</p>
+              ) : (
+                groups.map((group) => {
+                  const isInGroup = userGroupsModal.currentGroupIds.includes(group.id);
+                  return (
+                    <div
+                      key={group.id}
+                      className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
+                    >
+                      <div>
+                        <p className="font-medium text-gray-900">{group.name}</p>
+                        {group.description && (
+                          <p className="text-sm text-gray-500">{group.description}</p>
+                        )}
+                      </div>
+                      {isInGroup ? (
+                        <button
+                          onClick={() => removeUserFromGroup(group.id)}
+                          className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200"
+                        >
+                          Remove
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => addUserToGroup(group.id)}
+                          className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200"
+                        >
+                          Add
+                        </button>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setUserGroupsModal({ isOpen: false, userId: '', userName: '', currentGroupIds: [] })}
+                className="btn-secondary w-full"
+              >
+                Close
               </button>
             </div>
           </div>

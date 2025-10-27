@@ -33,6 +33,19 @@ export class AuthController {
   @Get('me')
   @UseGuards(AuthGuard)
   async getCurrentUser(@CurrentUser() user: any) {
-    return user;
+    // Calculate permissions based on role
+    const permissions = {
+      canViewBrokers: ['ADMIN', 'SUPERADMIN'].includes(user.role),
+      canViewBoxes: ['ADMIN', 'SUPERADMIN'].includes(user.role),
+      canViewUsers: ['ADMIN', 'SUPERADMIN'].includes(user.role),
+      canViewFullEmail: ['ADMIN', 'SUPERADMIN'].includes(user.role),
+      canViewFullPhone: ['ADMIN', 'SUPERADMIN'].includes(user.role),
+      canResendLeads: ['ADMIN', 'SUPERADMIN'].includes(user.role),
+    };
+
+    return {
+      ...user,
+      ...permissions
+    };
   }
 }

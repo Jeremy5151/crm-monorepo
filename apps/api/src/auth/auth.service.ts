@@ -9,12 +9,10 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: { apiKey },
       include: {
-        parent: true,
         createdByUser: true,
         _count: {
           select: {
             leads: true,
-            children: true,
           }
         }
       }
@@ -31,12 +29,10 @@ export class AuthService {
     return this.prisma.user.findUnique({
       where: { id: userId },
       include: {
-        parent: true,
         createdByUser: true,
         _count: {
           select: {
             leads: true,
-            children: true,
           }
         }
       }
@@ -47,12 +43,10 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: { email },
       include: {
-        parent: true,
         createdByUser: true,
         _count: {
           select: {
             leads: true,
-            children: true,
           }
         }
       }

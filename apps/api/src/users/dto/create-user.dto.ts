@@ -26,8 +26,4 @@ export class CreateUserDto {
   @IsString()
   language?: string;
 
-  @IsOptional()
-  @IsString()
-  parentId?: string;
-
 }

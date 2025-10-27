@@ -660,7 +660,7 @@ const translations = {
     
     // Leads
     'leads.title': 'Leads',
-    'leads.search_placeholder': 'Q Search',
+    'leads.search_placeholder': 'Search...',
     'leads.filters': 'Filters',
     'leads.columns': 'Columns',
     'leads.available_fields': 'Available Fields',

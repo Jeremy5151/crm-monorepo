@@ -50,7 +50,7 @@ function loadLogsFromFile() {
     if (fs.existsSync(LOG_FILE)) {
       const data = fs.readFileSync(LOG_FILE, 'utf-8');
       const lines = data.split('\n').filter(line => line.trim());
-      const loaded = lines.slice(-MAX_LOGS).map(line => {
+      const loaded = lines.slice(-MAX_LOGS).reverse().map(line => {
         try {
           return JSON.parse(line);
         } catch {
@@ -58,6 +58,7 @@ function loadLogsFromFile() {
         }
       }).filter(Boolean) as Array<{ timestamp: string; level: string; type: LogType; message: string }>;
       
+      // Insert at beginning (oldest first since we're reversing)
       logs.push(...loaded);
     }
   } catch (error) {

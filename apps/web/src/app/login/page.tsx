@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/contexts/ToastContext';
-import { useUser } from '@/contexts/UserContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -12,7 +11,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const { showToast } = useToast();
-  const { refreshUser } = useUser();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,19 +37,20 @@ export default function LoginPage() {
 
       const data = await response.json();
       
-      // Save API key to localStorage for future requests
+      // Clear old user data
+      localStorage.removeItem('apiToken');
+      localStorage.removeItem('user');
+      
+      // Save new API key to localStorage
       localStorage.setItem('apiToken', data.user.apiKey);
       localStorage.setItem('user', JSON.stringify(data.user));
       
-      // Force refresh user context
-      await refreshUser();
-      
       showToast(`Welcome back, ${data.user.name}!`, 'success');
       
-      // Wait a bit for context to update, then redirect
+      // Full page reload to ensure fresh context
       setTimeout(() => {
         window.location.href = '/';
-      }, 1000);
+      }, 500);
     } catch (error: any) {
       showToast('Login failed: ' + error.message, 'error');
     } finally {

@@ -60,7 +60,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
       refreshUser();
     }, 1000);
     
-    return () => clearTimeout(timer);
+    // Also reload when localStorage changes (login/logout)
+    const handleStorageChange = () => {
+      refreshUser();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   return (

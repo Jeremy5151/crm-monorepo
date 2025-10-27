@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/contexts/ToastContext';
 import { useUser } from '@/contexts/UserContext';
@@ -43,13 +43,13 @@ export default function LoginPage() {
       localStorage.setItem('apiToken', data.user.apiKey);
       localStorage.setItem('user', JSON.stringify(data.user));
       
-      // Refresh user context with new data
+      // Force refresh user context
       await refreshUser();
       
       showToast(`Welcome back, ${data.user.name}!`, 'success');
-      setTimeout(() => {
-        router.push('/');
-      }, 500);
+      
+      // Redirect immediately
+      router.push('/');
     } catch (error: any) {
       showToast('Login failed: ' + error.message, 'error');
     } finally {

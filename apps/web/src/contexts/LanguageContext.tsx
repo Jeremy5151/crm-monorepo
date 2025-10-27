@@ -239,7 +239,7 @@ const translations = {
     
     // Лиды
     'leads.title': 'Лиды',
-    'leads.search_placeholder': 'Q Search',
+    'leads.search_placeholder': 'Search...',
     'leads.filters': 'Фильтры',
     'leads.columns': 'Колонки',
     'leads.available_fields': 'Доступные поля',
@@ -507,6 +507,7 @@ const translations = {
     
     // Leads
     'leads.title': 'Leads',
+    'leads.search_placeholder': 'Search...',
     'leads.create': 'Create Lead',
     'leads.edit': 'Edit Lead',
     'leads.delete': 'Delete Lead',

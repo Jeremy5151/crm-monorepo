@@ -23,13 +23,14 @@ export function Navigation() {
     { href: '/boxes', label: t('nav.boxes'), roles: ['ADMIN', 'SUPERADMIN'] },
     { href: '/brokers', label: t('nav.brokers'), roles: ['ADMIN', 'SUPERADMIN'] },
     { href: '/users', label: t('nav.users'), roles: ['ADMIN', 'SUPERADMIN'] },
-    { href: '/settings', label: t('nav.settings'), roles: ['ADMIN', 'SUPERADMIN'] },
+    { href: '/settings', label: t('nav.settings'), roles: ['AFFILIATE', 'AFFILIATE_MASTER', 'ADMIN', 'SUPERADMIN'] }, // Settings доступны всем
     { href: '/logs', label: 'Logs', roles: ['ADMIN', 'SUPERADMIN'] },
   ];
 
+  // Показываем только базовые пункты до загрузки пользователя
   const navItems = user 
     ? allNavItems.filter(item => item.roles.includes(user.role))
-    : allNavItems;
+    : [{ href: '/', label: t('nav.leads') }]; // Показываем только Leads до загрузки
 
   // Закрывать меню при клике снаружи
   useEffect(() => {

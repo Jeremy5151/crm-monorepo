@@ -27,10 +27,8 @@ export function Navigation() {
     { href: '/logs', label: 'Logs', roles: ['ADMIN', 'SUPERADMIN'] },
   ];
 
-  // Показываем только базовые пункты до загрузки пользователя
-  const navItems = user 
-    ? allNavItems.filter(item => item.roles.includes(user.role))
-    : [{ href: '/', label: t('nav.leads') }]; // Показываем только Leads до загрузки
+  // Показываем только пункты соответствующие роли пользователя
+  const navItems = allNavItems.filter(item => item.roles.includes(user.role));
 
   // Закрывать меню при клике снаружи
   useEffect(() => {

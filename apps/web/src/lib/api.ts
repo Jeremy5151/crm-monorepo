@@ -1,5 +1,4 @@
 const BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:3001';
-const KEY  = process.env.NEXT_PUBLIC_API_KEY  ?? 'superadmin-key';
 
 function joinUrl(base: string, path: string) {
   if (path.startsWith('http')) return path;
@@ -7,18 +6,28 @@ function joinUrl(base: string, path: string) {
   return `${base}${p}`;
 }
 
+// Get API key from localStorage
+function getApiKey() {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('apiToken') || 'superadmin-key';
+  }
+  return 'superadmin-key';
+}
+
 export async function apiGet(path: string, _init: RequestInit = {}) {
   const url = joinUrl(BASE, path);
-  const res = await fetch(url, { headers: { 'X-API-Key': KEY, ...( _init.headers || {}) }, cache: 'no-store' });
+  const apiKey = getApiKey();
+  const res = await fetch(url, { headers: { 'X-API-Key': apiKey, ...( _init.headers || {}) }, cache: 'no-store' });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
 export async function apiPatch(path: string, body: unknown) {
   const url = joinUrl(BASE, path);
+  const apiKey = getApiKey();
   const res = await fetch(url, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', 'X-API-Key': KEY },
+    headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -27,9 +36,10 @@ export async function apiPatch(path: string, body: unknown) {
 
 export async function apiPost(path: string, body: unknown) {
   const url = joinUrl(BASE, path);
+  const apiKey = getApiKey();
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-API-Key': KEY },
+    headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -44,9 +54,10 @@ export async function apiPost(path: string, body: unknown) {
 
 export async function apiDelete(path: string) {
   const url = joinUrl(BASE, path);
+  const apiKey = getApiKey();
   const res = await fetch(url, {
     method: 'DELETE',
-    headers: { 'X-API-Key': KEY },
+    headers: { 'X-API-Key': apiKey },
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();

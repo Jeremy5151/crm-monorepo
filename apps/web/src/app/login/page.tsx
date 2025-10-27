@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/contexts/ToastContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -9,12 +10,13 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const { showToast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email || !password) {
-      alert('Please fill in all fields');
+      showToast('Please fill in all fields', 'error');
       return;
     }
 
@@ -39,9 +41,12 @@ export default function LoginPage() {
       localStorage.setItem('apiToken', data.user.apiKey);
       localStorage.setItem('user', JSON.stringify(data.user));
       
-      router.push('/');
+      showToast('Login successful!', 'success');
+      setTimeout(() => {
+        router.push('/');
+      }, 500);
     } catch (error: any) {
-      alert('Login failed: ' + error.message);
+      showToast('Login failed: ' + error.message, 'error');
     } finally {
       setLoading(false);
     }

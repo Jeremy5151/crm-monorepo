@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import Providers from './Providers';
-import { Navigation } from '@/components/Navigation';
-import { StatusBar } from '@/components/StatusBar';
+import { ConditionalLayout } from '@/components/ConditionalLayout';
 
 export const metadata: Metadata = {
   title: 'CRM',
@@ -19,13 +18,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <Providers>
-          <div className="app-layout">
-            <Navigation />
-            <main className="main-content">
-              {children}
-            </main>
-            <StatusBar />
-          </div>
+          <ConditionalLayout>
+            {children}
+          </ConditionalLayout>
         </Providers>
       </body>
     </html>

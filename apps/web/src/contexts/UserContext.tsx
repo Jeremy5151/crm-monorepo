@@ -55,10 +55,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Добавляем небольшую задержку, чтобы API сервер успел запуститься
-    const timer = setTimeout(() => {
-      refreshUser();
-    }, 1000);
+    refreshUser();
     
     // Also reload when localStorage changes (login/logout)
     const handleStorageChange = () => {
@@ -68,7 +65,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
     window.addEventListener('storage', handleStorageChange);
     
     return () => {
-      clearTimeout(timer);
       window.removeEventListener('storage', handleStorageChange);
     };
   }, []);

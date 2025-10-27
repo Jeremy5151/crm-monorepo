@@ -20,9 +20,25 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      // TODO: Implement actual login API call
-      // For now, just redirect after "login"
-      localStorage.setItem('isLoggedIn', 'true');
+      const response = await fetch('http://localhost:3001/v1/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Login failed');
+      }
+
+      const data = await response.json();
+      
+      // Save API key to localStorage for future requests
+      localStorage.setItem('apiToken', data.user.apiKey);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      
       router.push('/');
     } catch (error: any) {
       alert('Login failed: ' + error.message);

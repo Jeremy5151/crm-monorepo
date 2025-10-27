@@ -17,6 +17,7 @@ export class PermissionsService {
         nameVisibility: 'SHOW',
         emailVisibility: 'SHOW',
         phoneVisibility: 'SHOW',
+        canViewGroupLeads: false,
       };
     }
 
@@ -29,6 +30,7 @@ export class PermissionsService {
       nameVisibility?: 'SHOW' | 'MASK' | 'HIDE';
       emailVisibility?: 'SHOW' | 'MASK' | 'HIDE';
       phoneVisibility?: 'SHOW' | 'MASK' | 'HIDE';
+      canViewGroupLeads?: boolean;
     }
   ) {
     return prisma.affSettings.upsert({
@@ -39,6 +41,7 @@ export class PermissionsService {
         nameVisibility: dto.nameVisibility || 'SHOW',
         emailVisibility: dto.emailVisibility || 'SHOW',
         phoneVisibility: dto.phoneVisibility || 'SHOW',
+        canViewGroupLeads: dto.canViewGroupLeads ?? false,
       }
     });
   }

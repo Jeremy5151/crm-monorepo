@@ -17,6 +17,7 @@ export class PermissionsController {
       nameVisibility?: 'SHOW' | 'MASK' | 'HIDE';
       emailVisibility?: 'SHOW' | 'MASK' | 'HIDE';
       phoneVisibility?: 'SHOW' | 'MASK' | 'HIDE';
+      canViewGroupLeads?: boolean;
     }
   ) {
     return this.service.updateSettings(aff, dto);

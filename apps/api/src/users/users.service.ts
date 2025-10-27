@@ -44,20 +44,28 @@ export class UsersService {
       data: {
         ...createUserDto,
         createdBy: currentUserId,
-        parentId: createUserDto.parentId || currentUserId,
         isActive: createUserDto.isActive ?? true,
         timezone: createUserDto.timezone || 'UTC',
         language: createUserDto.language || 'ru',
       },
       include: {
-        parent: true,
         createdByUser: true,
         _count: {
           select: {
             leads: true,
-            children: true,
           }
         }
+      }
+    });
+
+    // Создаем настройки видимости по умолчанию
+    await this.prisma.affSettings.create({
+      data: {
+        aff: user.id,
+        nameVisibility: 'SHOW',
+        emailVisibility: 'SHOW',
+        phoneVisibility: 'SHOW',
+        canViewGroupLeads: createUserDto.role === 'AFFILIATE_MASTER', // Мастер афилейт по умолчанию видит лиды группы
       }
     });
 
@@ -68,7 +76,6 @@ export class UsersService {
     const search = undefined;
     const role = undefined;
     const isActive = undefined;
-    const parentId = undefined;
     const take = '50';
     const skip = '0';
     
@@ -95,20 +102,10 @@ export class UsersService {
       where.role = role;
     }
 
-    // Фильтрация по активности
-    // Пропускаем - не используется
-
-    // Фильтрация по родителю
-    if (parentId) {
-      where.parentId = parentId;
-    }
-
     // Ограничения доступа
     if (currentUser) {
       if (currentUser.role === 'AFFILIATE_MASTER') {
-        // Affiliate Master видит только своих детей
-        where.parentId = currentUserId;
-        // Скрываем SUPERADMIN от всех
+        // Affiliate Master видит всех кроме SUPERADMIN
         where.role = { not: 'SUPERADMIN' };
       } else if (currentUser.role === 'AFFILIATE') {
         // Обычный аффилиат видит только себя
@@ -126,12 +123,10 @@ export class UsersService {
     const users = await this.prisma.user.findMany({
       where,
       include: {
-        parent: true,
         createdByUser: true,
         _count: {
           select: {
             leads: true,
-            children: true,
           }
         }
       },
@@ -154,22 +149,10 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({
       where: { id },
       include: {
-        parent: true,
         createdByUser: true,
-        children: {
-          include: {
-            _count: {
-              select: {
-                leads: true,
-                children: true,
-              }
-            }
-          }
-        },
         _count: {
           select: {
             leads: true,
-            children: true,
           }
         }
       }
@@ -190,10 +173,6 @@ export class UsersService {
       }
 
       if (currentUser.role === 'AFFILIATE' && user.id !== currentUserId) {
-        throw new ForbiddenException('Недостаточно прав для просмотра этого пользователя');
-      }
-
-      if (currentUser.role === 'AFFILIATE_MASTER' && user.parentId !== currentUserId) {
         throw new ForbiddenException('Недостаточно прав для просмотра этого пользователя');
       }
     }
@@ -225,11 +204,6 @@ export class UsersService {
         throw new ForbiddenException('Недостаточно прав для обновления пользователей');
       }
 
-      // AFFILIATE_MASTER может обновлять только своих детей
-      if (currentUser.role === 'AFFILIATE_MASTER' && user.parentId !== currentUserId) {
-        throw new ForbiddenException('Недостаточно прав для обновления этого пользователя');
-      }
-
       // AFFILIATE_MASTER не может менять роль
       if (currentUser.role === 'AFFILIATE_MASTER' && (updateUserDto as any).role && (updateUserDto as any).role !== 'AFFILIATE') {
         throw new ForbiddenException('Affiliate Master может управлять только обычными аффилиатами');
@@ -251,12 +225,10 @@ export class UsersService {
       where: { id },
       data: updateUserDto,
       include: {
-        parent: true,
         createdByUser: true,
         _count: {
           select: {
             leads: true,
-            children: true,
           }
         }
       }

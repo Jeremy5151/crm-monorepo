@@ -231,7 +231,6 @@ export class LeadsService {
     const user = await prisma.user.findUnique({
       where: { apiKey: apiKey || 'none' },
       include: {
-        children: { select: { id: true } },
         groups: {
           select: { id: true, group: { select: { id: true } } }
         }
@@ -246,21 +245,25 @@ export class LeadsService {
       const userGroupIds = user.groups.map(g => g.group.id);
       
       if (user.role === 'AFFILIATE' || user.role === 'AFFILIATE_MASTER') {
-        // Если у пользователя есть группы, показываем только лиды из его групп (или без групп)
-        if (userGroupIds.length > 0) {
+        // Получаем настройки видимости для пользователя
+        const userSettings = await prisma.affSettings.findUnique({
+          where: { aff: user.id }
+        });
+        
+        const canViewGroupLeads = userSettings?.canViewGroupLeads ?? (user.role === 'AFFILIATE_MASTER');
+        
+        if (userGroupIds.length > 0 && canViewGroupLeads) {
+          // Показываем все лиды из его групп (или без групп)
           where.OR = [
             { groups: { some: { groupId: { in: userGroupIds } } } },
             { groups: { none: {} } } // Лиды без групп
           ];
-        }
-        
-        // AFFILIATE видит только свои лиды (добавляем дополнительную фильтрацию)
-        if (user.role === 'AFFILIATE') {
+        } else if (userGroupIds.length > 0 && !canViewGroupLeads) {
+          // AFFILIATE без разрешения видит только свои лиды
           where.userId = user.id;
-        } else if (user.role === 'AFFILIATE_MASTER') {
-          // Мастер видит лиды своих детей тоже
-          const childIds = user.children.map(c => c.id);
-          where.userId = { in: [user.id, ...childIds] };
+        } else {
+          // Пользователь без групп видит только свои лиды
+          where.userId = user.id;
         }
       }
       // ADMIN и SUPERADMIN видят все лиды (нет фильтра)

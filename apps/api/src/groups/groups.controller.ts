@@ -72,5 +72,23 @@ export class GroupsController {
     
     return this.groupsService.removeUser(id, userId);
   }
+
+  @Post(':id/leads/:leadId')
+  addLead(@Param('id') id: string, @Param('leadId') leadId: string, @CurrentUser() user: any) {
+    if (!['ADMIN', 'SUPERADMIN'].includes(user.role)) {
+      throw new Error('Недостаточно прав');
+    }
+    
+    return this.groupsService.addLead(id, leadId);
+  }
+
+  @Delete(':id/leads/:leadId')
+  removeLead(@Param('id') id: string, @Param('leadId') leadId: string, @CurrentUser() user: any) {
+    if (!['ADMIN', 'SUPERADMIN'].includes(user.role)) {
+      throw new Error('Недостаточно прав');
+    }
+    
+    return this.groupsService.removeLead(id, leadId);
+  }
 }
 

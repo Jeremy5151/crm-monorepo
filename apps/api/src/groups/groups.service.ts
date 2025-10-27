@@ -197,5 +197,71 @@ export class GroupsService {
       }
     });
   }
+
+  async addLead(groupId: string, leadId: string) {
+    const group = await this.prisma.group.findUnique({
+      where: { id: groupId }
+    });
+
+    if (!group) {
+      throw new NotFoundException('Группа не найдена');
+    }
+
+    const lead = await this.prisma.lead.findUnique({
+      where: { id: leadId }
+    });
+
+    if (!lead) {
+      throw new NotFoundException('Лид не найден');
+    }
+
+    // Проверяем, не добавлен ли уже лид
+    const existing = await this.prisma.groupToLead.findUnique({
+      where: {
+        groupId_leadId: {
+          groupId,
+          leadId
+        }
+      }
+    });
+
+    if (existing) {
+      throw new ConflictException('Лид уже в группе');
+    }
+
+    return this.prisma.groupToLead.create({
+      data: {
+        groupId,
+        leadId
+      },
+      include: {
+        lead: true
+      }
+    });
+  }
+
+  async removeLead(groupId: string, leadId: string) {
+    const relation = await this.prisma.groupToLead.findUnique({
+      where: {
+        groupId_leadId: {
+          groupId,
+          leadId
+        }
+      }
+    });
+
+    if (!relation) {
+      throw new NotFoundException('Лид не найден в группе');
+    }
+
+    return this.prisma.groupToLead.delete({
+      where: {
+        groupId_leadId: {
+          groupId,
+          leadId
+        }
+      }
+    });
+  }
 }
 

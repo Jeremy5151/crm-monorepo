@@ -78,7 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 if (savedSettings) {
                   try {
                     const settings = JSON.parse(savedSettings);
-                    if (settings.accentColor) {
+                    if (settings.accentColor && settings.accentColor !== '#FFD666') {
                       setCSSVariables(settings.accentColor);
                     }
                   } catch (e) {

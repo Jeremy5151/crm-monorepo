@@ -85,7 +85,13 @@ export default function SettingsPage() {
       if (savedSettings) {
         try {
           const parsed = JSON.parse(savedSettings);
-          setSettings({ ...parsed, language });
+          // Используем сохраненные настройки, но приоритет отдаем актуальному языку
+          setSettings({ 
+            ...parsed, 
+            language: language,
+            // Убеждаемся, что accentColor не undefined
+            accentColor: parsed.accentColor || '#FFD666'
+          });
         } catch (e) {
           console.warn('Failed to parse saved settings:', e);
         }
@@ -93,14 +99,19 @@ export default function SettingsPage() {
       
       // Затем загружаем актуальные данные с сервера
       const data = await apiGet('/v1/settings');
-      setSettings({ ...data, language }); // Use current language from context
+      setSettings({ 
+        ...data, 
+        language: language, // Use current language from context
+        // Убеждаемся, что accentColor не undefined
+        accentColor: data.accentColor || '#FFD666'
+      });
       
       // Обновляем localStorage актуальными данными
       localStorage.setItem('crm-settings', JSON.stringify({
         timezone: data.timezone,
         theme: data.theme,
         language: data.language,
-        accentColor: data.accentColor
+        accentColor: data.accentColor || '#FFD666'
       }));
     } catch (e: any) {
       console.error('Ошибка загрузки настроек:', e);

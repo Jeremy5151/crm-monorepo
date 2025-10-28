@@ -69,3 +69,7 @@ button[data-columns-button] {
   border: 1px solid #e5e6ea;
   background: #fff;
 }
+
+.leads-page .absolute.top-full.right-0.mt-2.bg-white.rounded-lg.shadow-xl.border.border-gray-200.p-6 {
+  background: rgb(255, 255, 255);
+}

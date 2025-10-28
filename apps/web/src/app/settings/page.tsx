@@ -31,10 +31,73 @@ export default function SettingsPage() {
     setSettings(prev => ({ ...prev, language }));
   }, [language]);
 
+  // Function to update CSS variables
+  const updateCSSVariables = (accentColor: string) => {
+    const root = document.documentElement;
+    
+    // Convert hex to RGB
+    const hex = accentColor.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    // Calculate hover color (darker)
+    const hoverR = Math.max(0, r - Math.round(r * 0.1));
+    const hoverG = Math.max(0, g - Math.round(g * 0.1));
+    const hoverB = Math.max(0, b - Math.round(b * 0.1));
+    
+    // Calculate light color (lighter)
+    const lightR = Math.min(255, r + Math.round((255 - r) * 0.3));
+    const lightG = Math.min(255, g + Math.round((255 - g) * 0.3));
+    const lightB = Math.min(255, b + Math.round((255 - b) * 0.3));
+    
+    root.style.setProperty('--primary', `rgb(${r}, ${g}, ${b})`);
+    root.style.setProperty('--primary-hover', `rgb(${hoverR}, ${hoverG}, ${hoverB})`);
+    root.style.setProperty('--primary-light', `rgb(${lightR}, ${lightG}, ${lightB})`);
+    
+    // Update background gradient
+    const gradientColor = `rgb(${lightR}, ${lightG}, ${lightB})`;
+    const gradientStyle = `linear-gradient(352deg, ${gradientColor}, #E4E6E7)`;
+    
+    // Find and update the app-layout background
+    const appLayout = document.querySelector('.app-layout') as HTMLElement;
+    if (appLayout) {
+      appLayout.style.setProperty('--bg-gradient', gradientStyle);
+    }
+    
+    // Also update the ::after pseudo-element via CSS custom property
+    root.style.setProperty('--bg-gradient', gradientStyle);
+  };
+
+  // Update CSS variables when accent color changes
+  useEffect(() => {
+    updateCSSVariables(settings.accentColor);
+  }, [settings.accentColor]);
+
   async function loadSettings() {
     try {
+      // Сначала пробуем загрузить из localStorage для быстрого отображения
+      const savedSettings = localStorage.getItem('crm-settings');
+      if (savedSettings) {
+        try {
+          const parsed = JSON.parse(savedSettings);
+          setSettings({ ...parsed, language });
+        } catch (e) {
+          console.warn('Failed to parse saved settings:', e);
+        }
+      }
+      
+      // Затем загружаем актуальные данные с сервера
       const data = await apiGet('/v1/settings');
       setSettings({ ...data, language }); // Use current language from context
+      
+      // Обновляем localStorage актуальными данными
+      localStorage.setItem('crm-settings', JSON.stringify({
+        timezone: data.timezone,
+        theme: data.theme,
+        language: data.language,
+        accentColor: data.accentColor
+      }));
     } catch (e: any) {
       console.error('Ошибка загрузки настроек:', e);
       showError(t('common.error'), e?.message || String(e));
@@ -51,6 +114,14 @@ export default function SettingsPage() {
         accentColor: settings.accentColor
       });
       showSuccess(t('settings.saved'));
+      
+      // Сохраняем настройки в localStorage для быстрого доступа
+      localStorage.setItem('crm-settings', JSON.stringify({
+        timezone: settings.timezone,
+        theme: settings.theme,
+        language: settings.language,
+        accentColor: settings.accentColor
+      }));
       
       // Обновляем локальные контексты
       setTheme(settings.theme as any);

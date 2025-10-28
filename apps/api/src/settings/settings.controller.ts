@@ -14,8 +14,8 @@ export class SettingsController {
   }
 
   @Patch()
-  updateSettings(@Body() data: { timezone?: string; theme?: string; language?: string }) {
-    this.logger.log(`Updating CRM settings: timezone=${data.timezone}, theme=${data.theme}, language=${data.language}`);
+  updateSettings(@Body() data: { timezone?: string; theme?: string; language?: string; accentColor?: string }) {
+    this.logger.log(`Updating CRM settings: timezone=${data.timezone}, theme=${data.theme}, language=${data.language}, accentColor=${data.accentColor}`);
     return this.settingsService.updateSettings(data);
   }
 }

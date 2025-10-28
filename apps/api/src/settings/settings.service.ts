@@ -14,7 +14,10 @@ export class SettingsService {
       // Создаем настройки по умолчанию если их нет
       settings = await prisma.crmSettings.create({
         data: {
-          timezone: 'UTC'
+          timezone: 'UTC',
+          theme: 'light',
+          language: 'en',
+          accentColor: '#FFD666'
         }
       });
       this.logger.log('Created default CRM settings');
@@ -23,25 +26,31 @@ export class SettingsService {
     return settings;
   }
 
-  async updateSettings(data: { timezone?: string }) {
+  async updateSettings(data: { timezone?: string; theme?: string; language?: string; accentColor?: string }) {
     let settings = await prisma.crmSettings.findFirst();
     
     if (!settings) {
       settings = await prisma.crmSettings.create({
         data: {
-          timezone: data.timezone || 'UTC'
+          timezone: data.timezone || 'UTC',
+          theme: data.theme || 'light',
+          language: data.language || 'en',
+          accentColor: data.accentColor || '#FFD666'
         }
       });
     } else {
       settings = await prisma.crmSettings.update({
         where: { id: settings.id },
         data: {
-          timezone: data.timezone
+          timezone: data.timezone,
+          theme: data.theme,
+          language: data.language,
+          accentColor: data.accentColor
         }
       });
     }
 
-    this.logger.log(`Updated CRM settings: timezone=${settings.timezone}`);
+    this.logger.log(`Updated CRM settings: timezone=${settings.timezone}, theme=${settings.theme}, language=${settings.language}, accentColor=${settings.accentColor}`);
     return settings;
   }
 }

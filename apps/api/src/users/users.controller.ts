@@ -39,5 +39,10 @@ export class UsersController {
   regenerateApiKey(@Param('id') id: string, @CurrentUser() user: any) {
     return this.usersService.regenerateApiKey(id, user.id);
   }
+
+  @Patch(':id/personal-settings')
+  updatePersonalSettings(@Param('id') id: string, @Body() data: { theme?: string; accentColor?: string }, @CurrentUser() user: any) {
+    return this.usersService.updatePersonalSettings(id, data, user.id);
+  }
 }
 

@@ -227,12 +227,13 @@ model BoxBroker {
 }
 
 model CrmSettings {
-  id        String   @id @default(cuid())
-  timezone  String   @default("UTC")        // глобальный часовой пояс CRM
-  theme     String   @default("light")      // Цветовая схема (light/dark/auto)
-  language  String   @default("en")         // Язык интерфейса (ru/en)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  timezone    String   @default("UTC")        // глобальный часовой пояс CRM
+  theme       String   @default("light")      // Цветовая схема (light/dark/auto)
+  language    String   @default("en")         // Язык интерфейса (ru/en)
+  accentColor String   @default("#FFD666")    // Акцентный цвет (hex)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   
   @@map("crm_settings")
 }
@@ -254,6 +255,8 @@ model User {
   apiKey      String   @unique @default(cuid())
   timezone    String   @default("UTC")
   language    String   @default("en")
+  theme       String   @default("light")      // Персональная тема (light/dark/auto)
+  accentColor String   @default("#FFD666")    // Персональный акцентный цвет (hex)
   
   createdBy   String?
   lastLoginAt DateTime?

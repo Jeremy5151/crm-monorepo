@@ -28,6 +28,29 @@ $accent-color: rgb(255, 214, 102); // Желтый (текущий)
     --primary-light: #{lighten($accent-color, 30%)};
 }
 
+// ============================================
+// КНОПКИ С ДИНАМИЧЕСКИМ ЦВЕТОМ
+// ============================================
+
+.btn-primary {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+    color: #000 !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+}
+
+.btn-primary:focus {
+    box-shadow: 0 0 0 3px var(--primary-light) !important;
+}
+
+// ============================================
+// ТЕМЫ И ФОНЫ
+// ============================================
+
 body {
     background: #fff;
 }
@@ -42,6 +65,10 @@ body {
     background: linear-gradient(352deg, #{lighten($accent-color, 20%)}, #E4E6E7);
     z-index: -1;
 }
+
+// ============================================
+// КАРТОЧКИ И ЭЛЕМЕНТЫ С GLASS-MORPHISM
+// ============================================
 
 .card,
 .bg-white,
@@ -70,14 +97,12 @@ button.outline-none {
 .page-container .bg-white.rounded-2xl.p-3.shadow-sm {
     position: relative;
     z-index: 2;
-
 }
 
 .leads-table thead {
     background: transparent;
     position: relative;
 }
-
 
 .leads-table tbody tr {
     background: transparent;

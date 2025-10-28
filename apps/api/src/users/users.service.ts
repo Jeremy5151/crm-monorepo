@@ -310,4 +310,41 @@ export class UsersService {
     return updatedUser;
   }
 
+  async updatePersonalSettings(id: string, data: { theme?: string; accentColor?: string }, currentUserId?: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id }
+    });
+
+    if (!user) {
+      throw new NotFoundException('Пользователь не найден');
+    }
+
+    // Проверяем права - пользователь может обновлять только свои настройки
+    if (currentUserId && user.id !== currentUserId) {
+      const currentUser = await this.prisma.user.findUnique({
+        where: { id: currentUserId }
+      });
+      
+      if (!currentUser) {
+        throw new NotFoundException('Пользователь не найден');
+      }
+
+      // Только SUPERADMIN и ADMIN могут обновлять настройки других пользователей
+      if (!['SUPERADMIN', 'ADMIN'].includes(currentUser.role)) {
+        throw new ForbiddenException('Недостаточно прав для обновления настроек пользователя');
+      }
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id },
+      data: {
+        theme: data.theme,
+        accentColor: data.accentColor
+      },
+      select: { id: true, email: true, name: true, theme: true, accentColor: true }
+    });
+
+    return updatedUser;
+  }
+
 }

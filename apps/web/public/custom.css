@@ -4,6 +4,21 @@
   --primary-light: white;
 }
 
+.btn-primary {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #000 !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+}
+
+.btn-primary:focus {
+  box-shadow: 0 0 0 3px var(--primary-light) !important;
+}
+
 body {
   background: #fff;
 }

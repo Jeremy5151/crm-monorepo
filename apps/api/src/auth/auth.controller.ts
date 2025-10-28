@@ -26,6 +26,8 @@ export class AuthController {
         name: user.name,
         role: user.role,
         apiKey: user.apiKey,
+        theme: user.theme,
+        accentColor: user.accentColor,
       }
     };
   }

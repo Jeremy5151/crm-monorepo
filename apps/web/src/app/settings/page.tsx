@@ -14,7 +14,8 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState({ 
     timezone: 'UTC', 
     theme: 'light', 
-    language: language 
+    language: language,
+    accentColor: '#FFD666'
   });
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -46,7 +47,8 @@ export default function SettingsPage() {
       await apiPatch('/v1/settings', { 
         timezone: settings.timezone,
         theme: settings.theme,
-        language: settings.language
+        language: settings.language,
+        accentColor: settings.accentColor
       });
       showSuccess(t('settings.saved'));
       
@@ -155,6 +157,52 @@ export default function SettingsPage() {
               ]}
               placeholder={t('settings.theme')}
             />
+          </div>
+        </div>
+
+        {/* Акцентный цвет */}
+        <div>
+          <h2 className="text-lg font-medium text-gray-900 mb-4">{t('settings.accentColor')}</h2>
+          <p className="text-sm text-gray-700 mb-4">
+            {t('settings.accentColor.description')}
+          </p>
+          
+          <div className="max-w-md space-y-4">
+            <div className="flex items-center gap-4">
+              <input
+                type="color"
+                value={settings.accentColor}
+                onChange={(e) => setSettings(s => ({ ...s, accentColor: e.target.value }))}
+                className="w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer"
+              />
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={settings.accentColor}
+                  onChange={(e) => setSettings(s => ({ ...s, accentColor: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="#FFD666"
+                />
+              </div>
+            </div>
+            
+            {/* Предустановленные цвета */}
+            <div className="grid grid-cols-6 gap-2">
+              {[
+                '#FFD666', '#60A5FA', '#34D399', '#F472B6', '#A78BFA', '#FBBF24',
+                '#EF4444', '#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EC4899'
+              ].map((color) => (
+                <button
+                  key={color}
+                  onClick={() => setSettings(s => ({ ...s, accentColor: color }))}
+                  className={`w-8 h-8 rounded-lg border-2 ${
+                    settings.accentColor === color ? 'border-gray-800' : 'border-gray-300'
+                  }`}
+                  style={{ backgroundColor: color }}
+                  title={color}
+                />
+              ))}
+            </div>
           </div>
         </div>
 

@@ -33,6 +33,8 @@ export default function SettingsPage() {
 
   // Function to update CSS variables
   const updateCSSVariables = (accentColor: string) => {
+    if (!accentColor) return; // Exit if accentColor is undefined or empty
+    
     const root = document.documentElement;
     
     // Convert hex to RGB
@@ -71,7 +73,9 @@ export default function SettingsPage() {
 
   // Update CSS variables when accent color changes
   useEffect(() => {
-    updateCSSVariables(settings.accentColor);
+    if (settings.accentColor) {
+      updateCSSVariables(settings.accentColor);
+    }
   }, [settings.accentColor]);
 
   async function loadSettings() {

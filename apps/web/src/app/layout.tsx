@@ -54,6 +54,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 
                 // Set CSS variables
                 function setCSSVariables(accentColor) {
+                  if (!accentColor) return; // Exit if accentColor is undefined or empty
+                  
                   const { r, g, b } = hexToRgb(accentColor);
                   const hover = getHoverColor(r, g, b);
                   const light = getLightColor(r, g, b);

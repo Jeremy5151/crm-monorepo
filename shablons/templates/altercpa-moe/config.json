@@ -1,0 +1,53 @@
+{
+  "id": "altercpa-moe",
+  "name": "AlterCPA MOE",
+  "version": "1.0.0",
+  "description": "AlterCPA MOE affiliate network integration for lead submission and status pulling",
+  "urlTemplate": "https://api.cpa.moe/ext/add.json?id={WM}-{API_KEY}",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "bodyTemplate": "{\"id\":\"auto\",\"offer\":${OFFER},\"phone\":\"${phoneDigits}\",\"ip\":\"${ip}\",\"name\":\"${firstName} ${lastName}\",\"email\":\"${email}\",\"country\":\"${country}\"}",
+  "formFields": [
+    {
+      "name": "WM",
+      "label": "WM (вебмастер)",
+      "type": "text",
+      "required": true,
+      "placeholder": "3452"
+    },
+    {
+      "name": "API_KEY",
+      "label": "API ключ",
+      "type": "password",
+      "required": true,
+      "placeholder": "db14ae31a1ba39973ce41cd7137a9be9"
+    },
+    {
+      "name": "OFFER",
+      "label": "Оффер",
+      "type": "text",
+      "required": true,
+      "placeholder": "2445"
+    }
+  ],
+  "pull": {
+    "enabled": true,
+    "url": "https://api.cpa.moe/ext/status.json?id={WM}-{API_KEY}",
+    "method": "POST",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyTemplate": "{\"uids\":[${leadIds}]}",
+    "interval": 15,
+    "statusMapping": {
+      "wait": "PENDING",
+      "hold": "HOLD",
+      "approve": "APPROVED",
+      "cancel": "REJECTED",
+      "trash": "TRASH"
+    }
+  }
+}
+

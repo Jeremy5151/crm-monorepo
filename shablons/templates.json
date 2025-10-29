@@ -26,6 +26,14 @@
       "category": "email",
       "icon": "📧",
       "tags": ["mailchimp", "email", "marketing"]
+    },
+    {
+      "id": "altercpa-moe",
+      "name": "AlterCPA MOE",
+      "version": "1.0.0",
+      "description": "AlterCPA MOE affiliate network integration",
+      "category": "broker",
+      "tags": ["altercpa", "moe", "broker", "leads", "cpa"]
     }
   ]
 }

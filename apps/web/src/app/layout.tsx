@@ -20,8 +20,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: `
               // Initialize CSS variables on page load
               function initializeCSSVariables() {
-                const root = document.documentElement;
-                
                 // Default accent color
                 const defaultAccentColor = '#FFD666';
                 
@@ -52,7 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   };
                 }
                 
-                // Set CSS variables
+                // Set CSS variables using CSS custom properties
                 function setCSSVariables(accentColor) {
                   if (!accentColor) return; // Exit if accentColor is undefined or empty
                   
@@ -60,14 +58,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   const hover = getHoverColor(r, g, b);
                   const light = getLightColor(r, g, b);
                   
-                  root.style.setProperty('--primary', \`rgb(\${r}, \${g}, \${b})\`);
-                  root.style.setProperty('--primary-hover', \`rgb(\${hover.r}, \${hover.g}, \${hover.b})\`);
-                  root.style.setProperty('--primary-light', \`rgb(\${light.r}, \${light.g}, \${light.b})\`);
+                  // Create a style element to inject CSS variables
+                  let styleElement = document.getElementById('dynamic-css-variables');
+                  if (!styleElement) {
+                    styleElement = document.createElement('style');
+                    styleElement.id = 'dynamic-css-variables';
+                    document.head.appendChild(styleElement);
+                  }
                   
-                  // Update background gradient
-                  const gradientColor = \`rgb(\${light.r}, \${light.g}, \${light.b})\`;
-                  const gradientStyle = \`linear-gradient(352deg, \${gradientColor}, #E4E6E7)\`;
-                  root.style.setProperty('--bg-gradient', gradientStyle);
+                  styleElement.textContent = \`:root {
+                    --primary: rgb(\${r}, \${g}, \${b});
+                    --primary-hover: rgb(\${hover.r}, \${hover.g}, \${hover.b});
+                    --primary-light: rgb(\${light.r}, \${light.g}, \${light.b});
+                    --bg-gradient: linear-gradient(352deg, rgb(\${light.r}, \${light.g}, \${light.b}), #E4E6E7);
+                  }\`;
                 }
                 
                 // Initialize with default color

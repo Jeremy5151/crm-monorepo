@@ -35,8 +35,6 @@ export default function SettingsPage() {
   const updateCSSVariables = (accentColor: string) => {
     if (!accentColor) return; // Exit if accentColor is undefined or empty
     
-    const root = document.documentElement;
-    
     // Convert hex to RGB
     const hex = accentColor.replace('#', '');
     const r = parseInt(hex.substr(0, 2), 16);
@@ -53,22 +51,20 @@ export default function SettingsPage() {
     const lightG = Math.min(255, g + Math.round((255 - g) * 0.3));
     const lightB = Math.min(255, b + Math.round((255 - b) * 0.3));
     
-    root.style.setProperty('--primary', `rgb(${r}, ${g}, ${b})`);
-    root.style.setProperty('--primary-hover', `rgb(${hoverR}, ${hoverG}, ${hoverB})`);
-    root.style.setProperty('--primary-light', `rgb(${lightR}, ${lightG}, ${lightB})`);
-    
-    // Update background gradient
-    const gradientColor = `rgb(${lightR}, ${lightG}, ${lightB})`;
-    const gradientStyle = `linear-gradient(352deg, ${gradientColor}, #E4E6E7)`;
-    
-    // Find and update the app-layout background
-    const appLayout = document.querySelector('.app-layout') as HTMLElement;
-    if (appLayout) {
-      appLayout.style.setProperty('--bg-gradient', gradientStyle);
+    // Create or update style element to inject CSS variables
+    let styleElement = document.getElementById('dynamic-css-variables');
+    if (!styleElement) {
+      styleElement = document.createElement('style');
+      styleElement.id = 'dynamic-css-variables';
+      document.head.appendChild(styleElement);
     }
     
-    // Also update the ::after pseudo-element via CSS custom property
-    root.style.setProperty('--bg-gradient', gradientStyle);
+    styleElement.textContent = `:root {
+      --primary: rgb(${r}, ${g}, ${b});
+      --primary-hover: rgb(${hoverR}, ${hoverG}, ${hoverB});
+      --primary-light: rgb(${lightR}, ${lightG}, ${lightB});
+      --bg-gradient: linear-gradient(352deg, rgb(${lightR}, ${lightG}, ${lightB}), #E4E6E7);
+    }`;
   };
 
   // Update CSS variables when accent color changes

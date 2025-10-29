@@ -1,0 +1,52 @@
+{
+  "id": "altercpa-moe",
+  "name": "AlterCPA MOE",
+  "version": "1.0.0",
+  "description": "AlterCPA MOE affiliate network integration for lead submission and status pulling",
+  "urlTemplate": "https://api.cpa.moe/ext/add.json?id={USER_ID}-{API_KEY}",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "bodyTemplate": "{\"id\":\"auto\",\"offer\":${offer},\"phone\":\"${phoneDigits}\",\"ip\":\"${ip}\",\"name\":\"${firstName} ${lastName}\",\"email\":\"${email}\",\"country\":\"${country}\"}",
+  "formFields": [
+    {
+      "name": "USER_ID",
+      "label": "AlterCPA MOE User ID",
+      "type": "text",
+      "required": true,
+      "placeholder": "e.g., 3452"
+    },
+    {
+      "name": "API_KEY",
+      "label": "AlterCPA MOE API Key",
+      "type": "password",
+      "required": true,
+      "placeholder": "e.g., db14ae31a1ba39973ce41cd7137a9be9"
+    },
+    {
+      "name": "offer",
+      "label": "Default Offer ID",
+      "type": "text",
+      "required": true,
+      "placeholder": "e.g., 2445"
+    }
+  ],
+  "pull": {
+    "enabled": true,
+    "url": "https://api.cpa.moe/ext/status.json?id={USER_ID}-{API_KEY}",
+    "method": "POST",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyTemplate": "{\"uids\":[${leadIds}]}",
+    "interval": 15,
+    "statusMapping": {
+      "wait": "PENDING",
+      "hold": "HOLD",
+      "approve": "APPROVED",
+      "cancel": "REJECTED",
+      "trash": "TRASH"
+    }
+  }
+}

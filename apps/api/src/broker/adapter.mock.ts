@@ -150,6 +150,11 @@ export function renderTemplate(template: string, lead: Lead, params?: Record<str
       return phone.slice(prefix.length);
     }
     
+    // Специальная обработка для phoneDigits (только цифры, полный номер)
+    if (trimmedKey === 'phoneDigits') {
+      return (lead.phone || '').replace(/\D/g, '');
+    }
+    
     // Специальная обработка для password - генерируем если нет
     if (trimmedKey === 'password') {
       const attrs = lead.attrs as any;
@@ -295,6 +300,12 @@ Body: ${raw}
         if (json.status === 'Failed') {
           const reason = typeof json.errors === 'string' ? json.errors : JSON.stringify(json.errors);
           return { type: 'rejected', code: 400, raw: reason, requestUrl: url, requestHeaders: headers, requestBody: body };
+        }
+        
+        // AlterCPA MOE формат: { status: "ok", id: 1234, uid: 45678 }
+        if (json.status === 'ok' && json.uid) {
+          const externalId = String(json.uid);
+          return { type: 'accepted', externalId, autologinUrl: undefined, raw, requestUrl: url, requestHeaders: headers, requestBody: body };
         }
         
         // Trackbox формат

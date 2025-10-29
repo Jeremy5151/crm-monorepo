@@ -28,7 +28,14 @@ export class TemplateSyncService {
 
   async getAvailableTemplates(): Promise<ExternalTemplate[]> {
     try {
-      const response = await fetch(`${this.TEMPLATES_BASE_URL}/templates.json`);
+      // Используем cache: 'no-store' для всегда свежих данных из GitHub
+      const response = await fetch(`${this.TEMPLATES_BASE_URL}/templates.json`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
       if (!response.ok) {
         logger.warn('GitHub templates unavailable');
         return [];
@@ -43,7 +50,14 @@ export class TemplateSyncService {
 
   async getTemplateConfig(templateId: string): Promise<ExternalTemplate | null> {
     try {
-      const response = await fetch(`${this.TEMPLATES_BASE_URL}/templates/${templateId}/config.json`);
+      // Используем cache: 'no-store' для всегда свежих данных из GitHub
+      const response = await fetch(`${this.TEMPLATES_BASE_URL}/templates/${templateId}/config.json`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
       if (!response.ok) {
         throw new Error(`Failed to fetch template config: ${response.statusText}`);
       }

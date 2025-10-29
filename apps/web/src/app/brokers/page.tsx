@@ -175,6 +175,13 @@ export default function BrokersPage() {
     loadAvailableTemplates();
   }, []);
 
+  // Загружаем свежие шаблоны при открытии формы создания интеграции
+  useEffect(() => {
+    if (showAdd && step === 1) {
+      loadAvailableTemplates();
+    }
+  }, [showAdd, step]);
+
   async function addTemplate() {
     setLoading(true);
     try {

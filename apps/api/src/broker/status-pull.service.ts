@@ -87,7 +87,7 @@ export class StatusPullService implements OnModuleInit {
         .replace(/\{leadIds\}/g, encodeURIComponent(idsCsv));
       
       // Рендерим body с датами и ids (для POST запросов)
-      let body = this.renderPullBody(template.pullBody, from, to)
+      let body = this.renderPullBody(template.pullBody, from, to, params)
         .replace(/\$\{ids\}/g, idsCsv).replace(/\{ids\}/g, idsCsv)
         .replace(/\$\{leadIds\}/g, idsCsv).replace(/\{leadIds\}/g, idsCsv);
       
@@ -111,8 +111,18 @@ export class StatusPullService implements OnModuleInit {
 
       // Для POST добавляем Content-Type и body
       if (method === 'POST') {
-        options.headers['Content-Type'] = options.headers['Content-Type'] || options.headers['content-type'] || 'application/json';
-        options.body = body;
+        const ct = (options.headers['Content-Type'] || options.headers['content-type'] || '').toLowerCase();
+        if (!ct) options.headers['Content-Type'] = 'application/json';
+        // Если body пустое, но есть ids — подставим умный дефолт
+        if (!body || !String(body).trim()) {
+          if ((options.headers['Content-Type'] || '').includes('application/x-www-form-urlencoded')) {
+            options.body = `ids=${encodeURIComponent(idsCsv)}`;
+          } else {
+            options.body = JSON.stringify({ ids: idsCsv.split(',') });
+          }
+        } else {
+          options.body = body;
+        }
       }
       
       console.log('[STATUS_PULL] REQUEST', { url: pullUrl, method, headers: options.headers, body: options.body ?? null });
@@ -241,10 +251,11 @@ export class StatusPullService implements OnModuleInit {
 
     let result = template;
     
-    // Подставляем параметры интеграции
+    // Подставляем параметры интеграции (${KEY} и {KEY})
     for (const [key, value] of Object.entries(params)) {
-      const regex = new RegExp(`\\$\\{${key}\\}`, 'g');
-      result = result.replace(regex, String(value || ''));
+      const v = String(value ?? '');
+      result = result.replace(new RegExp(`\\$\\{${key}\\}`, 'g'), v);
+      result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), v);
     }
     
     // Подставляем даты
@@ -260,18 +271,26 @@ export class StatusPullService implements OnModuleInit {
   /**
    * Рендерим body для pull запроса с датами
    */
-  renderPullBody(template: string, from: Date, to: Date): string {
+  renderPullBody(template: string, from: Date, to: Date, params: Record<string, any> = {}): string {
     if (!template) return JSON.stringify({ from: from.toISOString(), to: to.toISOString() });
     
     const formatDate = (date: Date) => {
       return date.toISOString().replace('T', ' ').slice(0, 19);
     };
 
-    return template
+    let result = template
       .replace(/\$\{from\}/g, formatDate(from))
       .replace(/\$\{to\}/g, formatDate(to))
       .replace(/\$\{fromIso\}/g, from.toISOString())
       .replace(/\$\{toIso\}/g, to.toISOString());
+
+    // Подставляем параметры интеграции в body (${KEY} и {KEY})
+    for (const [key, value] of Object.entries(params)) {
+      const v = String(value ?? '');
+      result = result.replace(new RegExp(`\\$\\{${key}\\}`, 'g'), v);
+      result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), v);
+    }
+    return result;
   }
 
   /**

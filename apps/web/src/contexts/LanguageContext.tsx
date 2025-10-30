@@ -435,6 +435,9 @@ const translations = {
     'logs.of': 'из',
     'logs.total': 'всего',
     'logs.no_logs': 'Нет логов для отображения',
+    'logs.refresh': 'Обновить',
+    'logs.loading': 'Загрузка...',
+    'logs.all': 'Все',
   },
   en: {
     // Common
@@ -858,6 +861,9 @@ const translations = {
     'logs.of': 'of',
     'logs.total': 'total',
     'logs.no_logs': 'No logs to display',
+    'logs.refresh': 'Refresh',
+    'logs.loading': 'Loading...',
+    'logs.all': 'All',
   }
 };
 

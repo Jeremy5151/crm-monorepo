@@ -65,6 +65,11 @@ export class StatusPullService implements OnModuleInit {
     logger.log(`Pulling status for ${template.code} from ${from.toISOString()} to ${to.toISOString()}`);
 
     try {
+      // Спец-ветка для AlterCPA Moe: нужен список externalId (ids)
+      if (template.code?.toUpperCase() === 'ALTERCPA_MOE') {
+        await this.pullAlterCpaMoe(template);
+        return;
+      }
       // Рендерим URL с параметрами интеграции и датами
       let pullUrl = this.renderPullUrl(template.pullUrl, from, to, template.params || {});
       
@@ -110,6 +115,90 @@ export class StatusPullService implements OnModuleInit {
     } catch (error: any) {
       logger.error(`❌ ${template.code}: ${error.message}`);
     }
+  }
+
+  /**
+   * Pull для AlterCPA Moe: https://cpa.moe/ru/api-wm.html
+   * URL: https://api.cpa.moe/ext/list.json?id={user}-{key}&ids=1,2,3
+   */
+  private async pullAlterCpaMoe(template: any) {
+    const now = new Date();
+    // Берём лиды с этим брокером и с externalId, за последние 14 дней
+    const fromDate = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+    const leads = await prisma.lead.findMany({
+      where: {
+        broker: { equals: 'ALTERCPA_MOE' },
+        externalId: { not: null },
+        createdAt: { gte: fromDate }
+      },
+      select: { id: true, externalId: true }
+    });
+
+    if (leads.length === 0) {
+      logger.log('ALTERCPA_MOE: no leads to pull');
+      return;
+    }
+
+    const idsCsv = leads.map(l => String(l.externalId)).join(',');
+    const method = (template.pullMethod || 'POST').toUpperCase();
+    let url = template.pullUrl as string;
+    if (method === 'GET') {
+      url += (url.includes('?') ? '&' : '?') + `ids=${encodeURIComponent(idsCsv)}`;
+    }
+
+    const opts: any = {
+      method,
+      headers: { ...(template.pullHeaders || {}) },
+      agent: url.startsWith('https') ? httpsAgent : undefined
+    };
+    if (method === 'POST') {
+      const params = new URLSearchParams();
+      params.append('ids', idsCsv);
+      opts.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+      opts.body = params.toString();
+    }
+
+    const resp = await fetch(url, opts) as any;
+    const raw = await resp.text();
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${raw}`);
+
+    let data: any;
+    try { data = JSON.parse(raw); } catch { data = raw; }
+
+    // Ответ может быть объект с ключами id → { stage/status/... }
+    let updates: Array<{ id: string; stage?: string; status?: any } > = [];
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+      for (const [id, info] of Object.entries(data)) {
+        updates.push({ id, stage: (info as any).stage, status: (info as any).status });
+      }
+    }
+
+    let updated = 0;
+    for (const u of updates) {
+      const lead = await prisma.lead.findFirst({ where: { externalId: String(u.id), broker: 'ALTERCPA_MOE' } });
+      if (!lead) continue;
+
+      // маппинг стадий AlterCPA Moe
+      const stage = String(u.stage || '').toLowerCase();
+      const map: Record<string, string> = {
+        wait: 'PENDING',
+        hold: 'HOLD',
+        approve: 'APPROVED',
+        cancel: 'REJECTED',
+        trash: 'TRASH'
+      };
+      const newStatus = map[stage] || (u.status != null ? String(u.status) : null);
+      if (!newStatus || newStatus === lead.brokerStatus) continue;
+
+      await prisma.lead.update({
+        where: { id: lead.id },
+        data: { brokerStatus: newStatus, brokerStatusChangedAt: now }
+      });
+      updated++;
+    }
+
+    await prisma.brokerTemplate.update({ where: { id: template.id }, data: { pullLastSync: now } });
+    logger.log(`ALTERCPA_MOE: Updated ${updated} leads`);
   }
 
   /**

@@ -169,6 +169,94 @@ export default function BrokersPage() {
     }
   }
 
+  function toLinesFromAny(method: string, bodyTemplate: any): string {
+    if (!bodyTemplate) return '';
+    if (typeof bodyTemplate === 'string') {
+      const s = bodyTemplate.trim();
+      try {
+        const obj = JSON.parse(s);
+        return toLinesFromAny(method, obj);
+      } catch {}
+      // Treat as form-url-encoded regardless of presence of macros like ${...}
+      if (s.includes('=') && s.includes('&')) {
+        const pairs = s.split('&');
+        const lines = pairs.map(p => {
+          const [k, ...rest] = p.split('=');
+          const v = rest.join('=');
+          return `${decodeURIComponent(k)}: ${decodeURIComponent(v)};`;
+        });
+        return lines.join('\n');
+      }
+      return s;
+    }
+    if (typeof bodyTemplate === 'object') {
+      const lines = Object.entries(bodyTemplate).map(([k, v]) => `${k}: ${typeof v === 'string' ? v : JSON.stringify(v)};`);
+      return lines.join('\n');
+    }
+    return String(bodyTemplate);
+  }
+
+  function serializeForMethod(method: string, linesBody: string): string {
+    const map: Record<string, string> = {};
+    const lines = (linesBody || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    for (const line of lines) {
+      if (line.startsWith('#') || line.startsWith('//')) continue;
+      const clean = line.endsWith(';') ? line.slice(0, -1) : line;
+      if (!clean.includes(':')) continue;
+      const [kRaw, ...rest] = clean.split(':');
+      const key = kRaw.trim();
+      const val = rest.join(':').trim();
+      if (!key) continue;
+      map[key] = val;
+    }
+    if (method === 'POST_JSON') {
+      return JSON.stringify(map);
+    }
+    return Object.entries(map)
+      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+      .join('&');
+  }
+
+  function validateAndNormalizeBody(method: string, rawBody: string): { ok: boolean; body: string; error?: string } {
+    const trimmed = (rawBody || '').trim();
+    // Allow empty body
+    if (!trimmed) return { ok: true, body: '' };
+
+    if (method === 'POST_JSON') {
+      try {
+        const obj = JSON.parse(trimmed);
+        return { ok: true, body: JSON.stringify(obj, null, 2) };
+      } catch (e: any) {
+        return { ok: false, body: trimmed, error: 'Body must be valid JSON for POST_JSON' };
+      }
+    }
+
+    // For GET/POST (form), expect lines like: key: value;
+    const lines = trimmed.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const normalized: string[] = [];
+    for (const line of lines) {
+      // allow comments starting with # or //
+      if (line.startsWith('#') || line.startsWith('//')) continue;
+      if (!line.includes(':')) {
+        return { ok: false, body: trimmed, error: `Missing ':' in line: "${line}"` };
+      }
+      if (!line.endsWith(';')) {
+        return { ok: false, body: trimmed, error: `Line must end with ';': "${line}"` };
+      }
+      const [keyRaw, ...rest] = line.slice(0, -1).split(':');
+      const key = keyRaw.trim();
+      if (!key || /[^A-Za-z0-9_]/.test(key)) {
+        return { ok: false, body: trimmed, error: `Invalid parameter name: "${key}"` };
+      }
+      const value = rest.join(':').trim();
+      if (value.length === 0) {
+        return { ok: false, body: trimmed, error: `Empty value for parameter: "${key}"` };
+      }
+      normalized.push(`${key}: ${value};`);
+    }
+    return { ok: true, body: normalized.join('\n') };
+  }
+
   // Автозагрузка при открытии страницы
   useEffect(() => {
     loadTemplates();
@@ -182,9 +270,31 @@ export default function BrokersPage() {
     }
   }, [showAdd, step]);
 
+  // Единообразно нормализуем Body при входе на шаг 2 или смене метода
+  useEffect(() => {
+    if (!showAdd || step !== 2) return;
+    const current = form.body || '';
+    const looksEncoded = current.includes('&') && current.includes('=');
+    const looksJson = current.trim().startsWith('{') || current.trim().startsWith('[');
+    if (looksEncoded || looksJson) {
+      const normalized = toLinesFromAny(form.method, current);
+      if (normalized !== current) {
+        setForm(f => ({ ...f, body: normalized }));
+      }
+    }
+  }, [showAdd, step, form.method]);
+
   async function addTemplate() {
     setLoading(true);
     try {
+      // Validate body before saving
+      const bodyCheck = validateAndNormalizeBody(form.method, form.body || '');
+      if (!bodyCheck.ok) {
+        showError(t('brokers.create_error'), bodyCheck.error || 'Invalid body');
+        setLoading(false);
+        return;
+      }
+
       const code = form.name.toUpperCase().replace(/[^A-Z0-9]/g, '_');
       const payload = {
         code,
@@ -194,7 +304,7 @@ export default function BrokersPage() {
         method: form.method,
         url: form.url,
         headers: JSON.parse(form.headers),
-        body: form.body,
+        body: serializeForMethod(form.method, bodyCheck.body),
         params: form.params,
         // Password generation settings
         passwordLength: form.passwordLength,
@@ -229,6 +339,14 @@ export default function BrokersPage() {
     if (!editingId) return;
     setLoading(true);
     try {
+      // Validate body before saving
+      const bodyCheck = validateAndNormalizeBody(form.method, form.body || '');
+      if (!bodyCheck.ok) {
+        showError(t('brokers.create_error'), bodyCheck.error || 'Invalid body');
+        setLoading(false);
+        return;
+      }
+
       const code = form.name.toUpperCase().replace(/[^A-Z0-9]/g, '_');
       const payload = {
         code,
@@ -238,7 +356,7 @@ export default function BrokersPage() {
         method: form.method,
         url: form.url,
         headers: JSON.parse(form.headers),
-        body: form.body,
+        body: serializeForMethod(form.method, bodyCheck.body),
         params: form.params,
         // Password generation settings
         passwordLength: form.passwordLength,
@@ -318,7 +436,7 @@ export default function BrokersPage() {
       method: template.method,
       url: template.url,
       headers: JSON.stringify(parsedHeaders, null, 2),
-      body: template.body,
+      body: toLinesFromAny(template.method, template.body),
       params: template.params || {},
       // Password generation settings
       passwordLength: template.passwordLength || 8,
@@ -399,7 +517,7 @@ export default function BrokersPage() {
         url: urlWithDomain,
         method: config.method,
         headers: JSON.stringify(config.headers, null, 2),
-        body: JSON.stringify(config.bodyTemplate, null, 2),
+        body: toLinesFromAny(config.method, config.bodyTemplate),
         params: config.params || {},
         // Password generation defaults from template
         passwordLength: config.passwordSettings?.length || 8,
@@ -554,20 +672,18 @@ export default function BrokersPage() {
                   </div>
 
                   <div className="space-y-4">
-                    {form.method !== 'GET' && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-800 mb-2">
-                          {t('brokers.body')} {form.method === 'POST_JSON' ? '(JSON)' : '(form-urlencoded)'}
-                        </label>
-                        <textarea
-                          className="w-full px-3 py-2 border border-gray-300 rounded-xl font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          rows={12}
-                          value={form.body || ''}
-                          onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
-                          placeholder={form.method === 'POST_JSON' ? '{\n  "key": "value"\n}' : 'key1=value1&key2=value2'}
-                        />
-                      </div>
-                    )}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-800 mb-2">
+                        {t('brokers.body')} {form.method === 'POST_JSON' ? '(JSON)' : '(params: key: value; per line)'}
+                      </label>
+                      <textarea
+                        className="w-full px-3 py-2 border border-gray-300 rounded-xl font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        rows={12}
+                        value={form.body || ''}
+                        onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
+                        placeholder={form.method === 'POST_JSON' ? '{\n  "key": "value"\n}' : 'key1: value1;\nkey2: value2;'}
+                      />
+                    </div>
 
                     <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                       <h4 className="text-sm font-medium text-gray-800 mb-3">{t('brokers.available_macros')}</h4>

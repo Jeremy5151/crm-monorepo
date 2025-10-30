@@ -1,6 +1,7 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+import { StatusPullService } from './broker/status-pull.service';
 
 // Log types
 export enum LogType {
@@ -134,6 +135,8 @@ console.error = function(...args: any[]) {
 
 @Controller('v1')
 export class AppController {
+  constructor(private readonly statusPullService: StatusPullService) {}
+
   @Get('ping')
   ping() {
     return { status: 'ok' };
@@ -149,5 +152,19 @@ export class AppController {
     const filterType = Object.values(LogType).includes(type as LogType) ? (type as LogType) : null;
     if (!filterType) return logs; // Return all if invalid type
     return logs.filter(log => log.type === filterType);
+  }
+
+  @Post('broker/pull-statuses')
+  async pullStatuses() {
+    try {
+      console.log('[STATUS_PULL] Manual pull requested');
+      await this.statusPullService.pullAllBrokerStatuses();
+      console.log('[STATUS_PULL] Manual pull finished');
+      return { success: true, message: 'Status pull completed' };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : (typeof err === 'string' ? err : JSON.stringify(err));
+      console.error('Error in pull-statuses endpoint:', msg);
+      return { success: false, error: msg };
+    }
   }
 }

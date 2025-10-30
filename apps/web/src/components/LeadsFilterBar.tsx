@@ -6,6 +6,9 @@ import ColumnPicker from '@/components/ColumnPicker';
 import { CustomSelect } from '@/components/CustomSelect';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { ColumnKey } from '@/lib/columns';
+import { useToast } from '@/contexts/ToastContext';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE as string;
+const API_KEY = process.env.NEXT_PUBLIC_API_KEY as string;
 
 type Lead = {
   id: string;
@@ -28,6 +31,7 @@ const TYPES = ['', 'NEW', 'SENT', 'REJECTED'];
 export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
   const { params, set } = useQueryState();
   const { t } = useLanguage();
+  const { showToast } = useToast();
 
   const [showColumns, setShowColumns] = useState(false);
   const [showCreatedDateInputs, setShowCreatedDateInputs] = useState(false);
@@ -78,6 +82,34 @@ export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
     setShowSentDateInputs(sentDateRange === 'custom');
   }, [createdDateRange, sentDateRange]);
 
+  const [pulling, setPulling] = useState(false);
+
+  async function handlePullStatuses() {
+    if (pulling) return;
+    setPulling(true);
+    try {
+      const res = await fetch(`${API_BASE}/v1/broker/pull-statuses`, {
+        method: 'POST',
+        cache: 'no-store',
+        headers: { 'X-API-Key': API_KEY, 'Content-Type': 'application/json' },
+      });
+      const text = await res.text();
+      let data: any = null;
+      try { data = JSON.parse(text); } catch { /* noop */ }
+      if (!res.ok) {
+        const msg = (data?.error || text || 'Failed to pull statuses');
+        showToast({ title: 'Error', description: msg, variant: 'error' });
+      } else {
+        const msg = (data?.message || 'Statuses updated');
+        showToast({ title: 'Success', description: msg, variant: 'success' });
+      }
+    } catch (e: any) {
+      showToast({ title: 'Error', description: String(e?.message || e), variant: 'error' });
+    } finally {
+      setPulling(false);
+    }
+  }
+
   return (
     <div className="bg-white rounded-2xl p-3 shadow-sm">
       <div className="flex items-center gap-3">
@@ -120,6 +152,15 @@ export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
           <button className="px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 text-sm font-medium text-gray-700 flex items-center gap-2 opacity-50 cursor-not-allowed">
             <i className="fas fa-download"></i>
             {t('leads.export')}
+          </button>
+          
+          <button 
+            className={`px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center gap-2 transition-colors ${pulling ? 'bg-yellow-400 cursor-wait' : 'bg-yellow-500 hover:bg-yellow-600'}`}
+            onClick={handlePullStatuses}
+            disabled={pulling}
+          >
+            <i className={`fas fa-sync-alt ${pulling ? 'animate-spin' : ''}`}></i>
+            {pulling ? 'Обновление…' : 'Получить статусы'}
           </button>
         </div>
       </div>

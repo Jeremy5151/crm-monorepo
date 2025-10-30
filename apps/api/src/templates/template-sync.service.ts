@@ -1,4 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 import { PrismaClient } from '@prisma/client';
 
 const logger = new Logger('TemplateSyncService');
@@ -26,42 +28,54 @@ export interface ExternalTemplate {
 export class TemplateSyncService {
   private readonly TEMPLATES_BASE_URL = 'https://raw.githubusercontent.com/Jeremy5151/shablons/main';
 
+  constructor(private readonly httpService: HttpService) {}
+
   async getAvailableTemplates(): Promise<ExternalTemplate[]> {
     try {
-      // Используем cache: 'no-store' для всегда свежих данных из GitHub
-      const response = await fetch(`${this.TEMPLATES_BASE_URL}/templates.json`, {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
-      });
-      if (!response.ok) {
-        logger.warn('GitHub templates unavailable');
-        return [];
-      }
-      const data = await response.json();
-      return data.templates || [];
+      // Используем timestamp для обхода кеша GitHub
+      // templates.json находится в shablons/templates.json (репозиторий содержит папку shablons)
+      const url = `https://raw.githubusercontent.com/Jeremy5151/shablons/main/shablons/templates.json?t=${Date.now()}`;
+      logger.log(`Fetching templates from: ${url}`);
+      
+      const response = await firstValueFrom(
+        this.httpService.get(url, {
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        })
+      );
+      
+      logger.log(`Response status: ${response.status}, data length: ${JSON.stringify(response.data).length}`);
+      
+      const data = response.data;
+      const templates = data.templates || [];
+      logger.log(`Found ${templates.length} templates`);
+      
+      return templates;
     } catch (error) {
       logger.error('Error fetching available templates:', error);
+      logger.error(`Error details: ${error instanceof Error ? error.message : String(error)}`);
       return [];
     }
   }
 
   async getTemplateConfig(templateId: string): Promise<ExternalTemplate | null> {
     try {
-      // Используем cache: 'no-store' для всегда свежих данных из GitHub
-      const response = await fetch(`${this.TEMPLATES_BASE_URL}/templates/${templateId}/config.json`, {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
-      });
-      if (!response.ok) {
-        throw new Error(`Failed to fetch template config: ${response.statusText}`);
-      }
-      return await response.json();
+      // Путь: shablons/templates/{templateId}/config.json (так как репозиторий shablons находится в корне)
+      const url = `${this.TEMPLATES_BASE_URL}/shablons/templates/${templateId}/config.json?t=${Date.now()}`;
+      logger.log(`Fetching template config from: ${url}`);
+      
+      const response = await firstValueFrom(
+        this.httpService.get(url, {
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        })
+      );
+      
+      return response.data;
     } catch (error) {
       logger.error(`Error fetching template config for ${templateId}:`, error);
       return null;

@@ -180,6 +180,20 @@ export function renderTemplate(template: string, lead: Lead, params?: Record<str
   });
 }
 
+function decodeDeep(input: string): string {
+  let prev = input;
+  for (let i = 0; i < 3; i++) {
+    try {
+      const next = decodeURIComponent(prev);
+      if (next === prev) break;
+      prev = next;
+    } catch {
+      break;
+    }
+  }
+  return prev;
+}
+
 export class HttpTemplateAdapter implements BrokerAdapter {
   code: string;
   private tpl: HttpTemplate;
@@ -206,8 +220,16 @@ export class HttpTemplateAdapter implements BrokerAdapter {
       const method = this.tpl.method ?? 'POST';
       headers = { ...(this.tpl.headers ?? {}) };
       
-      body = this.tpl.body ? renderTemplate(this.tpl.body, lead, this.params) : undefined;
-      console.log(`[HttpTemplateAdapter] Rendered body:`, body);
+      // 1) Подготовим шаблон body: если плейсхолдеры были URL-экранированы (%24%7B...%7D), сначала декодируем
+      let bodyTemplate = this.tpl.body;
+      if (bodyTemplate) {
+        const hasPct = /%[0-9A-Fa-f]{2}/.test(bodyTemplate);
+        if (hasPct) bodyTemplate = decodeDeep(bodyTemplate);
+      }
+
+      // 2) Подставляем макросы ДО сериализации
+      body = bodyTemplate ? renderTemplate(bodyTemplate, lead, this.params) : undefined;
+      console.log(`[HttpTemplateAdapter] Rendered body (pre-serialize):`, body);
       
       // Определяем Content-Type
       const contentType = headers['content-type'] || headers['Content-Type'];
@@ -219,19 +241,48 @@ export class HttpTemplateAdapter implements BrokerAdapter {
         headers['content-type'] = 'application/json';
       }
       
-      // Если body это JSON и нужно form-urlencoded - конвертируем
+      // Если требуется form-urlencoded — конвертируем из удобного формата
       if (isFormUrlEncoded && body && body.trim()) {
-        try {
-          const bodyObj = JSON.parse(body);
-          const params = new URLSearchParams();
-          for (const [key, value] of Object.entries(bodyObj)) {
-            params.append(key, String(value ?? ''));
-          }
+        const params = new URLSearchParams();
+        const looksLikeLines = /:\s*.+;\s*(\n|$)/.test(body);
+        if (looksLikeLines) {
+          body.split(/\r?\n/).forEach(line => {
+            const l = line.trim();
+            if (!l || l.startsWith('#') || l.startsWith('//')) return;
+            const clean = l.endsWith(';') ? l.slice(0, -1) : l;
+            const idx = clean.indexOf(':');
+            if (idx === -1) return;
+            const key = clean.slice(0, idx).trim();
+            const rawVal = clean.slice(idx + 1).trim();
+            const renderedVal = renderTemplate(rawVal, lead, this.params);
+            params.append(key, renderedVal);
+          });
           body = params.toString();
-          console.log(`[HttpTemplateAdapter] Converted JSON to form-urlencoded:`, body);
-        } catch (e) {
-          console.error(`[HttpTemplateAdapter] Failed to convert to form-urlencoded:`, e);
-          // Если не JSON, используем как есть
+          console.log(`[HttpTemplateAdapter] Built form-urlencoded from lines with macros:`, body);
+        } else {
+          // Попробуем JSON
+          try {
+            const bodyObj = JSON.parse(body);
+            for (const [key, value] of Object.entries(bodyObj)) {
+              const renderedVal = renderTemplate(String(value ?? ''), lead, this.params);
+              params.append(key, renderedVal);
+            }
+            body = params.toString();
+            console.log(`[HttpTemplateAdapter] Converted JSON to form-urlencoded with macros:`, body);
+          } catch {
+            // Считаем строкой key=value&...
+            body.split('&').forEach(pair => {
+              if (!pair) return;
+              const [k, ...rest] = pair.split('=');
+              const v = rest.join('=');
+              const key = decodeDeep(k);
+              const rawVal = decodeDeep(v);
+              const renderedVal = renderTemplate(rawVal, lead, this.params);
+              params.append(key, renderedVal);
+            });
+            body = params.toString();
+            console.log(`[HttpTemplateAdapter] Rebuilt existing form-urlencoded with macros:`, body);
+          }
         }
       }
       
@@ -303,8 +354,8 @@ Body: ${raw}
         }
         
         // AlterCPA MOE формат: { status: "ok", id: 1234, uid: 45678 }
-        if (json.status === 'ok' && json.uid) {
-          const externalId = String(json.uid);
+        if (json.status === 'ok' && (json.id || json.uid)) {
+          const externalId = String(json.id ?? json.uid);
           return { type: 'accepted', externalId, autologinUrl: undefined, raw, requestUrl: url, requestHeaders: headers, requestBody: body };
         }
         

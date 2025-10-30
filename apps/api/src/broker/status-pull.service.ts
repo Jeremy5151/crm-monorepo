@@ -71,25 +71,47 @@ export class StatusPullService implements OnModuleInit {
         await this.pullAlterCpaMoe(template);
         return;
       }
-      // Рендерим URL с параметрами интеграции и датами
-      let pullUrl = this.renderPullUrl(template.pullUrl, from, to, template.params || {});
+
+      // Собираем externalId для текущего брокера за 14 дней
+      const brokerCode = String(template.code || '').toUpperCase();
+      const leads = await prisma.lead.findMany({
+        where: { broker: brokerCode, externalId: { not: null }, createdAt: { gte: new Date(Date.now() - 14*24*60*60*1000) } },
+        select: { externalId: true }
+      });
+      const idsCsv = leads.map(l => String(l.externalId)).join(',');
+
+      // Рендерим URL с параметрами интеграции, датами и ids
+      const params = { ...(template.params || {}), ids: idsCsv, leadIds: idsCsv };
+      let pullUrl = this.renderPullUrl(template.pullUrl, from, to, params)
+        .replace(/\{ids\}/g, encodeURIComponent(idsCsv))
+        .replace(/\{leadIds\}/g, encodeURIComponent(idsCsv));
       
-      // Рендерим body с датами (для POST запросов)
-      const body = this.renderPullBody(template.pullBody, from, to);
+      // Рендерим body с датами и ids (для POST запросов)
+      let body = this.renderPullBody(template.pullBody, from, to)
+        .replace(/\$\{ids\}/g, idsCsv).replace(/\{ids\}/g, idsCsv)
+        .replace(/\$\{leadIds\}/g, idsCsv).replace(/\{leadIds\}/g, idsCsv);
       
       // Делаем запрос к брокеру
-      const method = template.pullMethod || 'POST';
+      const method = (template.pullMethod || 'POST').toUpperCase();
       const options: any = {
         method,
-        headers: {
-          ...(template.pullHeaders || {})
-        },
-        agent: template.pullUrl.startsWith('https') ? httpsAgent : undefined
+        headers: { ...(template.pullHeaders || {}) },
+        agent: pullUrl.startsWith('https') ? httpsAgent : undefined
       };
-      
+
+      // Рендерим заголовки с параметрами (поддержка ${NAME} и {NAME})
+      if (options.headers) {
+        const render = (v: string) => v
+          .replace(/\$\{([^}]+)\}/g, (_, k) => String((params as any)[String(k).trim()] ?? ''))
+          .replace(/\{([^}]+)\}/g, (_, k) => String((params as any)[String(k).trim()] ?? ''));
+        const newHeaders: Record<string, string> = {};
+        for (const [k, v] of Object.entries(options.headers)) newHeaders[k] = render(String(v));
+        options.headers = newHeaders;
+      }
+
       // Для POST добавляем Content-Type и body
       if (method === 'POST') {
-        options.headers['Content-Type'] = 'application/json';
+        options.headers['Content-Type'] = options.headers['Content-Type'] || options.headers['content-type'] || 'application/json';
         options.body = body;
       }
       

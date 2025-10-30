@@ -334,6 +334,8 @@ const translations = {
     'leads.clone_error': 'Ошибка клонирования лидов',
     'leads.delete_confirm_title': 'Удалить лиды',
     'leads.clone_confirm_title': 'Клонировать лиды',
+    'leads.get_statuses': 'Получить статусы',
+    'leads.pulling_statuses': 'Обновление…',
     
     // Статусбар
     'statusbar.success': 'Успешно',
@@ -760,6 +762,8 @@ const translations = {
     'leads.clone_error': 'Error cloning leads',
     'leads.delete_confirm_title': 'Delete Leads',
     'leads.clone_confirm_title': 'Clone Leads',
+    'leads.get_statuses': 'Get Statuses',
+    'leads.pulling_statuses': 'Updating...',
     
     // Status Bar
     'statusbar.success': 'Success',

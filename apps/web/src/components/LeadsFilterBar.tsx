@@ -170,7 +170,7 @@ export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
             disabled={pulling}
           >
             <i className={`fas fa-sync-alt ${pulling ? 'animate-spin' : ''}`}></i>
-            {pulling ? 'Обновление…' : 'Получить статусы'}
+            {pulling ? (t('leads.pulling_statuses') || 'Обновление…') : (t('leads.get_statuses') || 'Получить статусы')}
           </button>
         </div>
       </div>

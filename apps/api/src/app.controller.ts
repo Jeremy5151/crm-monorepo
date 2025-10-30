@@ -158,7 +158,7 @@ export class AppController {
   }
 
   @Post('broker/pull-statuses')
-  async pullStatuses(@Req req: any) {
+  async pullStatuses(@Req() req: any) {
     try {
       const apiKey = req?.headers?.['x-api-key'] || req?.headers?.['X-API-Key'];
       console.log('[STATUS_PULL] Manual pull requested', { apiKeyPresent: Boolean(apiKey) });

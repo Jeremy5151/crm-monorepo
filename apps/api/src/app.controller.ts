@@ -62,8 +62,9 @@ function loadLogsFromFile() {
       // Insert at beginning (oldest first since we're reversing)
       logs.push(...loaded);
     }
-  } catch (error) {
-    console.error('Failed to load logs from file:', error);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('Failed to load logs from file:', msg);
   }
 }
 
@@ -71,8 +72,9 @@ function loadLogsFromFile() {
 function writeLogToFile(logEntry: { timestamp: string; level: string; type: LogType; message: string }) {
   try {
     fs.appendFileSync(LOG_FILE, JSON.stringify(logEntry) + '\n');
-  } catch (error) {
-    console.error('Failed to write log to file:', error);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('Failed to write log to file:', msg);
   }
 }
 
@@ -110,6 +112,7 @@ console.log = function(...args: any[]) {
   else if (message.includes('INCOMING RESPONSE')) logType = LogType.OUTGOING_REQUEST;
   else if (message.includes('Pulling status')) logType = LogType.STATUS_PULL;
   else if (message.includes('Response from')) logType = LogType.STATUS_PULL;
+  else if (message.includes('STATUS_PULL')) logType = LogType.STATUS_PULL;
   else if (message.includes('login') || message.includes('Login')) logType = LogType.AUTH;
   else if (message.includes('Lead created') || message.includes('incoming')) logType = LogType.INCOMING_LEAD;
 

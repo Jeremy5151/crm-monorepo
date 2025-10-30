@@ -8,7 +8,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import type { ColumnKey } from '@/lib/columns';
 import { useToast } from '@/contexts/ToastContext';
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE as string;
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY as string;
+const ENV_API_KEY = process.env.NEXT_PUBLIC_API_KEY as string;
 
 type Lead = {
   id: string;
@@ -88,10 +88,11 @@ export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
     if (pulling) return;
     setPulling(true);
     try {
+      const runtimeKey = (typeof window !== 'undefined' && localStorage.getItem('apiKey')) || ENV_API_KEY || '';
       const res = await fetch(`${API_BASE}/v1/broker/pull-statuses`, {
         method: 'POST',
         cache: 'no-store',
-        headers: { 'X-API-Key': API_KEY, 'Content-Type': 'application/json' },
+        headers: { 'X-API-Key': runtimeKey, 'Content-Type': 'application/json' },
       });
       const text = await res.text();
       let data: any = null;

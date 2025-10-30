@@ -22,7 +22,7 @@ export class StatusPullService implements OnModuleInit {
    */
   @Cron(CronExpression.EVERY_5_MINUTES)
   async pullAllBrokerStatuses() {
-    logger.log('Starting pull cycle for all brokers...');
+    logger.log('[STATUS_PULL] Starting pull cycle for all brokers...');
     
     try {
       // Получаем все активные шаблоны с включенным Pull
@@ -38,15 +38,16 @@ export class StatusPullService implements OnModuleInit {
 
       for (const template of templates) {
         try {
+          console.log('[STATUS_PULL] Template queued:', template.code);
           await this.pullBrokerStatus(template);
         } catch (error) {
-          logger.error(`Error pulling status for ${template.code}:`, error);
+          console.error('[STATUS_PULL] Error pulling status for', template.code, error);
         }
       }
 
-      logger.log('Pull cycle completed');
+      logger.log('[STATUS_PULL] Pull cycle completed');
     } catch (error) {
-      logger.error('Error in pull cycle:', error);
+      console.error('[STATUS_PULL] Error in pull cycle:', error);
     }
   }
 
@@ -62,7 +63,7 @@ export class StatusPullService implements OnModuleInit {
     const from = lastSync;
     const to = now;
 
-    logger.log(`Pulling status for ${template.code} from ${from.toISOString()} to ${to.toISOString()}`);
+    console.log('[STATUS_PULL] Pulling status for', template.code, 'from', from.toISOString(), 'to', to.toISOString());
 
     try {
       // Спец-ветка для AlterCPA Moe: нужен список externalId (ids)
@@ -92,14 +93,17 @@ export class StatusPullService implements OnModuleInit {
         options.body = body;
       }
       
-      const response = await fetch(template.pullUrl, options) as any;
+      console.log('[STATUS_PULL] REQUEST', { url: pullUrl, method, headers: options.headers, body: options.body ?? null });
+      const response = await fetch(pullUrl, options) as any;
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const data = await response.json();
-      logger.log(`Response from ${template.code}:`, JSON.stringify(data).slice(0, 500));
+      const rawText = await response.text();
+      let data: any;
+      try { data = JSON.parse(rawText); } catch { data = rawText; }
+      console.log('[STATUS_PULL] RESPONSE', { code: template.code, status: response.status, body: typeof data === 'string' ? data.slice(0, 1000) : data });
       
       // Парсим ответ и обновляем статусы
       const updatedCount = await this.processStatusUpdates(template.code, data);
@@ -113,7 +117,7 @@ export class StatusPullService implements OnModuleInit {
       logger.log(`✅ ${template.code}: Updated ${updatedCount} leads`);
       
     } catch (error: any) {
-      logger.error(`❌ ${template.code}: ${error.message}`);
+      console.error('[STATUS_PULL] ❌', template.code, error?.message || String(error));
     }
   }
 
@@ -158,12 +162,14 @@ export class StatusPullService implements OnModuleInit {
       opts.body = params.toString();
     }
 
+    console.log('[STATUS_PULL] REQUEST', { url, method, headers: opts.headers, body: opts.body ?? null });
     const resp = await fetch(url, opts) as any;
     const raw = await resp.text();
     if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${raw}`);
 
     let data: any;
     try { data = JSON.parse(raw); } catch { data = raw; }
+    console.log('[STATUS_PULL] RESPONSE', { code: template.code, status: resp.status, body: typeof data === 'string' ? data.slice(0, 1000) : data });
 
     // Ответ может быть объект с ключами id → { stage/status/... }
     let updates: Array<{ id: string; stage?: string; status?: any } > = [];

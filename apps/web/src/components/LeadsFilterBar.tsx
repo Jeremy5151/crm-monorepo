@@ -7,7 +7,7 @@ import { CustomSelect } from '@/components/CustomSelect';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { ColumnKey } from '@/lib/columns';
 import { useToast } from '@/contexts/ToastContext';
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE as string;
+const API_BASE = (process.env.NEXT_PUBLIC_API_BASE as string) || 'http://localhost:3001';
 const ENV_API_KEY = process.env.NEXT_PUBLIC_API_KEY as string;
 
 type Lead = {

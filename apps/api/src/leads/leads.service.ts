@@ -775,7 +775,7 @@ export class LeadsService {
             sentAt: getCurrentTimeInUtc(),
             externalId: (res as any).externalId,
             brokerResp: res.raw ?? Prisma.JsonNull,
-            broker: brokerSelection.brokerName,
+            broker: brokerSelection.brokerId,
             ...(res as any).autologinUrl ? { autologinUrl: (res as any).autologinUrl } : {},
           } as any),
         });

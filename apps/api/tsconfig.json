@@ -6,7 +6,8 @@
     "outDir": "./dist",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "types": ["node"]
+    "types": ["node"],
+    "useUnknownInCatchVariables": false
   },
   "include": ["src/**/*"],
   "exclude": ["src/**/*.spec.ts", "src/**/__tests__/**"]

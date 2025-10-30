@@ -590,6 +590,28 @@ export class LeadsService {
       if (i > 0 && intervalMinutes > 0) {
         const delayMs = i * intervalMinutes * 60 * 1000;
         const nextAction = new Date(Date.now() + delayMs);
+        // Предварительно выбираем брокера и фиксируем в БД, чтобы не терять его в таймере
+        const preselected = await this.selectBrokerForLead(lead, broker);
+        if (!preselected) {
+          results.push({
+            id,
+            name: lead.firstName || lead.lastName || 'Неизвестно',
+            email: lead.email || '',
+            status: 'skipped',
+            message: 'Нет доступных брокеров в текущее время',
+          });
+          continue;
+        }
+        try {
+          await prisma.lead.update({
+            where: { id },
+            data: {
+              broker: preselected.brokerId,
+              brokerStatus: 'NEW',
+              brokerStatusChangedAt: getCurrentTimeInUtc(),
+            },
+          });
+        } catch (_) {}
         
         const queueItem = {
           id,
@@ -622,8 +644,12 @@ export class LeadsService {
 
             let res: any;
             let duration = 0;
+            // Используем ранее зафиксированного брокера из БД
+            const leadRef = await prisma.lead.findUnique({ where: { id }, select: { broker: true } });
+            const finalBrokerId = String(leadRef?.broker || 'UNKNOWN');
+            console.log(`[DELAYED_SEND] Lead ${id}: Using queued broker ${finalBrokerId}`);
             try {
-              const adapter = BrokerRegistry.getOrDefault(broker);
+              const adapter = BrokerRegistry.getOrDefault(finalBrokerId);
               const t0 = Date.now();
               res = await adapter.send(lead);
               duration = Date.now() - t0;
@@ -640,7 +666,7 @@ export class LeadsService {
             await prisma.leadBrokerAttempt.create({
               data: {
                 leadId: id,
-                broker: broker || 'UNKNOWN',
+                broker: finalBrokerId,
                 attemptNo: attempts + 1,
                 status: res.type,
                 responseCode: 'code' in res ? (res as any).code ?? null : null,
@@ -649,18 +675,55 @@ export class LeadsService {
                 createdAt: getCurrentTimeInUtc(),
               },
             });
+            // Гарантируем, что у лида зафиксирован брокер сразу после попытки
+            try {
+              await prisma.lead.update({ where: { id }, data: { broker: finalBrokerId } });
+            } catch (_) {}
             
             if (res.type === 'accepted') {
+              console.log(`[DELAYED_SEND] Lead ${id}: Updating lead with broker ${finalBrokerId}`);
+              const updateData: any = {
+                status: LeadStatus.SENT,
+                sentAt: getCurrentTimeInUtc(),
+                externalId: (res as any).externalId,
+                brokerResp: res.raw ?? Prisma.JsonNull,
+                broker: finalBrokerId, // КРИТИЧНО: сохраняем брокера ПЕРЕД всеми остальными полями
+                brokerStatus: 'NEW',
+                brokerStatusChangedAt: getCurrentTimeInUtc(),
+              };
+              if ((res as any).autologinUrl) {
+                updateData.autologinUrl = (res as any).autologinUrl;
+              }
               await prisma.lead.update({
                 where: { id },
-                data: ({
-                  status: LeadStatus.SENT,
-                  sentAt: getCurrentTimeInUtc(),
-                  externalId: (res as any).externalId,
-                  brokerResp: res.raw ?? Prisma.JsonNull,
-                  ...(res as any).autologinUrl ? { autologinUrl: (res as any).autologinUrl } : {},
-                } as any),
+                data: updateData,
               });
+              // DB-level safety: if broker is still NULL, pull it from the latest attempt
+              try {
+                await prisma.$executeRawUnsafe(
+                  `UPDATE "Lead" SET broker = COALESCE(broker, (
+                     SELECT broker FROM "LeadBrokerAttempt" WHERE "leadId" = $1 ORDER BY "createdAt" DESC LIMIT 1
+                   )) WHERE id = $1`,
+                  id,
+                );
+              } catch (_) {}
+              console.log(`[DELAYED_SEND] Lead ${id}: Lead updated successfully with broker ${finalBrokerId}`);
+              // Страховка: если по какой-то причине broker остался пустым, досохраняем
+              const afterUpdate = await prisma.lead.findUnique({ where: { id } });
+              if (!afterUpdate?.broker) {
+                console.log(`[DELAYED_SEND] Lead ${id}: Broker was lost, trying to restore from attempts or selection`);
+                // Попробуем взять брокера из последней попытки
+                const lastAttempt = await prisma.leadBrokerAttempt.findFirst({
+                  where: { leadId: id },
+                  orderBy: { createdAt: 'desc' },
+                  select: { broker: true },
+                });
+                const fallbackBroker = lastAttempt?.broker || finalBrokerId;
+                await prisma.lead.update({ where: { id }, data: { broker: fallbackBroker } });
+                console.log(`[DELAYED_SEND] Lead ${id}: Broker restored to ${fallbackBroker}`);
+              } else {
+                console.log(`[DELAYED_SEND] Lead ${id}: Broker is correctly set to ${afterUpdate.broker}`);
+              }
               LeadsService.removeFromQueue(id);
               LeadsService.completedResults.set(id, {
                 id,
@@ -766,6 +829,10 @@ export class LeadsService {
           createdAt: getCurrentTimeInUtc(),
         },
       });
+      // Гарантируем, что у лида зафиксирован брокер сразу после попытки
+      try {
+        await prisma.lead.update({ where: { id }, data: { broker: brokerSelection.brokerId } });
+      } catch (_) {}
 
       if (res.type === 'accepted') {
         await prisma.lead.update({
@@ -776,9 +843,20 @@ export class LeadsService {
             externalId: (res as any).externalId,
             brokerResp: res.raw ?? Prisma.JsonNull,
             broker: brokerSelection.brokerId,
+            brokerStatus: 'NEW',
+            brokerStatusChangedAt: getCurrentTimeInUtc(),
             ...(res as any).autologinUrl ? { autologinUrl: (res as any).autologinUrl } : {},
           } as any),
         });
+        // DB-level safety: if broker is still NULL, pull it from the latest attempt
+        try {
+          await prisma.$executeRawUnsafe(
+            `UPDATE "Lead" SET broker = COALESCE(broker, (
+               SELECT broker FROM "LeadBrokerAttempt" WHERE "leadId" = $1 ORDER BY "createdAt" DESC LIMIT 1
+             )) WHERE id = $1`,
+            id,
+          );
+        } catch (_) {}
         ok++;
         results.push({
           id,

@@ -44,6 +44,8 @@ export class DispatchService implements OnModuleInit {
             externalId: (res as any).externalId,
             brokerResp: (res as any).raw ?? null,
             broker: (broker ?? adapter.code ?? 'UNKNOWN'),
+            brokerStatus: 'NEW', // Устанавливаем начальный статус брокера
+            brokerStatusChangedAt: new Date(),
             ...(res as any).autologinUrl ? { autologinUrl: (res as any).autologinUrl } : {},
           } as any),
         });

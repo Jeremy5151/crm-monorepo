@@ -296,6 +296,16 @@ export default function BrokersPage() {
       }
 
       const code = form.name.toUpperCase().replace(/[^A-Z0-9]/g, '_');
+      // Validate PULL body before saving (works same way as main body)
+      const pullBodyCheck = validateAndNormalizeBody(form.pullMethod, form.pullBody || '');
+      if (!pullBodyCheck.ok) {
+        showError(t('brokers.create_error'), pullBodyCheck.error || 'Invalid pull body');
+        setLoading(false);
+        return;
+      }
+
+      
+
       const payload = {
         code,
         name: form.name,
@@ -318,7 +328,7 @@ export default function BrokersPage() {
         pullUrl: form.pullUrl || null,
         pullMethod: form.pullMethod || 'POST',
         pullHeaders: form.pullHeaders ? JSON.parse(form.pullHeaders) : null,
-        pullBody: form.pullBody || null,
+        pullBody: form.pullMethod === 'GET' ? null : serializeForMethod(form.pullMethod, pullBodyCheck.body),
         pullInterval: form.pullInterval || 15
       };
       console.log('Отправляем:', payload);
@@ -348,6 +358,15 @@ export default function BrokersPage() {
       }
 
       const code = form.name.toUpperCase().replace(/[^A-Z0-9]/g, '_');
+      
+      // Validate PULL body before saving (works same way as main body)
+      const pullBodyCheck = validateAndNormalizeBody(form.pullMethod, form.pullBody || '');
+      if (!pullBodyCheck.ok) {
+        showError(t('brokers.update_error'), pullBodyCheck.error || 'Invalid pull body');
+        setLoading(false);
+        return;
+      }
+      
       const payload = {
         code,
         name: form.name,
@@ -370,7 +389,7 @@ export default function BrokersPage() {
         pullUrl: form.pullUrl || null,
         pullMethod: form.pullMethod || 'POST',
         pullHeaders: form.pullHeaders ? JSON.parse(form.pullHeaders) : null,
-        pullBody: form.pullBody || null,
+        pullBody: form.pullMethod === 'GET' ? null : serializeForMethod(form.pullMethod, pullBodyCheck.body),
         pullInterval: form.pullInterval || 15
       };
       console.log('Обновление интеграции:', editingId, payload);
@@ -450,7 +469,7 @@ export default function BrokersPage() {
       pullUrl: template.pullUrl || '',
       pullMethod: template.pullMethod || 'POST',
       pullHeaders: JSON.stringify(parsedPullHeaders, null, 2),
-      pullBody: template.pullBody || '',
+      pullBody: toLinesFromAny(template.pullMethod || 'POST', template.pullBody || ''),
       pullInterval: template.pullInterval || 15
     });
 
@@ -497,7 +516,7 @@ export default function BrokersPage() {
       pullUrl: '',
       pullMethod: 'POST',
       pullHeaders: JSON.stringify({}, null, 2),
-      pullBody: JSON.stringify({}, null, 2),
+      pullBody: '',
       pullInterval: 15
     });
   }
@@ -531,7 +550,7 @@ export default function BrokersPage() {
         pullUrl: config.pull?.url || '',
         pullMethod: config.pull?.method || 'POST',
         pullHeaders: config.pull?.headers ? JSON.stringify(config.pull.headers, null, 2) : JSON.stringify({}, null, 2),
-        pullBody: config.pull?.bodyTemplate ? JSON.stringify(config.pull.bodyTemplate, null, 2) : JSON.stringify({}, null, 2),
+        pullBody: toLinesFromAny(config.pull?.method || 'POST', config.pull?.bodyTemplate || ''),
         pullInterval: config.pull?.interval || 15
       }));
     }
@@ -851,6 +870,22 @@ export default function BrokersPage() {
                     <div className="grid md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
                       <div className="space-y-4">
                         <div>
+                          <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.method')}</label>
+                          <CustomSelect
+                            value={form.pullMethod}
+                            onChange={(value) => setForm(f => ({ 
+                              ...f, 
+                              pullMethod: value,
+                              pullBody: value === 'GET' ? '' : f.pullBody
+                            }))}
+                            options={[
+                              { value: 'GET', label: 'GET' },
+                              { value: 'POST', label: 'POST (form-urlencoded)' },
+                              { value: 'POST_JSON', label: 'POST (JSON)' }
+                            ]}
+                          />
+                        </div>
+                        <div>
                           <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.pull_url')}</label>
                           <input
                             className="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -886,12 +921,15 @@ export default function BrokersPage() {
 
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-800 mb-2">{t('brokers.pull_body')}</label>
+                          <label className="block text-sm font-medium text-gray-800 mb-2">
+                            {t('brokers.pull_body')} {form.pullMethod === 'POST_JSON' ? '(JSON)' : '(params: key: value; per line)'}
+                          </label>
                           <textarea
                             className="w-full px-3 py-2 border border-gray-300 rounded-xl bg-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             rows={8}
                             value={form.pullBody}
                             onChange={e => setForm(f => ({ ...f, pullBody: e.target.value }))}
+                            placeholder={form.pullMethod === 'POST_JSON' ? '{\n  "ids": ["1","2"]\n}' : 'ids: ${leadIds};'}
                           />
                           <p className="text-xs text-gray-700 mt-1">
                             {t('brokers.pull_macros')}

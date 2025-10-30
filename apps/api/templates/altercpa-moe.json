@@ -3,38 +3,38 @@
   "name": "AlterCPA MOE",
   "version": "1.0.0",
   "description": "AlterCPA MOE affiliate network integration for lead submission and status pulling",
-  "urlTemplate": "https://api.cpa.moe/ext/add.json?id={USER_ID}-{API_KEY}",
+  "urlTemplate": "https://api.cpa.moe/ext/add.json?id={WM}-{API_KEY}",
   "method": "POST",
   "headers": {
     "Content-Type": "application/json"
   },
-  "bodyTemplate": "{\"id\":\"auto\",\"offer\":${offer},\"phone\":\"${phoneDigits}\",\"ip\":\"${ip}\",\"name\":\"${firstName} ${lastName}\",\"email\":\"${email}\",\"country\":\"${country}\"}",
+  "bodyTemplate": "{\"id\":\"auto\",\"offer\":${OFFER},\"phone\":\"${phoneDigits}\",\"ip\":\"${ip}\",\"name\":\"${firstName} ${lastName}\",\"email\":\"${email}\",\"country\":\"${country}\"}",
   "formFields": [
     {
-      "name": "USER_ID",
-      "label": "AlterCPA MOE User ID",
+      "name": "WM",
+      "label": "WM (вебмастер)",
       "type": "text",
       "required": true,
-      "placeholder": "e.g., 3452"
+      "placeholder": "3452"
     },
     {
       "name": "API_KEY",
-      "label": "AlterCPA MOE API Key",
+      "label": "API ключ",
       "type": "password",
       "required": true,
-      "placeholder": "e.g., db14ae31a1ba39973ce41cd7137a9be9"
+      "placeholder": "db14ae31a1ba39973ce41cd7137a9be9"
     },
     {
-      "name": "offer",
-      "label": "Default Offer ID",
+      "name": "OFFER",
+      "label": "Оффер",
       "type": "text",
       "required": true,
-      "placeholder": "e.g., 2445"
+      "placeholder": "2445"
     }
   ],
   "pull": {
     "enabled": true,
-    "url": "https://api.cpa.moe/ext/status.json?id={USER_ID}-{API_KEY}",
+    "url": "https://api.cpa.moe/ext/status.json?id={WM}-{API_KEY}",
     "method": "POST",
     "headers": {
       "Content-Type": "application/json"

@@ -82,6 +82,7 @@ export default function LeadsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [items, setItems] = useState<Lead[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const query = useMemo(() => {
     const p = new URLSearchParams();
@@ -100,8 +101,9 @@ export default function LeadsPage() {
     (async () => {
       setLoading(true); setError(null);
       try {
+        const runtimeKey = (typeof window !== 'undefined' && localStorage.getItem('apiKey')) || API_KEY || '';
         const res = await fetch(`${API_BASE}/v1/leads?${query}`, {
-          headers: { 'X-API-Key': API_KEY },
+          headers: { 'X-API-Key': runtimeKey },
           cache: 'no-store',
         });
         if (!res.ok) throw new Error(await res.text());
@@ -114,7 +116,16 @@ export default function LeadsPage() {
       }
     })();
     return () => { abort = true; };
-  }, [query]);
+  }, [query, refreshKey]);
+
+  // Слушаем событие обновления статусов
+  useEffect(() => {
+    const handler = () => {
+      setRefreshKey(prev => prev + 1);
+    };
+    window.addEventListener('leads:refresh', handler);
+    return () => window.removeEventListener('leads:refresh', handler);
+  }, []);
 
   const sortedItems = useMemo(() => {
     if (!order) return items;

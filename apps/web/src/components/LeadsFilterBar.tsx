@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQueryState } from '@/lib/useQueryState';
 import ColumnPicker from '@/components/ColumnPicker';
 import { CustomSelect } from '@/components/CustomSelect';
@@ -29,9 +30,10 @@ const TYPES = ['', 'NEW', 'SENT', 'REJECTED'];
 // TEXTS moved to LanguageContext
 
 export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
+  const router = useRouter();
   const { params, set } = useQueryState();
   const { t } = useLanguage();
-  const { showToast } = useToast();
+  const { showToast, showSuccess, showError } = useToast();
 
   const [showColumns, setShowColumns] = useState(false);
   const [showCreatedDateInputs, setShowCreatedDateInputs] = useState(false);
@@ -93,19 +95,26 @@ export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
         method: 'POST',
         cache: 'no-store',
         headers: { 'X-API-Key': runtimeKey, 'Content-Type': 'application/json' },
+        body: '{}',
       });
       const text = await res.text();
       let data: any = null;
       try { data = JSON.parse(text); } catch { /* noop */ }
       if (!res.ok) {
         const msg = (data?.error || text || 'Failed to pull statuses');
-        showToast({ title: 'Error', description: msg, variant: 'error' });
+        // Prefer helper for consistent API
+        // showToast supports { type, title, message }
+        showError('Error', msg);
       } else {
         const msg = (data?.message || 'Statuses updated');
-        showToast({ title: 'Success', description: msg, variant: 'success' });
+        showSuccess('Success', msg);
+        try {
+          window.dispatchEvent(new CustomEvent('leads:refresh'));
+        } catch {}
+        router.refresh();
       }
     } catch (e: any) {
-      showToast({ title: 'Error', description: String(e?.message || e), variant: 'error' });
+      showError('Error', String(e?.message || e));
     } finally {
       setPulling(false);
     }

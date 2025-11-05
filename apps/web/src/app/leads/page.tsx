@@ -221,15 +221,19 @@ export default function LeadsPage() {
         if (!statusValue) {
           return <BrokerStatusBadge value={null} />;
         }
+        // Используем прямой обработчик, который будет вызываться из BrokerStatusBadge
         return (
           <BrokerStatusBadge 
             value={statusValue} 
             clickable 
             onClick={(e) => {
-              console.log('BrokerStatusBadge onClick triggered in table for lead:', lead.id);
+              console.log('BrokerStatusBadge onClick triggered in table for lead:', lead.id, 'event:', e);
               e.preventDefault();
               e.stopPropagation();
-              handleBrokerStatusClick(e, lead.id);
+              // Вызываем обработчик напрямую
+              handleBrokerStatusClick(e, lead.id).catch(err => {
+                console.error('Error in handleBrokerStatusClick:', err);
+              });
             }}
           />
         );
@@ -283,21 +287,18 @@ export default function LeadsPage() {
                 <tr key={lead.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
                   {cols.map((c) => {
                     const cellContent = renderCell(c as ColumnKey, lead);
+                    // Для brokerStatus не добавляем обработчик onClick, чтобы событие всплыло до BrokerStatusBadge
+                    if (c === 'brokerStatus') {
+                      return (
+                        <td key={c} className="px-4 py-3 text-sm">
+                          {cellContent}
+                        </td>
+                      );
+                    }
                     return (
-                    <td 
-                      key={c} 
-                      className="px-4 py-3 text-sm"
-                      onClick={(e) => {
-                        // Если клик по brokerStatus - полностью пропускаем событие
-                        if (c === 'brokerStatus') {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          return;
-                        }
-                      }}
-                    >
-                      {cellContent}
-                    </td>
+                      <td key={c} className="px-4 py-3 text-sm">
+                        {cellContent}
+                      </td>
                     );
                   })}
                   <td className="px-4 py-3 text-sm">

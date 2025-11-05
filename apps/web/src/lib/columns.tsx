@@ -125,10 +125,18 @@ export function BrokerStatusBadge({
     <span 
       className={cls} 
       style={style}
-      onClick={onClick}
-      onMouseDown={(e) => {
+      onClick={(e) => {
         if (onClick) {
+          e.preventDefault();
           e.stopPropagation();
+          onClick(e);
+        }
+      }}
+      onMouseDown={(e) => {
+        // Не блокируем mousedown, чтобы onClick мог сработать
+        // Но останавливаем всплытие, чтобы не мешать другим обработчикам
+        if (onClick) {
+          // Не останавливаем всплытие здесь, только на onClick
         }
       }}
       title={clickable ? "Кликните, чтобы увидеть историю изменений статуса" : undefined}

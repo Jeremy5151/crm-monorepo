@@ -218,12 +218,32 @@ export default function LeadsPage() {
       case 'status': return <StatusBadge value={lead.status} />;
       case 'brokerStatus': 
         const statusValue = lead.brokerStatus;
+        console.log('Rendering brokerStatus for lead:', lead.id, 'value:', statusValue);
         if (!statusValue) {
           return <BrokerStatusBadge value={null} />;
         }
-        // Просто возвращаем badge с подчеркиванием, обработчик будет на td
+        // Возвращаем badge с обработчиком клика прямо здесь
         return (
-          <span style={{ textDecoration: 'underline', textDecorationStyle: 'dotted' }}>
+          <span 
+            style={{ 
+              textDecoration: 'underline', 
+              textDecorationStyle: 'dotted',
+              cursor: 'pointer',
+              display: 'inline-block'
+            }}
+            onClick={(e) => {
+              console.log('🔥 SPAN CLICKED! Lead:', lead.id);
+              e.preventDefault();
+              e.stopPropagation();
+              handleBrokerStatusClick(e, lead.id).catch(err => {
+                console.error('Error in handleBrokerStatusClick:', err);
+              });
+            }}
+            onMouseDown={(e) => {
+              console.log('🔥 SPAN MOUSEDOWN!');
+              e.stopPropagation();
+            }}
+          >
             <BrokerStatusBadge 
               value={statusValue} 
               clickable={false}
@@ -280,28 +300,17 @@ export default function LeadsPage() {
                 <tr key={lead.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
                   {cols.map((c) => {
                     const cellContent = renderCell(c as ColumnKey, lead);
-                    // Для brokerStatus добавляем обработчик клика прямо на td
+                    // Для brokerStatus просто рендерим td без обработчика - обработчик на span внутри
                     if (c === 'brokerStatus') {
                       return (
                         <td 
                           key={c} 
-                          className="px-4 py-3 text-sm cursor-pointer"
+                          className="px-4 py-3 text-sm"
                           onClick={(e) => {
-                            if (lead.brokerStatus) {
-                              console.log('✅ BrokerStatus td CLICKED! Lead:', lead.id);
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleBrokerStatusClick(e, lead.id).catch(err => {
-                                console.error('Error in handleBrokerStatusClick:', err);
-                              });
-                            }
+                            // Логируем клик на td для отладки
+                            console.log('🔵 TD CLICKED for brokerStatus, lead:', lead.id);
+                            // Не останавливаем событие, пусть всплывет до span
                           }}
-                          onMouseEnter={(e) => {
-                            if (lead.brokerStatus) {
-                              (e.currentTarget as HTMLElement).style.cursor = 'pointer';
-                            }
-                          }}
-                          title={lead.brokerStatus ? "Кликните, чтобы увидеть историю изменений статуса" : undefined}
                         >
                           {cellContent}
                         </td>

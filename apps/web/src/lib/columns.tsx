@@ -121,15 +121,10 @@ export function BrokerStatusBadge({
     userSelect: 'none' as const
   } : undefined;
   
-  const finalStyle: React.CSSProperties = {
-    ...style,
-    pointerEvents: onClick ? 'auto' : 'none' // Если onClick на родителе, не блокируем события
-  };
-  
   return (
     <span 
       className={cls} 
-      style={finalStyle}
+      style={style}
       onClick={(e) => {
         if (onClick) {
           e.preventDefault();
@@ -138,10 +133,12 @@ export function BrokerStatusBadge({
         }
       }}
       onMouseDown={(e) => {
-        // Если onClick не передан, значит обработчик на родителе - не блокируем
-        if (onClick) {
-          e.stopPropagation();
+        // Если onClick не передан, значит обработчик на родителе - не блокируем события
+        if (!onClick) {
+          // Не останавливаем всплытие, чтобы событие дошло до родителя
+          return;
         }
+        e.stopPropagation();
       }}
       title={clickable ? "Кликните, чтобы увидеть историю изменений статуса" : undefined}
       role={clickable ? "button" : undefined}

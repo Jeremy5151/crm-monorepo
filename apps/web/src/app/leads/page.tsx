@@ -164,20 +164,33 @@ export default function LeadsPage() {
   }, [items, order]);
 
   async function handleBrokerStatusClick(e: React.MouseEvent | React.SyntheticEvent, leadId: string) {
+    console.log('handleBrokerStatusClick called for lead:', leadId);
     e.preventDefault();
     e.stopPropagation();
     
-    const target = e.currentTarget as HTMLElement;
+    // Используем координаты из события, если доступны
+    const clientX = 'clientX' in e ? e.clientX : 0;
+    const clientY = 'clientY' in e ? e.clientY : 0;
+    
+    // Если координаты недоступны, используем target
+    const target = (e.target || e.currentTarget) as HTMLElement;
     const rect = target.getBoundingClientRect();
+    
+    const popoverX = clientX || (rect.left + rect.width / 2);
+    const popoverY = clientY || rect.top;
+    
+    console.log('Setting popover at:', { leadId, x: popoverX, y: popoverY });
+    
     setStatusHistoryPopover({
       leadId,
-      x: rect.left + rect.width / 2,
-      y: rect.top,
+      x: popoverX,
+      y: popoverY,
     });
     
     setLoadingHistory(true);
     try {
       const history = await apiGet<StatusEvent[]>(`/v1/leads/${leadId}/status-history`);
+      console.log('Status history loaded:', history);
       setStatusHistory(history || []);
     } catch (err) {
       console.error('Error loading status history:', err);
@@ -213,6 +226,7 @@ export default function LeadsPage() {
             value={statusValue} 
             clickable 
             onClick={(e) => {
+              console.log('BrokerStatusBadge onClick triggered in table for lead:', lead.id);
               e.preventDefault();
               e.stopPropagation();
               handleBrokerStatusClick(e, lead.id);
@@ -274,9 +288,11 @@ export default function LeadsPage() {
                       key={c} 
                       className="px-4 py-3 text-sm"
                       onClick={(e) => {
-                        // Если клик по brokerStatus - не перехватываем
+                        // Если клик по brokerStatus - полностью пропускаем событие
                         if (c === 'brokerStatus') {
+                          e.preventDefault();
                           e.stopPropagation();
+                          return;
                         }
                       }}
                     >
@@ -309,16 +325,22 @@ export default function LeadsPage() {
         <>
           <div 
             className="fixed inset-0 z-40" 
-            onClick={() => setStatusHistoryPopover(null)}
+            onClick={() => {
+              console.log('Closing popover');
+              setStatusHistoryPopover(null);
+            }}
           />
           <div
-            className="fixed z-50 bg-white rounded-lg shadow-xl border border-gray-200 p-4 max-w-md max-h-96 overflow-auto"
+            className="fixed z-[9999] bg-white rounded-lg shadow-xl border border-gray-200 p-4 max-w-md max-h-96 overflow-auto"
             style={{
               left: `${statusHistoryPopover.x}px`,
               top: `${statusHistoryPopover.y + 20}px`,
               transform: 'translateX(-50%)',
             }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log('Popover content clicked');
+            }}
           >
             <div className="flex justify-between items-center mb-3">
               <h3 className="text-sm font-semibold text-gray-900">История статусов брокера</h3>

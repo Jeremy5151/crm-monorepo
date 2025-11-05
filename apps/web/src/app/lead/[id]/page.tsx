@@ -122,14 +122,15 @@ export default function LeadPage() {
           <div><b>{t('leads.type')}</b> <TypeBadge value={lead.status} /></div>
           <div className="flex items-center gap-2">
             <b>{t('leads.broker_status')}</b>
-            <button
-              onClick={() => setShowStatusHistory(true)}
-              className="cursor-pointer hover:opacity-80 transition-opacity inline-block"
-              type="button"
-              title="Кликните, чтобы увидеть историю изменений статуса"
-            >
-              <BrokerStatusBadge value={lead.brokerStatus} clickable />
-            </button>
+            <BrokerStatusBadge 
+              value={lead.brokerStatus} 
+              clickable 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowStatusHistory(true);
+              }}
+            />
           </div>
           <div><b>{t('leads.broker')}</b> {lead.broker || t('leads.not_sent')}</div>
 

@@ -228,33 +228,16 @@ export default function LeadsPage() {
           return <BrokerStatusBadge value={null} />;
         }
         return (
-          <span
+          <BrokerStatusBadge 
+            value={statusValue} 
+            clickable 
             onClick={(e) => {
               console.log('BrokerStatus CLICKED! Lead:', lead.id, 'status:', statusValue);
               e.preventDefault();
               e.stopPropagation();
               handleBrokerStatusClick(e, lead.id);
             }}
-            onMouseDown={(e) => {
-              console.log('BrokerStatus mousedown');
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-            className="cursor-pointer hover:opacity-80 transition-opacity inline-block"
-            style={{ display: 'inline-block', userSelect: 'none' }}
-            title="Кликните, чтобы увидеть историю изменений статуса"
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                e.stopPropagation();
-                handleBrokerStatusClick(e, lead.id);
-              }
-            }}
-          >
-            <BrokerStatusBadge value={statusValue} clickable />
-          </span>
+          />
         );
       case 'broker': return lead.broker || '—';
       default: return '';

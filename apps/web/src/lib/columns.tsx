@@ -98,7 +98,15 @@ export function TypeBadge({ value }: { value?: string | null }) {
   );
 }
 
-export function BrokerStatusBadge({ value, clickable }: { value?: string | null; clickable?: boolean }) {
+export function BrokerStatusBadge({ 
+  value, 
+  clickable, 
+  onClick 
+}: { 
+  value?: string | null; 
+  clickable?: boolean;
+  onClick?: (e: React.MouseEvent) => void;
+}) {
   const v = (value ?? '').toUpperCase();
   const cls =
     v === 'APPROVED'
@@ -106,8 +114,37 @@ export function BrokerStatusBadge({ value, clickable }: { value?: string | null;
       : v === 'REJECTED' || v === 'FAILED'
       ? 'badge badge-failed'
       : 'badge';
-  const style = clickable ? { textDecoration: 'underline' as const, textDecorationStyle: 'dotted' as const } : undefined;
-  return <span className={cls} style={style}>{v || '—'}</span>;
+  const style = clickable ? { 
+    textDecoration: 'underline' as const, 
+    textDecorationStyle: 'dotted' as const,
+    cursor: 'pointer' as const,
+    userSelect: 'none' as const
+  } : undefined;
+  
+  return (
+    <span 
+      className={cls} 
+      style={style}
+      onClick={onClick}
+      onMouseDown={(e) => {
+        if (onClick) {
+          e.stopPropagation();
+        }
+      }}
+      title={clickable ? "Кликните, чтобы увидеть историю изменений статуса" : undefined}
+      role={clickable ? "button" : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onKeyDown={(e) => {
+        if (clickable && onClick && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          e.stopPropagation();
+          onClick(e as any);
+        }
+      }}
+    >
+      {v || '—'}
+    </span>
+  );
 }
 
 export function getCellValue(row: any, key: ColumnKey): string | number {

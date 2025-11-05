@@ -226,7 +226,7 @@ export default function LeadsPage() {
           <button
             type="button"
             onClick={(e) => {
-              console.log('BrokerStatus button onClick triggered in table for lead:', lead.id);
+              console.log('✅ BrokerStatus button CLICKED! Lead:', lead.id);
               e.preventDefault();
               e.stopPropagation();
               handleBrokerStatusClick(e, lead.id).catch(err => {
@@ -234,8 +234,13 @@ export default function LeadsPage() {
               });
             }}
             onMouseDown={(e) => {
+              console.log('🖱️ BrokerStatus mousedown');
               e.preventDefault();
               e.stopPropagation();
+            }}
+            onMouseEnter={(e) => {
+              console.log('👆 Mouse entered brokerStatus');
+              (e.currentTarget as HTMLElement).style.cursor = 'pointer';
             }}
             style={{ 
               display: 'inline-block',
@@ -243,19 +248,24 @@ export default function LeadsPage() {
               border: 'none',
               padding: 0,
               margin: 0,
-              cursor: 'pointer',
+              cursor: 'pointer !important' as any,
               userSelect: 'none',
               textAlign: 'left',
               font: 'inherit',
-              color: 'inherit'
+              color: 'inherit',
+              pointerEvents: 'auto',
+              WebkitUserSelect: 'none',
+              MozUserSelect: 'none',
+              msUserSelect: 'none'
             }}
             title="Кликните, чтобы увидеть историю изменений статуса"
-            className="cursor-pointer"
           >
-            <BrokerStatusBadge 
-              value={statusValue} 
-              clickable={false}
-            />
+            <span style={{ textDecoration: 'underline', textDecorationStyle: 'dotted', cursor: 'pointer' }}>
+              <BrokerStatusBadge 
+                value={statusValue} 
+                clickable={false}
+              />
+            </span>
           </button>
         );
       case 'broker': return lead.broker || '—';

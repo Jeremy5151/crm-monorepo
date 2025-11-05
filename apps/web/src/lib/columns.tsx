@@ -121,9 +121,9 @@ export function BrokerStatusBadge({
     userSelect: 'none' as const
   } : undefined;
   
-  const finalStyle = {
+  const finalStyle: React.CSSProperties = {
     ...style,
-    pointerEvents: onClick ? 'auto' : 'none' as const // Если onClick на родителе, не блокируем события
+    pointerEvents: onClick ? 'auto' : 'none' // Если onClick на родителе, не блокируем события
   };
   
   return (

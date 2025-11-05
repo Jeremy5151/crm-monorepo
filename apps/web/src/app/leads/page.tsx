@@ -218,37 +218,15 @@ export default function LeadsPage() {
       case 'status': return <StatusBadge value={lead.status} />;
       case 'brokerStatus': 
         const statusValue = lead.brokerStatus;
-        console.log('Rendering brokerStatus for lead:', lead.id, 'value:', statusValue);
         if (!statusValue) {
           return <BrokerStatusBadge value={null} />;
         }
-        // Возвращаем badge с обработчиком клика прямо здесь
+        // Просто возвращаем badge с подчеркиванием - обработчик будет на td
         return (
-          <span 
-            style={{ 
-              textDecoration: 'underline', 
-              textDecorationStyle: 'dotted',
-              cursor: 'pointer',
-              display: 'inline-block'
-            }}
-            onClick={(e) => {
-              console.log('🔥 SPAN CLICKED! Lead:', lead.id);
-              e.preventDefault();
-              e.stopPropagation();
-              handleBrokerStatusClick(e, lead.id).catch(err => {
-                console.error('Error in handleBrokerStatusClick:', err);
-              });
-            }}
-            onMouseDown={(e) => {
-              console.log('🔥 SPAN MOUSEDOWN!');
-              e.stopPropagation();
-            }}
-          >
-            <BrokerStatusBadge 
-              value={statusValue} 
-              clickable={false}
-            />
-          </span>
+          <BrokerStatusBadge 
+            value={statusValue} 
+            clickable={true}
+          />
         );
       case 'broker': return lead.broker || '—';
       default: return '';
@@ -296,26 +274,25 @@ export default function LeadsPage() {
                 </tr>
               )}
 
-              {!loading && !error && sortedItems.map((lead) => {
-                console.log('Rendering row for lead:', lead.id, 'cols:', cols, 'has brokerStatus:', 'brokerStatus' in lead, 'value:', lead.brokerStatus);
-                return (
+              {!loading && !error && sortedItems.map((lead) => (
                 <tr key={lead.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
                   {cols.map((c) => {
-                    console.log('Rendering cell:', c, 'for lead:', lead.id);
                     const cellContent = renderCell(c as ColumnKey, lead);
-                    // Для brokerStatus просто рендерим td без обработчика - обработчик на span внутри
-                    if (c === 'brokerStatus') {
-                      console.log('Rendering brokerStatus TD for lead:', lead.id);
+                    // Для brokerStatus добавляем обработчик клика прямо на td
+                    if (c === 'brokerStatus' && lead.brokerStatus) {
                       return (
                         <td 
                           key={c} 
                           className="px-4 py-3 text-sm cursor-pointer"
                           onClick={(e) => {
-                            // Логируем клик на td для отладки
-                            console.log('🔵 TD CLICKED for brokerStatus, lead:', lead.id);
-                            // Не останавливаем событие, пусть всплывет до span
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleBrokerStatusClick(e, lead.id).catch(err => {
+                              console.error('Error in handleBrokerStatusClick:', err);
+                            });
                           }}
                           style={{ cursor: 'pointer' }}
+                          title="Кликните, чтобы увидеть историю изменений статуса"
                         >
                           {cellContent}
                         </td>

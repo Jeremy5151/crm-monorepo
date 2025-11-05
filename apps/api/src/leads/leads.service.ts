@@ -10,6 +10,7 @@ import { SettingsService } from '../settings/settings.service';
 import { BoxesService } from '../boxes/boxes.service';
 import { getCurrentTimeInUtc } from '../utils/date-timezone';
 import { applyVisibility } from '../visibility/visibility';
+import { dispatchQueue } from '../queue/queue';
 const prisma = new PrismaClient();
 
 @Injectable()
@@ -118,7 +119,7 @@ export class LeadsService {
   /**
    * Выбирает подходящего брокера для лида с учетом времени доставки и капы
    */
-  private async selectBrokerForLead(lead: any, specifiedBroker?: string): Promise<{ brokerId: string; reason: string; brokerName: string } | null> {
+  private async selectBrokerForLead(lead: any, specifiedBroker?: string, box?: any): Promise<{ brokerId: string; reason: string; brokerName: string } | null> {
     // Если указан конкретный брокер - используем его
     if (specifiedBroker) {
       const broker = await prisma.brokerTemplate.findUnique({
@@ -133,14 +134,20 @@ export class LeadsService {
     }
 
     try {
-      // Получаем подходящий бокс для лида
-      const box = await this.boxesService.getBoxForLead(lead.country);
-      if (!box || !box.brokers || box.brokers.length === 0) {
+      // Если передан конкретный бокс - используем его
+      let targetBox = box;
+      
+      // Если бокс не передан - ищем по стране
+      if (!targetBox) {
+        targetBox = await this.boxesService.getBoxForLead(lead.country);
+      }
+      
+      if (!targetBox || !targetBox.brokers || targetBox.brokers.length === 0) {
         return null;
       }
 
       // Ищем первого доступного брокера по приоритету
-      for (const boxBroker of box.brokers) {
+      for (const boxBroker of targetBox.brokers) {
         const isTimeAllowed = await this.isDeliveryTimeAllowed(boxBroker);
         const isCapExceeded = await this.isLeadCapExceeded(boxBroker);
         
@@ -151,7 +158,7 @@ export class LeadsService {
           });
           return { 
             brokerId: boxBroker.brokerId, 
-            reason: `Бокс "${box.name}", приоритет ${boxBroker.priority}`,
+            reason: `Бокс "${targetBox.name}", приоритет ${boxBroker.priority}`,
             brokerName: broker?.name || 'Unknown Broker'
           };
         }
@@ -220,7 +227,67 @@ export class LeadsService {
       };
     }
     
-    return prisma.lead.create({ data });
+    const lead = await prisma.lead.create({ data });
+
+    // Если указан параметр bx - ищем бокс по ID и отправляем лид
+    if (dto.bx) {
+      try {
+        const box = await this.boxesService.get(dto.bx);
+        
+        if (!box) {
+          // Бокс не найден - возвращаем лид с сообщением
+          return {
+            ...lead,
+            message: 'Lead added to CRM, but no active box found for the specified bx parameter'
+          };
+        }
+
+        if (!box.isActive) {
+          // Бокс неактивен - возвращаем лид с сообщением
+          return {
+            ...lead,
+            message: 'Lead added to CRM, but the specified box is not active'
+          };
+        }
+
+        // Бокс найден и активен - выбираем брокера и отправляем лид
+        const brokerSelection = await this.selectBrokerForLead(lead, undefined, box);
+        
+        if (!brokerSelection) {
+          // Нет доступных брокеров в боксе - возвращаем лид с сообщением
+          return {
+            ...lead,
+            message: 'Lead added to CRM, but no available brokers found in the specified box'
+          };
+        }
+
+        // Добавляем лид в очередь на отправку
+        await dispatchQueue.add('dispatchLead', {
+          leadId: lead.id,
+          broker: brokerSelection.brokerId
+        });
+
+        // Обновляем статус лида на NEW (он будет отправлен через очередь)
+        return {
+          ...lead,
+          message: 'Lead added to CRM and queued for sending',
+          broker: brokerSelection.brokerId
+        };
+      } catch (error) {
+        console.error('Error processing box:', error);
+        // В случае ошибки возвращаем лид как NEW
+        return {
+          ...lead,
+          message: 'Lead added to CRM, but error occurred while processing box'
+        };
+      }
+    }
+
+    // Если bx не указан - просто возвращаем лид как NEW
+    return {
+      ...lead,
+      message: 'Lead added to CRM, but no box specified (bx parameter)'
+    };
   }
 
   async list(dto: ListLeadsDto, apiKey?: string) {

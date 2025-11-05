@@ -221,11 +221,12 @@ export default function LeadsPage() {
         if (!statusValue) {
           return <BrokerStatusBadge value={null} />;
         }
-        // Используем прямой обработчик, обернув в div для гарантированного клика
+        // Используем button для гарантированной кликабельности
         return (
-          <div
+          <button
+            type="button"
             onClick={(e) => {
-              console.log('BrokerStatus div onClick triggered in table for lead:', lead.id);
+              console.log('BrokerStatus button onClick triggered in table for lead:', lead.id);
               e.preventDefault();
               e.stopPropagation();
               handleBrokerStatusClick(e, lead.id).catch(err => {
@@ -233,20 +234,29 @@ export default function LeadsPage() {
               });
             }}
             onMouseDown={(e) => {
+              e.preventDefault();
               e.stopPropagation();
             }}
             style={{ 
-              display: 'inline-block', 
+              display: 'inline-block',
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              margin: 0,
               cursor: 'pointer',
-              userSelect: 'none'
+              userSelect: 'none',
+              textAlign: 'left',
+              font: 'inherit',
+              color: 'inherit'
             }}
             title="Кликните, чтобы увидеть историю изменений статуса"
+            className="cursor-pointer"
           >
             <BrokerStatusBadge 
               value={statusValue} 
-              clickable 
+              clickable={false}
             />
-          </div>
+          </button>
         );
       case 'broker': return lead.broker || '—';
       default: return '';

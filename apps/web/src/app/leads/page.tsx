@@ -27,6 +27,7 @@ type StatusEvent = {
 type Lead = {
   id: string;
   createdAt: string;
+  sentAt?: string | null;
   firstName: string | null;
   lastName: string | null;
   email: string | null;
@@ -186,6 +187,7 @@ export default function LeadsPage() {
   function renderCell(col: ColumnKey, lead: Lead) {
     switch (col) {
       case 'createdAt': return formatDateTime(lead.createdAt);
+      case 'sentAt': return formatDateTime(lead.sentAt);
       case 'name': {
         const full = [lead.firstName ?? '', lead.lastName ?? ''].join(' ').trim();
         return full || '—';
@@ -196,16 +198,19 @@ export default function LeadsPage() {
       case 'aff': return lead.aff || '—';
       case 'bx': return lead.bx || '—';
       case 'funnel': return lead.funnel || '—';
+      case 'type': return <StatusBadge value={lead.status} />;
       case 'status': return <StatusBadge value={lead.status} />;
       case 'brokerStatus': 
-        return lead.brokerStatus ? (
+        return (
           <button
             onClick={(e) => handleBrokerStatusClick(e, lead.id)}
-            className="cursor-pointer hover:opacity-80 transition-opacity"
+            className="cursor-pointer hover:opacity-80 transition-opacity inline-block"
+            type="button"
+            onMouseDown={(e) => e.stopPropagation()}
           >
             <BrokerStatusBadge value={lead.brokerStatus} />
           </button>
-        ) : <BrokerStatusBadge value={null} />;
+        );
       case 'broker': return lead.broker || '—';
       default: return '';
     }

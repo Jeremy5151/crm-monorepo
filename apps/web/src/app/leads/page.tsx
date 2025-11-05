@@ -221,52 +221,14 @@ export default function LeadsPage() {
         if (!statusValue) {
           return <BrokerStatusBadge value={null} />;
         }
-        // Используем button для гарантированной кликабельности
+        // Просто возвращаем badge с подчеркиванием, обработчик будет на td
         return (
-          <button
-            type="button"
-            onClick={(e) => {
-              console.log('✅ BrokerStatus button CLICKED! Lead:', lead.id);
-              e.preventDefault();
-              e.stopPropagation();
-              handleBrokerStatusClick(e, lead.id).catch(err => {
-                console.error('Error in handleBrokerStatusClick:', err);
-              });
-            }}
-            onMouseDown={(e) => {
-              console.log('🖱️ BrokerStatus mousedown');
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-            onMouseEnter={(e) => {
-              console.log('👆 Mouse entered brokerStatus');
-              (e.currentTarget as HTMLElement).style.cursor = 'pointer';
-            }}
-            style={{ 
-              display: 'inline-block',
-              background: 'none',
-              border: 'none',
-              padding: 0,
-              margin: 0,
-              cursor: 'pointer !important' as any,
-              userSelect: 'none',
-              textAlign: 'left',
-              font: 'inherit',
-              color: 'inherit',
-              pointerEvents: 'auto',
-              WebkitUserSelect: 'none',
-              MozUserSelect: 'none',
-              msUserSelect: 'none'
-            }}
-            title="Кликните, чтобы увидеть историю изменений статуса"
-          >
-            <span style={{ textDecoration: 'underline', textDecorationStyle: 'dotted', cursor: 'pointer' }}>
-              <BrokerStatusBadge 
-                value={statusValue} 
-                clickable={false}
-              />
-            </span>
-          </button>
+          <span style={{ textDecoration: 'underline', textDecorationStyle: 'dotted' }}>
+            <BrokerStatusBadge 
+              value={statusValue} 
+              clickable={false}
+            />
+          </span>
         );
       case 'broker': return lead.broker || '—';
       default: return '';
@@ -318,10 +280,29 @@ export default function LeadsPage() {
                 <tr key={lead.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
                   {cols.map((c) => {
                     const cellContent = renderCell(c as ColumnKey, lead);
-                    // Для brokerStatus не добавляем обработчик onClick, чтобы событие всплыло до BrokerStatusBadge
+                    // Для brokerStatus добавляем обработчик клика прямо на td
                     if (c === 'brokerStatus') {
                       return (
-                        <td key={c} className="px-4 py-3 text-sm">
+                        <td 
+                          key={c} 
+                          className="px-4 py-3 text-sm cursor-pointer"
+                          onClick={(e) => {
+                            if (lead.brokerStatus) {
+                              console.log('✅ BrokerStatus td CLICKED! Lead:', lead.id);
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleBrokerStatusClick(e, lead.id).catch(err => {
+                                console.error('Error in handleBrokerStatusClick:', err);
+                              });
+                            }
+                          }}
+                          onMouseEnter={(e) => {
+                            if (lead.brokerStatus) {
+                              (e.currentTarget as HTMLElement).style.cursor = 'pointer';
+                            }
+                          }}
+                          title={lead.brokerStatus ? "Кликните, чтобы увидеть историю изменений статуса" : undefined}
+                        >
                           {cellContent}
                         </td>
                       );

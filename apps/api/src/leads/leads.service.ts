@@ -200,7 +200,7 @@ export class LeadsService {
       ip: dto.ip ?? null,
       country: dto.country ?? null,
       aff,
-      bx: dto.bx !== undefined ? dto.bx : null,
+      bx: (dto.bx !== undefined ? dto.bx : null) as any,
       funnel: dto.funnel ?? null,
       utmSource: dto.utmSource ?? null,
       utmMedium: dto.utmMedium ?? null,
@@ -338,7 +338,7 @@ export class LeadsService {
 
     if (dto.status && dto.status !== 'all') where.status = dto.status as any;
     if (dto.aff) where.aff = dto.aff;
-    if (dto.bx !== undefined) where.bx = dto.bx;
+    if (dto.bx !== undefined) where.bx = dto.bx as any;
     if (dto.country) where.country = dto.country;
     if (dto.funnel) where.funnel = dto.funnel;
 

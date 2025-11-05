@@ -130,13 +130,7 @@ export default function LeadsPage() {
         });
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
-        const leads = Array.isArray(data.items) ? data.items : [];
-        // Логируем для отладки
-        if (leads.length > 0) {
-          console.log('Sample lead data:', leads[0]);
-          console.log('Has brokerStatus:', 'brokerStatus' in leads[0], leads[0]?.brokerStatus);
-        }
-        if (!abort) setItems(leads);
+        if (!abort) setItems(Array.isArray(data.items) ? data.items : []);
       } catch (e: any) {
         if (!abort) setError(e?.message ?? String(e));
       } finally {
@@ -172,7 +166,6 @@ export default function LeadsPage() {
   async function handleBrokerStatusClick(e: React.MouseEvent | React.SyntheticEvent, leadId: string) {
     e.preventDefault();
     e.stopPropagation();
-    console.log('Broker status clicked for lead:', leadId);
     
     const target = e.currentTarget as HTMLElement;
     const rect = target.getBoundingClientRect();
@@ -195,17 +188,6 @@ export default function LeadsPage() {
   }
 
   function renderCell(col: ColumnKey, lead: Lead) {
-    // Логируем все вызовы renderCell для brokerStatus
-    if (col === 'brokerStatus') {
-      console.log('renderCell called for brokerStatus:', {
-        col,
-        leadId: lead.id,
-        hasBrokerStatus: 'brokerStatus' in lead,
-        brokerStatus: lead.brokerStatus,
-        allLeadKeys: Object.keys(lead)
-      });
-    }
-    
     switch (col) {
       case 'createdAt': return formatDateTime(lead.createdAt);
       case 'sentAt': return formatDateTime(lead.sentAt);
@@ -222,7 +204,6 @@ export default function LeadsPage() {
       case 'type': return <StatusBadge value={lead.status} />;
       case 'status': return <StatusBadge value={lead.status} />;
       case 'brokerStatus': 
-        console.log('Rendering brokerStatus for lead:', lead.id, 'value:', lead.brokerStatus);
         const statusValue = lead.brokerStatus;
         if (!statusValue) {
           return <BrokerStatusBadge value={null} />;
@@ -232,7 +213,6 @@ export default function LeadsPage() {
             value={statusValue} 
             clickable 
             onClick={(e) => {
-              console.log('BrokerStatus CLICKED! Lead:', lead.id, 'status:', statusValue);
               e.preventDefault();
               e.stopPropagation();
               handleBrokerStatusClick(e, lead.id);
@@ -285,12 +265,7 @@ export default function LeadsPage() {
                 </tr>
               )}
 
-              {!loading && !error && sortedItems.map((lead) => {
-                // Логируем для отладки
-                if (cols.includes('brokerStatus' as ColumnKey)) {
-                  console.log('Rendering row for lead:', lead.id, 'cols:', cols, 'has brokerStatus in lead:', 'brokerStatus' in lead);
-                }
-                return (
+              {!loading && !error && sortedItems.map((lead) => (
                 <tr key={lead.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
                   {cols.map((c) => {
                     const cellContent = renderCell(c as ColumnKey, lead);
@@ -315,8 +290,7 @@ export default function LeadsPage() {
                     </Link>
                   </td>
                 </tr>
-                );
-              })}
+              ))}
 
               {!loading && !error && sortedItems.length === 0 && (
                 <tr>

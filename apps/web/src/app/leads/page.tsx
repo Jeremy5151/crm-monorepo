@@ -203,12 +203,20 @@ export default function LeadsPage() {
       case 'brokerStatus': 
         return (
           <button
-            onClick={(e) => handleBrokerStatusClick(e, lead.id)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleBrokerStatusClick(e, lead.id);
+            }}
             className="cursor-pointer hover:opacity-80 transition-opacity inline-block"
             type="button"
-            onMouseDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            title="Кликните, чтобы увидеть историю изменений статуса"
           >
-            <BrokerStatusBadge value={lead.brokerStatus} />
+            <BrokerStatusBadge value={lead.brokerStatus} clickable />
           </button>
         );
       case 'broker': return lead.broker || '—';

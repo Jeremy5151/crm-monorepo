@@ -124,9 +124,11 @@ export default function LeadPage() {
             <b>{t('leads.broker_status')}</b>
             <button
               onClick={() => setShowStatusHistory(true)}
-              className="cursor-pointer hover:opacity-80 transition-opacity"
+              className="cursor-pointer hover:opacity-80 transition-opacity inline-block"
+              type="button"
+              title="Кликните, чтобы увидеть историю изменений статуса"
             >
-              <BrokerStatusBadge value={lead.brokerStatus} />
+              <BrokerStatusBadge value={lead.brokerStatus} clickable />
             </button>
           </div>
           <div><b>{t('leads.broker')}</b> {lead.broker || t('leads.not_sent')}</div>

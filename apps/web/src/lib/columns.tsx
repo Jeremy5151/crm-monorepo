@@ -98,7 +98,7 @@ export function TypeBadge({ value }: { value?: string | null }) {
   );
 }
 
-export function BrokerStatusBadge({ value }: { value?: string | null }) {
+export function BrokerStatusBadge({ value, clickable }: { value?: string | null; clickable?: boolean }) {
   const v = (value ?? '').toUpperCase();
   const cls =
     v === 'APPROVED'
@@ -106,7 +106,8 @@ export function BrokerStatusBadge({ value }: { value?: string | null }) {
       : v === 'REJECTED' || v === 'FAILED'
       ? 'badge badge-failed'
       : 'badge';
-  return <span className={cls}>{v || '—'}</span>;
+  const style = clickable ? { textDecoration: 'underline' as const, textDecorationStyle: 'dotted' as const } : undefined;
+  return <span className={cls} style={style}>{v || '—'}</span>;
 }
 
 export function getCellValue(row: any, key: ColumnKey): string | number {

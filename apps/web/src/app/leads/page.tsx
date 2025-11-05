@@ -221,21 +221,32 @@ export default function LeadsPage() {
         if (!statusValue) {
           return <BrokerStatusBadge value={null} />;
         }
-        // Используем прямой обработчик, который будет вызываться из BrokerStatusBadge
+        // Используем прямой обработчик, обернув в div для гарантированного клика
         return (
-          <BrokerStatusBadge 
-            value={statusValue} 
-            clickable 
+          <div
             onClick={(e) => {
-              console.log('BrokerStatusBadge onClick triggered in table for lead:', lead.id, 'event:', e);
+              console.log('BrokerStatus div onClick triggered in table for lead:', lead.id);
               e.preventDefault();
               e.stopPropagation();
-              // Вызываем обработчик напрямую
               handleBrokerStatusClick(e, lead.id).catch(err => {
                 console.error('Error in handleBrokerStatusClick:', err);
               });
             }}
-          />
+            onMouseDown={(e) => {
+              e.stopPropagation();
+            }}
+            style={{ 
+              display: 'inline-block', 
+              cursor: 'pointer',
+              userSelect: 'none'
+            }}
+            title="Кликните, чтобы увидеть историю изменений статуса"
+          >
+            <BrokerStatusBadge 
+              value={statusValue} 
+              clickable 
+            />
+          </div>
         );
       case 'broker': return lead.broker || '—';
       default: return '';

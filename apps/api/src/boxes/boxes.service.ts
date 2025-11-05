@@ -58,36 +58,42 @@ export class BoxesService {
       leadCap?: number;
     }[];
   }) {
-    const box = await prisma.box.create({
-      data: {
-        name: data.name,
-        countries: data.countries || [],
-        isActive: data.isActive ?? true,
-        brokers: {
-          create: data.brokers.map(b => ({
-            brokerId: b.brokerId,
-            priority: b.priority,
-            deliveryEnabled: b.deliveryEnabled || false,
-            deliveryFrom: b.deliveryFrom || null,
-            deliveryTo: b.deliveryTo || null,
-            leadCap: b.leadCap || null
-          }))
-        }
-      },
-      include: {
-        brokers: {
-          include: {
-            broker: true
-          },
-          orderBy: {
-            priority: 'asc'
+    try {
+      this.logger.log(`Creating box: ${data.name} with ${data.brokers.length} brokers`);
+      const box = await prisma.box.create({
+        data: {
+          name: data.name,
+          countries: data.countries || [],
+          isActive: data.isActive ?? true,
+          brokers: {
+            create: data.brokers.map(b => ({
+              brokerId: b.brokerId,
+              priority: b.priority,
+              deliveryEnabled: b.deliveryEnabled || false,
+              deliveryFrom: b.deliveryFrom || null,
+              deliveryTo: b.deliveryTo || null,
+              leadCap: b.leadCap || null
+            }))
+          }
+        },
+        include: {
+          brokers: {
+            include: {
+              broker: true
+            },
+            orderBy: {
+              priority: 'asc'
+            }
           }
         }
-      }
-    });
+      });
 
-    this.logger.log(`Created box: ${box.id} (${box.name})`);
-    return box;
+      this.logger.log(`Created box: ${box.id} (${box.name})`);
+      return box;
+    } catch (error: any) {
+      this.logger.error(`Error creating box: ${error?.message || error}`, error?.stack);
+      throw error;
+    }
   }
 
   async update(id: string | number, data: {

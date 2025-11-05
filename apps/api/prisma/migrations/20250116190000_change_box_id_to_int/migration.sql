@@ -78,12 +78,20 @@ ALTER TABLE "Box_new" RENAME TO "Box";
 ALTER TABLE "BoxBroker_new" RENAME TO "BoxBroker";
 
 -- Step 9: Recreate indexes and constraints
-CREATE INDEX "Box_countries_idx" ON "Box"("countries");
-CREATE UNIQUE INDEX "BoxBroker_boxId_brokerId_key" ON "BoxBroker"("boxId", "brokerId");
-CREATE INDEX "BoxBroker_boxId_priority_idx" ON "BoxBroker"("boxId", "priority");
-CREATE UNIQUE INDEX "BoxBroker_boxId_priority_key" ON "BoxBroker"("boxId", "priority");
-ALTER TABLE "BoxBroker" ADD CONSTRAINT "BoxBroker_boxId_fkey" FOREIGN KEY ("boxId") REFERENCES "Box"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE "BoxBroker" ADD CONSTRAINT "BoxBroker_brokerId_fkey" FOREIGN KEY ("brokerId") REFERENCES "BrokerTemplate"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-CREATE INDEX "Lead_bx_idx" ON "Lead"("bx");
-CREATE INDEX "Lead_bx_createdAt_idx" ON "Lead"("bx", "createdAt");
+CREATE INDEX IF NOT EXISTS "Box_countries_idx" ON "Box"("countries");
+CREATE UNIQUE INDEX IF NOT EXISTS "BoxBroker_boxId_brokerId_key" ON "BoxBroker"("boxId", "brokerId");
+CREATE INDEX IF NOT EXISTS "BoxBroker_boxId_priority_idx" ON "BoxBroker"("boxId", "priority");
+CREATE UNIQUE INDEX IF NOT EXISTS "BoxBroker_boxId_priority_key" ON "BoxBroker"("boxId", "priority");
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'BoxBroker_boxId_fkey') THEN
+        ALTER TABLE "BoxBroker" ADD CONSTRAINT "BoxBroker_boxId_fkey" FOREIGN KEY ("boxId") REFERENCES "Box"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    END IF;
+END $$;
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'BoxBroker_brokerId_fkey') THEN
+        ALTER TABLE "BoxBroker" ADD CONSTRAINT "BoxBroker_brokerId_fkey" FOREIGN KEY ("brokerId") REFERENCES "BrokerTemplate"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    END IF;
+END $$;
+CREATE INDEX IF NOT EXISTS "Lead_bx_idx" ON "Lead"("bx");
+CREATE INDEX IF NOT EXISTS "Lead_bx_createdAt_idx" ON "Lead"("bx", "createdAt");
 

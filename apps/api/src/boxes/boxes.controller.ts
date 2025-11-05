@@ -16,7 +16,7 @@ export class BoxesController {
   }
 
   @Post()
-  create(@Body() data: {
+  async create(@Body() data: {
     name: string;
     countries?: string[];
     isActive?: boolean;
@@ -29,7 +29,12 @@ export class BoxesController {
       leadCap?: number;
     }[];
   }) {
-    return this.boxesService.create(data);
+    try {
+      return await this.boxesService.create(data);
+    } catch (error: any) {
+      console.error('Error creating box:', error);
+      throw error;
+    }
   }
 
   @Patch(':id')

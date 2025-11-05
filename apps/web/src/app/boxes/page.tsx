@@ -9,7 +9,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 type Box = {
-  id: string;
+  id: number;
   name: string;
   countries: string[];
   isActive: boolean;
@@ -43,7 +43,7 @@ export default function BoxesPage() {
   const { showSuccess, showError } = useToast();
   const [loading, setLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     title: string;
@@ -149,7 +149,7 @@ export default function BoxesPage() {
     }
   }
 
-  async function deleteBox(id: string) {
+  async function deleteBox(id: number) {
     setConfirmDialog({
       isOpen: true,
       title: t('boxes.delete_confirm_title'),

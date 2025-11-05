@@ -9,6 +9,8 @@ import {
   IsObject,
   IsISO31661Alpha2,
   Matches,
+  IsInt,
+  Min,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 
@@ -68,11 +70,16 @@ export class CreateLeadDto {
   aff!: string;
 
   // Бокс (если нет — лид не отправляем, только сохраняем)
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, type: Number })
   @IsOptional()
-  @IsString()
-  @Length(1, 100)
-  bx?: string;
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') return undefined;
+    const num = typeof value === 'string' ? parseInt(value, 10) : value;
+    return isNaN(num) ? undefined : num;
+  })
+  @IsInt()
+  @Min(1)
+  bx?: number;
 
   // Оффер/воронка
   @ApiProperty({ required: false })

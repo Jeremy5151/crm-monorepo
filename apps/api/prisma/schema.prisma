@@ -22,7 +22,7 @@ model Lead {
 
   // Атрибутика
   aff       String?                // id аффилиата (ожидаем совпадение с X-API-Key)
-  bx        String?                // код "бокса" (план отправки)
+  bx        Int?                    // код "бокса" (план отправки) - ID бокса
   funnel    String?                // оффер
   
 
@@ -189,7 +189,7 @@ model BrokerTemplate {
 }
 
 model Box {
-  id          String   @id @default(cuid())
+  id          Int      @id @default(autoincrement())
   name        String                        // название бокса, например: "EU Premium"
   countries   String[]                      // коды стран (ISO 2-letter), например: ["FR", "DE"], пустой = любая
   isActive    Boolean  @default(true)       // активен ли бокс
@@ -204,7 +204,7 @@ model Box {
 
 model BoxBroker {
   id         String   @id @default(cuid())
-  boxId      String
+  boxId      Int
   brokerId   String
   priority   Int                            // приоритет от 1 до 10 (1 = самый высокий)
   

@@ -25,9 +25,13 @@ export class BoxesService {
     });
   }
 
-  async get(id: string) {
+  async get(id: string | number) {
+    const boxId = typeof id === 'string' ? parseInt(id, 10) : id;
+    if (isNaN(boxId)) {
+      return null;
+    }
     return prisma.box.findUnique({
-      where: { id },
+      where: { id: boxId },
       include: {
         brokers: {
           include: {
@@ -86,7 +90,7 @@ export class BoxesService {
     return box;
   }
 
-  async update(id: string, data: {
+  async update(id: string | number, data: {
     name?: string;
     countries?: string[];
     isActive?: boolean;
@@ -99,13 +103,18 @@ export class BoxesService {
       leadCap?: number;
     }[];
   }) {
+    const boxId = typeof id === 'string' ? parseInt(id, 10) : id;
+    if (isNaN(boxId)) {
+      throw new Error('Invalid box ID');
+    }
+    
     // Если передали новый список брокеров - удаляем старые и создаем новые
     if (data.brokers) {
-      await prisma.boxBroker.deleteMany({ where: { boxId: id } });
+      await prisma.boxBroker.deleteMany({ where: { boxId } });
     }
 
     const box = await prisma.box.update({
-      where: { id },
+      where: { id: boxId },
       data: {
         name: data.name,
         countries: data.countries !== undefined ? data.countries : undefined,
@@ -137,9 +146,13 @@ export class BoxesService {
     return box;
   }
 
-  async delete(id: string) {
-    await prisma.box.delete({ where: { id } });
-    this.logger.log(`Deleted box: ${id}`);
+  async delete(id: string | number) {
+    const boxId = typeof id === 'string' ? parseInt(id, 10) : id;
+    if (isNaN(boxId)) {
+      throw new Error('Invalid box ID');
+    }
+    await prisma.box.delete({ where: { id: boxId } });
+    this.logger.log(`Deleted box: ${boxId}`);
     return { ok: true };
   }
 

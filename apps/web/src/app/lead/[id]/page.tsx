@@ -23,13 +23,22 @@ type Attempt = {
   requestBody?: string | null;
 };
 
+type StatusEvent = {
+  id: string;
+  kind: string;
+  from: string | null;
+  to: string | null;
+  createdAt: string;
+};
+
 type Lead = {
   id: string;
   createdAt: string;
   sentAt: string | null;
-  status: string | null;        // это “тип” (NEW/SENT/…)
+  status: string | null;        // это "тип" (NEW/SENT/…)
   brokerStatus: string | null;  // статус от брокера
   broker: string | null;
+  statusEvents?: StatusEvent[];
 
   firstName: string | null;
   lastName: string | null;
@@ -69,6 +78,7 @@ export default function LeadPage() {
   const [form, setForm] = useState<{ bx?: string; funnel?: string; comment?: string }>({});
   const [selectedAttempt, setSelectedAttempt] = useState<Attempt | null>(null);
   const [activeTab, setActiveTab] = useState<'request' | 'response'>('request');
+  const [showStatusHistory, setShowStatusHistory] = useState(false);
   const { timezone: crmTimezone } = useTimezone();
   const { t } = useLanguage();
 
@@ -110,7 +120,15 @@ export default function LeadPage() {
           <div><b>{t('leads.created')}</b> {formatDateTime(lead.createdAt, crmTimezone)}</div>
           <div><b>{t('leads.sent_to_broker')}</b> {formatDateTime(lead.sentAt, crmTimezone)}</div>
           <div><b>{t('leads.type')}</b> <TypeBadge value={lead.status} /></div>
-          <div><b>{t('leads.broker_status')}</b> <BrokerStatusBadge value={lead.brokerStatus} /></div>
+          <div className="flex items-center gap-2">
+            <b>{t('leads.broker_status')}</b>
+            <button
+              onClick={() => setShowStatusHistory(true)}
+              className="cursor-pointer hover:opacity-80 transition-opacity"
+            >
+              <BrokerStatusBadge value={lead.brokerStatus} />
+            </button>
+          </div>
           <div><b>{t('leads.broker')}</b> {lead.broker || t('leads.not_sent')}</div>
 
           <div><b>{t('leads.name')}</b> {fullName}</div>
@@ -222,6 +240,51 @@ export default function LeadPage() {
           </table>
         </div>
       </div>
+
+      {showStatusHistory && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowStatusHistory(false)}>
+          <div className="bg-white rounded-lg p-6 max-w-2xl max-h-[80vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">История изменения статусов брокера</h3>
+              <button 
+                onClick={() => setShowStatusHistory(false)}
+                className="text-gray-500 hover:text-gray-700 text-xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            {lead.statusEvents && lead.statusEvents.length > 0 ? (
+              <div className="space-y-3">
+                {lead.statusEvents.map((event, idx) => (
+                  <div key={event.id} className="border-b pb-3 last:border-b-0">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          {event.from ? (
+                            <>
+                              <BrokerStatusBadge value={event.from} />
+                              <span className="text-gray-400">→</span>
+                            </>
+                          ) : null}
+                          <BrokerStatusBadge value={event.to} />
+                        </div>
+                        <div className="text-sm text-gray-500 mt-1">
+                          {formatDateTime(event.createdAt, crmTimezone)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-gray-500 py-8">
+                История изменений статусов отсутствует
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {selectedAttempt && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

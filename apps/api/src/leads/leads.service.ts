@@ -503,9 +503,31 @@ export class LeadsService {
 
   async get(id: string, apiKey?: string) {
     await this.assertApiKeyOrThrow(apiKey);
-    const lead = await prisma.lead.findUnique({ where: { id } });
+    const lead = await prisma.lead.findUnique({ 
+      where: { id },
+      include: {
+        statusEvents: {
+          where: { kind: 'brokerStatus' },
+          orderBy: { createdAt: 'desc' }
+        }
+      }
+    });
     if (!lead) throw new NotFoundException('Lead not found');
     return lead;
+  }
+
+  async getStatusHistory(id: string, apiKey?: string) {
+    await this.assertApiKeyOrThrow(apiKey);
+    const lead = await prisma.lead.findUnique({ where: { id } });
+    if (!lead) throw new NotFoundException('Lead not found');
+    
+    return prisma.leadStatusEvent.findMany({
+      where: { 
+        leadId: id,
+        kind: 'brokerStatus'
+      },
+      orderBy: { createdAt: 'desc' }
+    });
   }
 
   async attempts(id: string, apiKey?: string) {

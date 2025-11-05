@@ -30,6 +30,11 @@ export class LeadsController {
     return this.service.attempts(id, key);
   }
 
+  @Get(':id/status-history')
+  getStatusHistory(@Param('id') id: string, @Headers('x-api-key') key?: string) {
+    return this.service.getStatusHistory(id, key);
+  }
+
   @Patch(':id')
   update(
     @Param('id') id: string,

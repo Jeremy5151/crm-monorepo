@@ -8,10 +8,21 @@ import { useQueryState } from '@/lib/useQueryState';
 import {
   ColumnKey,
   StatusBadge,
+  BrokerStatusBadge,
   formatDateTime,
   getCellValue,
   columnLabel,
 } from '@/lib/columns';
+import { apiGet } from '@/lib/api';
+import { useTimezone } from '@/contexts/TimezoneContext';
+
+type StatusEvent = {
+  id: string;
+  kind: string;
+  from: string | null;
+  to: string | null;
+  createdAt: string;
+};
 
 type Lead = {
   id: string;
@@ -25,6 +36,8 @@ type Lead = {
   bx: string | null;
   funnel: string | null;
   status: string | null;
+  brokerStatus?: string | null;
+  broker?: string | null;
 };
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE!;
@@ -83,6 +96,14 @@ export default function LeadsPage() {
   const [error, setError] = useState<string | null>(null);
   const [items, setItems] = useState<Lead[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [statusHistoryPopover, setStatusHistoryPopover] = useState<{
+    leadId: string;
+    x: number;
+    y: number;
+  } | null>(null);
+  const [statusHistory, setStatusHistory] = useState<StatusEvent[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const { timezone: crmTimezone } = useTimezone();
 
   const query = useMemo(() => {
     const p = new URLSearchParams();
@@ -141,6 +162,27 @@ export default function LeadsPage() {
     return copy;
   }, [items, order]);
 
+  async function handleBrokerStatusClick(e: React.MouseEvent, leadId: string) {
+    e.stopPropagation();
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setStatusHistoryPopover({
+      leadId,
+      x: rect.left + rect.width / 2,
+      y: rect.top,
+    });
+    
+    setLoadingHistory(true);
+    try {
+      const history = await apiGet<StatusEvent[]>(`/v1/leads/${leadId}/status-history`);
+      setStatusHistory(history || []);
+    } catch (err) {
+      console.error('Error loading status history:', err);
+      setStatusHistory([]);
+    } finally {
+      setLoadingHistory(false);
+    }
+  }
+
   function renderCell(col: ColumnKey, lead: Lead) {
     switch (col) {
       case 'createdAt': return formatDateTime(lead.createdAt);
@@ -155,6 +197,16 @@ export default function LeadsPage() {
       case 'bx': return lead.bx || '—';
       case 'funnel': return lead.funnel || '—';
       case 'status': return <StatusBadge value={lead.status} />;
+      case 'brokerStatus': 
+        return lead.brokerStatus ? (
+          <button
+            onClick={(e) => handleBrokerStatusClick(e, lead.id)}
+            className="cursor-pointer hover:opacity-80 transition-opacity"
+          >
+            <BrokerStatusBadge value={lead.brokerStatus} />
+          </button>
+        ) : <BrokerStatusBadge value={null} />;
+      case 'broker': return lead.broker || '—';
       default: return '';
     }
   }
@@ -226,6 +278,62 @@ export default function LeadsPage() {
           </table>
         </div>
       </div>
+
+      {/* Popover для истории статусов */}
+      {statusHistoryPopover && (
+        <>
+          <div 
+            className="fixed inset-0 z-40" 
+            onClick={() => setStatusHistoryPopover(null)}
+          />
+          <div
+            className="fixed z-50 bg-white rounded-lg shadow-xl border border-gray-200 p-4 max-w-md max-h-96 overflow-auto"
+            style={{
+              left: `${statusHistoryPopover.x}px`,
+              top: `${statusHistoryPopover.y + 20}px`,
+              transform: 'translateX(-50%)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-sm font-semibold text-gray-900">История статусов брокера</h3>
+              <button
+                onClick={() => setStatusHistoryPopover(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ×
+              </button>
+            </div>
+            
+            {loadingHistory ? (
+              <div className="text-center text-gray-500 py-4">Загрузка...</div>
+            ) : statusHistory.length > 0 ? (
+              <div className="space-y-2">
+                {statusHistory.map((event) => (
+                  <div key={event.id} className="border-b pb-2 last:border-b-0">
+                    <div className="flex items-center gap-2">
+                      {event.from ? (
+                        <>
+                          <BrokerStatusBadge value={event.from} />
+                          <span className="text-gray-400">→</span>
+                        </>
+                      ) : null}
+                      <BrokerStatusBadge value={event.to} />
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {formatDateTime(event.createdAt, crmTimezone)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-gray-500 py-4 text-sm">
+                История изменений статусов отсутствует
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

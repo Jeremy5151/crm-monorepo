@@ -120,13 +120,27 @@ export default function BoxesPage() {
       if (editingId) {
         await apiPatch(`/v1/boxes/${editingId}`, payload);
         showSuccess(t('boxes.updated_successfully'));
+        await loadBoxes();
+        resetForm();
       } else {
-        await apiPost('/v1/boxes', payload);
-        showSuccess(t('boxes.created_successfully'));
+        const createdBox = await apiPost('/v1/boxes', payload);
+        // После создания показываем ID нового бокса
+        if (createdBox?.id) {
+          showSuccess(
+            t('boxes.created_successfully'), 
+            `Box ID: ${createdBox.id} (используйте этот ID в параметре bx)`
+          );
+          // Загружаем боксы, чтобы обновить список
+          await loadBoxes();
+          // Устанавливаем editingId, чтобы показать ID в форме
+          setEditingId(createdBox.id);
+          // Форма остается открытой, ID будет показан в желтом блоке
+        } else {
+          showSuccess(t('boxes.created_successfully'));
+          await loadBoxes();
+          resetForm();
+        }
       }
-
-      await loadBoxes();
-      resetForm();
     } catch (e: any) {
       console.error('Ошибка сохранения:', e);
       showError(t('boxes.save_error'), e?.message || String(e));
@@ -250,6 +264,31 @@ export default function BoxesPage() {
             <h3 className="text-lg font-medium text-gray-900">
               {editingId ? t('boxes.edit') : t('boxes.new_box')}
             </h3>
+
+            {editingId && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block text-sm font-medium text-yellow-800 mb-1">
+                      Box ID (используйте этот ID в параметре bx):
+                    </label>
+                    <code className="text-sm font-mono text-yellow-900 bg-yellow-100 px-3 py-2 rounded-lg">
+                      {editingId}
+                    </code>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(editingId);
+                      showSuccess(t('common.success'), 'ID скопирован в буфер обмена');
+                    }}
+                    className="px-3 py-2 text-sm bg-yellow-200 text-yellow-800 rounded-xl hover:bg-yellow-300"
+                  >
+                    📋 Копировать
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
@@ -402,7 +441,25 @@ export default function BoxesPage() {
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-3">
                   <div>
-                    <h3 className="font-medium text-gray-900">{box.name}</h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-medium text-gray-900">{box.name}</h3>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(box.id);
+                          showSuccess(t('common.success'), 'ID скопирован в буфер обмена');
+                        }}
+                        className="text-xs text-gray-500 hover:text-gray-700"
+                        title="Копировать ID"
+                      >
+                        📋
+                      </button>
+                    </div>
+                    <div className="mb-1">
+                      <code className="text-xs font-mono bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                        ID: {box.id}
+                      </code>
+                    </div>
                     <p className="text-sm text-gray-500">
                       {box.countries.length > 0 
                         ? `${t('boxes.countries_label')} ${box.countries.join(', ')}` 

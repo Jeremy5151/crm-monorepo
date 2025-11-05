@@ -12,8 +12,15 @@ export class ListLeadsDto {
   @IsOptional() @IsString()
   aff?: string;
 
-  @IsOptional() @IsString()
-  bx?: string;
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') return undefined;
+    const num = typeof value === 'string' ? parseInt(value, 10) : value;
+    return isNaN(num) ? undefined : num;
+  })
+  @IsInt()
+  @Min(1)
+  bx?: number;
 
   @IsOptional() @IsString()
   country?: string;

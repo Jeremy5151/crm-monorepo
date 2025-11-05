@@ -163,9 +163,13 @@ export default function LeadsPage() {
     return copy;
   }, [items, order]);
 
-  async function handleBrokerStatusClick(e: React.MouseEvent, leadId: string) {
+  async function handleBrokerStatusClick(e: React.MouseEvent | React.SyntheticEvent, leadId: string) {
+    e.preventDefault();
     e.stopPropagation();
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    console.log('Broker status clicked for lead:', leadId);
+    
+    const target = e.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
     setStatusHistoryPopover({
       leadId,
       x: rect.left + rect.width / 2,
@@ -201,23 +205,36 @@ export default function LeadsPage() {
       case 'type': return <StatusBadge value={lead.status} />;
       case 'status': return <StatusBadge value={lead.status} />;
       case 'brokerStatus': 
+        if (!lead.brokerStatus) {
+          return <BrokerStatusBadge value={null} />;
+        }
         return (
-          <button
+          <span
             onClick={(e) => {
+              console.log('BrokerStatus span clicked for lead:', lead.id, 'status:', lead.brokerStatus);
               e.preventDefault();
               e.stopPropagation();
               handleBrokerStatusClick(e, lead.id);
             }}
-            className="cursor-pointer hover:opacity-80 transition-opacity inline-block"
-            type="button"
             onMouseDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
             }}
+            className="cursor-pointer hover:opacity-80 transition-opacity inline-block"
+            style={{ display: 'inline-block' }}
             title="Кликните, чтобы увидеть историю изменений статуса"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                handleBrokerStatusClick(e, lead.id);
+              }
+            }}
           >
             <BrokerStatusBadge value={lead.brokerStatus} clickable />
-          </button>
+          </span>
         );
       case 'broker': return lead.broker || '—';
       default: return '';
@@ -268,7 +285,16 @@ export default function LeadsPage() {
               {!loading && !error && sortedItems.map((lead) => (
                 <tr key={lead.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
                   {cols.map((c) => (
-                    <td key={c} className="px-4 py-3 text-sm">
+                    <td 
+                      key={c} 
+                      className="px-4 py-3 text-sm"
+                      onClick={(e) => {
+                        // Если клик по brokerStatus - не перехватываем
+                        if (c === 'brokerStatus') {
+                          e.stopPropagation();
+                        }
+                      }}
+                    >
                       {renderCell(c as ColumnKey, lead)}
                     </td>
                   ))}

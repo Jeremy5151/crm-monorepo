@@ -130,7 +130,13 @@ export default function LeadsPage() {
         });
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
-        if (!abort) setItems(Array.isArray(data.items) ? data.items : []);
+        const leads = Array.isArray(data.items) ? data.items : [];
+        // Логируем для отладки
+        if (leads.length > 0) {
+          console.log('Sample lead data:', leads[0]);
+          console.log('Has brokerStatus:', 'brokerStatus' in leads[0], leads[0]?.brokerStatus);
+        }
+        if (!abort) setItems(leads);
       } catch (e: any) {
         if (!abort) setError(e?.message ?? String(e));
       } finally {
@@ -189,6 +195,17 @@ export default function LeadsPage() {
   }
 
   function renderCell(col: ColumnKey, lead: Lead) {
+    // Логируем все вызовы renderCell для brokerStatus
+    if (col === 'brokerStatus') {
+      console.log('renderCell called for brokerStatus:', {
+        col,
+        leadId: lead.id,
+        hasBrokerStatus: 'brokerStatus' in lead,
+        brokerStatus: lead.brokerStatus,
+        allLeadKeys: Object.keys(lead)
+      });
+    }
+    
     switch (col) {
       case 'createdAt': return formatDateTime(lead.createdAt);
       case 'sentAt': return formatDateTime(lead.sentAt);
@@ -205,23 +222,26 @@ export default function LeadsPage() {
       case 'type': return <StatusBadge value={lead.status} />;
       case 'status': return <StatusBadge value={lead.status} />;
       case 'brokerStatus': 
-        if (!lead.brokerStatus) {
+        console.log('Rendering brokerStatus for lead:', lead.id, 'value:', lead.brokerStatus);
+        const statusValue = lead.brokerStatus;
+        if (!statusValue) {
           return <BrokerStatusBadge value={null} />;
         }
         return (
           <span
             onClick={(e) => {
-              console.log('BrokerStatus span clicked for lead:', lead.id, 'status:', lead.brokerStatus);
+              console.log('BrokerStatus CLICKED! Lead:', lead.id, 'status:', statusValue);
               e.preventDefault();
               e.stopPropagation();
               handleBrokerStatusClick(e, lead.id);
             }}
             onMouseDown={(e) => {
+              console.log('BrokerStatus mousedown');
               e.preventDefault();
               e.stopPropagation();
             }}
             className="cursor-pointer hover:opacity-80 transition-opacity inline-block"
-            style={{ display: 'inline-block' }}
+            style={{ display: 'inline-block', userSelect: 'none' }}
             title="Кликните, чтобы увидеть историю изменений статуса"
             role="button"
             tabIndex={0}
@@ -233,7 +253,7 @@ export default function LeadsPage() {
               }
             }}
           >
-            <BrokerStatusBadge value={lead.brokerStatus} clickable />
+            <BrokerStatusBadge value={statusValue} clickable />
           </span>
         );
       case 'broker': return lead.broker || '—';
@@ -282,9 +302,16 @@ export default function LeadsPage() {
                 </tr>
               )}
 
-              {!loading && !error && sortedItems.map((lead) => (
+              {!loading && !error && sortedItems.map((lead) => {
+                // Логируем для отладки
+                if (cols.includes('brokerStatus' as ColumnKey)) {
+                  console.log('Rendering row for lead:', lead.id, 'cols:', cols, 'has brokerStatus in lead:', 'brokerStatus' in lead);
+                }
+                return (
                 <tr key={lead.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
-                  {cols.map((c) => (
+                  {cols.map((c) => {
+                    const cellContent = renderCell(c as ColumnKey, lead);
+                    return (
                     <td 
                       key={c} 
                       className="px-4 py-3 text-sm"
@@ -295,16 +322,18 @@ export default function LeadsPage() {
                         }
                       }}
                     >
-                      {renderCell(c as ColumnKey, lead)}
+                      {cellContent}
                     </td>
-                  ))}
+                    );
+                  })}
                   <td className="px-4 py-3 text-sm">
                     <Link className="text-[color:var(--primary)] hover:underline" href={`/lead/${lead.id}`}>
                       Открыть
                     </Link>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
 
               {!loading && !error && sortedItems.length === 0 && (
                 <tr>

@@ -274,24 +274,36 @@ export default function LeadsPage() {
                 </tr>
               )}
 
-              {!loading && !error && sortedItems.map((lead) => (
-                <tr key={lead.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
+              {!loading && !error && sortedItems.map((lead) => {
+                // Находим индекс колонки brokerStatus
+                const brokerStatusIndex = cols.indexOf('brokerStatus' as ColumnKey);
+                return (
+                <tr 
+                  key={lead.id} 
+                  className="border-t" 
+                  style={{ borderColor: 'var(--border)' }}
+                  onClick={(e) => {
+                    // Проверяем, был ли клик по колонке brokerStatus
+                    const target = e.target as HTMLElement;
+                    const td = target.closest('td');
+                    if (td && td.cellIndex === brokerStatusIndex && lead.brokerStatus) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleBrokerStatusClick(e, lead.id).catch(err => {
+                        console.error('Error in handleBrokerStatusClick:', err);
+                      });
+                    }
+                  }}
+                >
                   {cols.map((c) => {
                     const cellContent = renderCell(c as ColumnKey, lead);
-                    // Для brokerStatus добавляем обработчик клика прямо на td
+                    // Для brokerStatus добавляем стили и курсор
                     if (c === 'brokerStatus' && lead.brokerStatus) {
                       return (
                         <td 
                           key={c} 
                           className="px-4 py-3 text-sm cursor-pointer"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleBrokerStatusClick(e, lead.id).catch(err => {
-                              console.error('Error in handleBrokerStatusClick:', err);
-                            });
-                          }}
-                          style={{ cursor: 'pointer' }}
+                          style={{ cursor: 'pointer', userSelect: 'none' }}
                           title="Кликните, чтобы увидеть историю изменений статуса"
                         >
                           {cellContent}

@@ -296,21 +296,26 @@ export default function LeadsPage() {
                 </tr>
               )}
 
-              {!loading && !error && sortedItems.map((lead) => (
+              {!loading && !error && sortedItems.map((lead) => {
+                console.log('Rendering row for lead:', lead.id, 'cols:', cols, 'has brokerStatus:', 'brokerStatus' in lead, 'value:', lead.brokerStatus);
+                return (
                 <tr key={lead.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
                   {cols.map((c) => {
+                    console.log('Rendering cell:', c, 'for lead:', lead.id);
                     const cellContent = renderCell(c as ColumnKey, lead);
                     // Для brokerStatus просто рендерим td без обработчика - обработчик на span внутри
                     if (c === 'brokerStatus') {
+                      console.log('Rendering brokerStatus TD for lead:', lead.id);
                       return (
                         <td 
                           key={c} 
-                          className="px-4 py-3 text-sm"
+                          className="px-4 py-3 text-sm cursor-pointer"
                           onClick={(e) => {
                             // Логируем клик на td для отладки
                             console.log('🔵 TD CLICKED for brokerStatus, lead:', lead.id);
                             // Не останавливаем событие, пусть всплывет до span
                           }}
+                          style={{ cursor: 'pointer' }}
                         >
                           {cellContent}
                         </td>
@@ -328,7 +333,8 @@ export default function LeadsPage() {
                     </Link>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
 
               {!loading && !error && sortedItems.length === 0 && (
                 <tr>

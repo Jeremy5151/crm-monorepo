@@ -119,8 +119,8 @@ const translations = {
     // Боксы
     'boxes.title': 'Боксы (планы отправки)',
     'boxes.create': 'Добавить бокс',
-    'boxes.edit': 'Редактировать бокс',
-    'boxes.delete': 'Удалить бокс',
+    'boxes.edit_box': 'Редактировать бокс',
+    'boxes.delete_box': 'Удалить бокс',
     'boxes.name': 'Название',
     'boxes.description': 'Описание',
     'boxes.is_active': 'Активен',
@@ -546,8 +546,8 @@ const translations = {
     // Boxes
     'boxes.title': 'Boxes (Shipping Plans)',
     'boxes.create': 'Add Box',
-    'boxes.edit': 'Edit Box',
-    'boxes.delete': 'Delete Box',
+    'boxes.edit_box': 'Edit Box',
+    'boxes.delete_box': 'Delete Box',
     'boxes.name': 'Name',
     'boxes.description': 'Description',
     'boxes.is_active': 'Active',

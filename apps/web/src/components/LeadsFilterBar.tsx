@@ -22,14 +22,14 @@ type Lead = {
 type Props = {
   columns: ColumnKey[];
   onColumns: (cols: ColumnKey[]) => void;
-  leads: Lead[];
+  leads?: Lead[];
 };
 
 const TYPES = ['', 'NEW', 'SENT', 'REJECTED'];
 
 // TEXTS moved to LanguageContext
 
-export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
+export default function LeadsFilterBar({ columns, onColumns, leads = [] }: Props) {
   const router = useRouter();
   const { params, set } = useQueryState();
   const { t } = useLanguage();

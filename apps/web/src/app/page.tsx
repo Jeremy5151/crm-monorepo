@@ -265,10 +265,11 @@ export default function LeadsPage() {
 
   async function onBulkDelete() {
     if (!selectedIds.length) return;
+    const count = selectedIds.length;
     setConfirmDialog({
       isOpen: true,
       title: t('leads.delete_confirm_title'),
-      message: t('leads.delete_confirm', { count: selectedIds.length }),
+      message: `${t('leads.delete_confirm')} (${count})`,
       type: 'danger',
       onConfirm: async () => {
         setConfirmDialog(prev => ({ ...prev, isOpen: false }));
@@ -276,7 +277,7 @@ export default function LeadsPage() {
           await apiPost('/v1/leads/bulk-delete', { ids: selectedIds });
           setSelected(new Set());
           await load();
-          showSuccess(t('leads.delete_success', { count: selectedIds.length }));
+          showSuccess(t('leads.delete_success'), `${count} ${count === 1 ? 'lead' : 'leads'}`);
         } catch (error: any) {
           showError(t('leads.delete_error'), error?.message || String(error));
         }

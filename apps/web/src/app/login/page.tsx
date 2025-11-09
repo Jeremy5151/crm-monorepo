@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const { showToast } = useToast();
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:3001';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +23,7 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/v1/auth/login', {
+      const response = await fetch(`${API_BASE}/v1/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -163,23 +163,18 @@ export default function LeadsPage() {
     return copy;
   }, [items, order]);
 
-  async function handleBrokerStatusClick(e: React.MouseEvent | React.SyntheticEvent, leadId: string) {
-    console.log('handleBrokerStatusClick called for lead:', leadId);
+  async function handleBrokerStatusClick(
+    e: React.MouseEvent | React.SyntheticEvent,
+    leadId: string,
+    anchor?: HTMLElement,
+  ) {
     e.preventDefault();
     e.stopPropagation();
     
-    // Используем координаты из события, если доступны
-    const clientX = 'clientX' in e ? e.clientX : 0;
-    const clientY = 'clientY' in e ? e.clientY : 0;
-    
-    // Если координаты недоступны, используем target
-    const target = (e.target || e.currentTarget) as HTMLElement;
+    const target = anchor ?? ((e.currentTarget || e.target) as HTMLElement);
     const rect = target.getBoundingClientRect();
-    
-    const popoverX = clientX || (rect.left + rect.width / 2);
-    const popoverY = clientY || rect.top;
-    
-    console.log('Setting popover at:', { leadId, x: popoverX, y: popoverY });
+    const popoverX = rect.left + rect.width / 2;
+    const popoverY = rect.top;
     
     setStatusHistoryPopover({
       leadId,
@@ -217,17 +212,7 @@ export default function LeadsPage() {
       case 'type': return <StatusBadge value={lead.status} />;
       case 'status': return <StatusBadge value={lead.status} />;
       case 'brokerStatus': 
-        const statusValue = lead.brokerStatus;
-        if (!statusValue) {
-          return <BrokerStatusBadge value={null} />;
-        }
-        // Просто возвращаем badge с подчеркиванием - обработчик будет на td
-        return (
-          <BrokerStatusBadge 
-            value={statusValue} 
-            clickable={true}
-          />
-        );
+        return <BrokerStatusBadge value={lead.brokerStatus} clickable={false} />;
       case 'broker': return lead.broker || '—';
       default: return '';
     }
@@ -274,30 +259,10 @@ export default function LeadsPage() {
                 </tr>
               )}
 
-              {!loading && !error && sortedItems.map((lead) => {
-                // Находим индекс колонки brokerStatus
-                const brokerStatusIndex = cols.indexOf('brokerStatus' as ColumnKey);
-                return (
-                <tr 
-                  key={lead.id} 
-                  className="border-t" 
-                  style={{ borderColor: 'var(--border)' }}
-                  onClick={(e) => {
-                    // Проверяем, был ли клик по колонке brokerStatus
-                    const target = e.target as HTMLElement;
-                    const td = target.closest('td');
-                    if (td && td.cellIndex === brokerStatusIndex && lead.brokerStatus) {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleBrokerStatusClick(e, lead.id).catch(err => {
-                        console.error('Error in handleBrokerStatusClick:', err);
-                      });
-                    }
-                  }}
-                >
+              {!loading && !error && sortedItems.map((lead) => (
+                <tr key={lead.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
                   {cols.map((c) => {
                     const cellContent = renderCell(c as ColumnKey, lead);
-                    // Для brokerStatus добавляем стили и курсор
                     if (c === 'brokerStatus' && lead.brokerStatus) {
                       return (
                         <td 
@@ -306,7 +271,21 @@ export default function LeadsPage() {
                           style={{ cursor: 'pointer', userSelect: 'none' }}
                           title="Кликните, чтобы увидеть историю изменений статуса"
                         >
-                          {cellContent}
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-1"
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              padding: 0,
+                              margin: 0,
+                              cursor: 'pointer',
+                              color: 'inherit',
+                            }}
+                            onClick={(ev) => handleBrokerStatusClick(ev, lead.id, ev.currentTarget as HTMLElement)}
+                          >
+                            {cellContent}
+                          </button>
                         </td>
                       );
                     }
@@ -322,8 +301,7 @@ export default function LeadsPage() {
                     </Link>
                   </td>
                 </tr>
-                );
-              })}
+              ))}
 
               {!loading && !error && sortedItems.length === 0 && (
                 <tr>

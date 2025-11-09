@@ -279,7 +279,9 @@ export default function BoxesPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      navigator.clipboard.writeText(editingId);
+                      if (editingId != null) {
+                        navigator.clipboard.writeText(String(editingId));
+                      }
                       showSuccess(t('common.success'), 'ID скопирован в буфер обмена');
                     }}
                     className="px-3 py-2 text-sm bg-yellow-200 text-yellow-800 rounded-xl hover:bg-yellow-300"
@@ -446,7 +448,7 @@ export default function BoxesPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          navigator.clipboard.writeText(box.id);
+                          navigator.clipboard.writeText(String(box.id));
                           showSuccess(t('common.success'), 'ID скопирован в буфер обмена');
                         }}
                         className="text-xs text-gray-500 hover:text-gray-700"

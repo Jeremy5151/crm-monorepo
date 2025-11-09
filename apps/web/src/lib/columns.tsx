@@ -98,6 +98,10 @@ export function TypeBadge({ value }: { value?: string | null }) {
   );
 }
 
+export function StatusBadge(props: { value?: string | null }) {
+  return <TypeBadge {...props} />;
+}
+
 export function BrokerStatusBadge({ 
   value, 
   clickable, 
@@ -118,8 +122,9 @@ export function BrokerStatusBadge({
     textDecoration: 'underline' as const, 
     textDecorationStyle: 'dotted' as const,
     cursor: 'pointer' as const,
-    userSelect: 'none' as const
-  } : undefined;
+    userSelect: 'none' as const,
+    pointerEvents: 'auto' as const,
+  } : ({ pointerEvents: 'auto' as const });
   
   return (
     <span 

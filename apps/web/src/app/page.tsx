@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import LeadsFilterBar from '@/components/LeadsFilterBar';
 import { useColumnsPref } from '@/hooks/useColumnsPref';
 import { useQueryState } from '@/lib/useQueryState';
@@ -70,6 +70,14 @@ const FIRST_DIR: Record<ColumnKey, Dir> = {
 } as const;
 
 export default function LeadsPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-sm text-gray-500">Loading dashboard…</div>}>
+      <LeadsPageContent />
+    </Suspense>
+  );
+}
+
+function LeadsPageContent() {
   const { cols, setCols } = useColumnsPref();
   const { params } = useQueryState();
   const { t } = useLanguage();

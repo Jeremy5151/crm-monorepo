@@ -365,10 +365,11 @@ export default function LeadsPage() {
 
   async function onBulkClone() {
     if (!selectedIds.length) return;
+    const count = selectedIds.length;
     setConfirmDialog({
       isOpen: true,
       title: t('leads.clone_confirm_title'),
-      message: t('leads.clone_confirm', { count: selectedIds.length }),
+      message: `${t('leads.clone_confirm')} (${count})`,
       type: 'warning',
       onConfirm: async () => {
         setConfirmDialog(prev => ({ ...prev, isOpen: false }));
@@ -376,7 +377,8 @@ export default function LeadsPage() {
           await apiPost('/v1/leads/bulk-clone', { ids: selectedIds });
           setSelected(new Set());
           await load();
-          showSuccess(t('leads.clone_success', { count: selectedIds.length }));
+          const suffix = count === 1 ? 'lead' : 'leads';
+          showSuccess(t('leads.clone_success'), `${count} ${suffix}`);
         } catch (error: any) {
           showError(t('leads.clone_error'), error?.message || String(error));
         }

@@ -184,7 +184,7 @@ export default function LeadsPage() {
     
     setLoadingHistory(true);
     try {
-      const history = await apiGet<StatusEvent[]>(`/v1/leads/${leadId}/status-history`);
+      const history = await apiGet(`/v1/leads/${leadId}/status-history`);
       console.log('Status history loaded:', history);
       setStatusHistory(history || []);
     } catch (err) {

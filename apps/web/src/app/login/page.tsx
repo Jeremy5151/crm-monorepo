@@ -10,14 +10,14 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  const { showToast } = useToast();
+  const { showSuccess, showError } = useToast();
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:3001';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email || !password) {
-      showToast('Please fill in all fields', 'error');
+      showError('Login', 'Please fill in all fields');
       return;
     }
 
@@ -46,14 +46,14 @@ export default function LoginPage() {
       localStorage.setItem('apiToken', data.user.apiKey);
       localStorage.setItem('user', JSON.stringify(data.user));
       
-      showToast(`Welcome back, ${data.user.name}!`, 'success');
+      showSuccess('Login', `Welcome back, ${data.user.name}!`);
       
       // Full page reload to ensure fresh context
       setTimeout(() => {
         window.location.href = '/';
       }, 500);
     } catch (error: any) {
-      showToast('Login failed: ' + error.message, 'error');
+      showError('Login failed', error.message);
     } finally {
       setLoading(false);
     }

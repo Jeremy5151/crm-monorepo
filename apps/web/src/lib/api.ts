@@ -18,7 +18,13 @@ export async function apiGet(path: string, _init: RequestInit = {}) {
   const url = joinUrl(BASE, path);
   const apiKey = getApiKey();
   const res = await fetch(url, { headers: { 'X-API-Key': apiKey, ...( _init.headers || {}) }, cache: 'no-store' });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) {
+    const errorText = await res.text();
+    const error = new Error(errorText || res.statusText);
+    (error as any).status = res.status;
+    (error as any).responseBody = errorText;
+    throw error;
+  }
   return res.json();
 }
 
@@ -30,7 +36,13 @@ export async function apiPatch(path: string, body: unknown) {
     headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) {
+    const errorText = await res.text();
+    const error = new Error(errorText || res.statusText);
+    (error as any).status = res.status;
+    (error as any).responseBody = errorText;
+    throw error;
+  }
   return res.json();
 }
 
@@ -44,9 +56,11 @@ export async function apiPost(path: string, body: unknown) {
   });
   if (!res.ok) {
     const errorText = await res.text();
-    const error = new Error(errorText);
+    const error = new Error(errorText || res.statusText);
+    (error as any).status = res.status;
     // Сохраняем оригинальный текст ошибки для парсинга
     (error as any).originalMessage = errorText;
+    (error as any).responseBody = errorText;
     throw error;
   }
   return res.json();
@@ -59,6 +73,12 @@ export async function apiDelete(path: string) {
     method: 'DELETE',
     headers: { 'X-API-Key': apiKey },
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) {
+    const errorText = await res.text();
+    const error = new Error(errorText || res.statusText);
+    (error as any).status = res.status;
+    (error as any).responseBody = errorText;
+    throw error;
+  }
   return res.json();
 }

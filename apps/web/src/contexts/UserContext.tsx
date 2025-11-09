@@ -46,8 +46,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const userData = await apiGet('/v1/auth/me');
       setUser(userData);
     } catch (err: any) {
-      console.error('Ошибка загрузки пользователя:', err);
-      setError(err.message || 'Ошибка загрузки пользователя');
+      if (typeof window !== 'undefined' && err && err.status === 401) {
+        // API ключ невалиден: очищаем локальное состояние и токены
+        localStorage.removeItem('apiToken');
+        localStorage.removeItem('user');
+        setUser(null);
+        setError(null);
+      } else {
+        console.error('Ошибка загрузки пользователя:', err);
+        setError(err?.message || 'Ошибка загрузки пользователя');
+      }
       setUser(null);
     } finally {
       setLoading(false);

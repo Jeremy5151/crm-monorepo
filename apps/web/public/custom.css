@@ -95,3 +95,7 @@ button[data-columns-button] {
 .leads-page .absolute.top-full.right-0.mt-2.bg-white.rounded-lg.shadow-xl.border.border-gray-200.p-6 {
   background: rgb(255, 255, 255);
 }
+
+.fixed.top-4.right-4.z-50 {
+  z-index: 100;
+}

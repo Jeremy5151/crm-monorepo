@@ -22,7 +22,7 @@ type Lead = {
 type Props = {
   columns: ColumnKey[];
   onColumns: (cols: ColumnKey[]) => void;
-  leads: Lead[];
+  leads?: Lead[];
 };
 
 const TYPES = ['', 'NEW', 'SENT', 'REJECTED'];
@@ -30,6 +30,7 @@ const TYPES = ['', 'NEW', 'SENT', 'REJECTED'];
 // TEXTS moved to LanguageContext
 
 export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
+  const leadList = leads ?? [];
   const router = useRouter();
   const { params, set } = useQueryState();
   const { t } = useLanguage();
@@ -50,24 +51,24 @@ export default function LeadsFilterBar({ columns, onColumns, leads }: Props) {
   const take    = params.get('take')    ?? '50';
 
   const uniqueCountries = useMemo(() => {
-    const countries = leads.map(lead => lead.country).filter(Boolean) as string[];
+    const countries = leadList.map(lead => lead.country).filter(Boolean) as string[];
     return Array.from(new Set(countries)).sort();
-  }, [leads]);
+  }, [leadList]);
 
   const uniqueAffs = useMemo(() => {
-    const affs = leads.map(lead => lead.aff).filter(Boolean) as string[];
+    const affs = leadList.map(lead => lead.aff).filter(Boolean) as string[];
     return Array.from(new Set(affs)).sort();
-  }, [leads]);
+  }, [leadList]);
 
   const uniqueBoxes = useMemo(() => {
-    const boxes = leads.map(lead => lead.bx).filter(Boolean) as string[];
+    const boxes = leadList.map(lead => lead.bx).filter(Boolean) as string[];
     return Array.from(new Set(boxes)).sort();
-  }, [leads]);
+  }, [leadList]);
 
   const uniqueFunnels = useMemo(() => {
-    const funnels = leads.map(lead => lead.funnel).filter(Boolean) as string[];
+    const funnels = leadList.map(lead => lead.funnel).filter(Boolean) as string[];
     return Array.from(new Set(funnels)).sort();
-  }, [leads]);
+  }, [leadList]);
 
   const handleCreatedDateRangeChange = (value: string) => {
     set({ createdDateRange: value, cursor: '' });

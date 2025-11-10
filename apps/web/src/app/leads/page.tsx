@@ -41,8 +41,8 @@ type Lead = {
   broker?: string | null;
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE!;
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY!;
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:3001';
+const API_KEY = process.env.NEXT_PUBLIC_API_KEY ?? '';
 
 type Dir = 'asc' | 'desc';
 type Order = { key: ColumnKey; dir: Dir } | null;
@@ -123,7 +123,22 @@ export default function LeadsPage() {
     (async () => {
       setLoading(true); setError(null);
       try {
-        const runtimeKey = (typeof window !== 'undefined' && localStorage.getItem('apiKey')) || API_KEY || '';
+        const runtimeKey =
+          (typeof window !== 'undefined' &&
+            (localStorage.getItem('apiToken') ||
+              localStorage.getItem('apiKey') ||
+              (() => {
+                const stored = localStorage.getItem('user');
+                if (!stored) return null;
+                try {
+                  const parsed = JSON.parse(stored);
+                  return parsed?.apiKey ?? null;
+                } catch {
+                  return null;
+                }
+              })())) ||
+          API_KEY ||
+          'superadmin-key';
         const res = await fetch(`${API_BASE}/v1/leads?${query}`, {
           headers: { 'X-API-Key': runtimeKey },
           cache: 'no-store',
@@ -131,6 +146,9 @@ export default function LeadsPage() {
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
         if (!abort) setItems(Array.isArray(data.items) ? data.items : []);
+        if (typeof window !== 'undefined') {
+          console.log('[LeadsRoute] fetched', Array.isArray(data.items) ? data.items.length : 0, 'items');
+        }
       } catch (e: any) {
         if (!abort) setError(e?.message ?? String(e));
       } finally {
@@ -220,7 +238,7 @@ export default function LeadsPage() {
 
   return (
     <div className="space-y-4">
-      <LeadsFilterBar columns={cols} onColumns={setCols} />
+      <LeadsFilterBar columns={cols} onColumns={setCols} leads={items} />
 
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">

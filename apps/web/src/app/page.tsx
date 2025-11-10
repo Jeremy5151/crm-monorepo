@@ -159,6 +159,9 @@ export default function LeadsPage() {
       const data = await apiGet(`/v1/leads?${query}`);
       setItems(Array.isArray(data.items) ? data.items : []);
       setTotal(data.total || data.items?.length || 0);
+      if (typeof window !== 'undefined') {
+        console.log('[LeadsPage] fetched', Array.isArray(data.items) ? data.items.length : 0, 'items');
+      }
     } catch (e: any) {
       setError(e?.message ?? String(e));
     } finally {
@@ -170,6 +173,9 @@ export default function LeadsPage() {
     try {
       const data = await apiGet('/v1/leads?take=200');
       setAllItems(Array.isArray(data.items) ? data.items : []);
+      if (typeof window !== 'undefined') {
+        console.log('[LeadsPage] fetched allItems', Array.isArray(data.items) ? data.items.length : 0);
+      }
     } catch (e: any) {
       console.error('Failed to load all items for filters:', e);
     }

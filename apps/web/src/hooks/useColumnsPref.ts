@@ -15,14 +15,18 @@ export function useColumnsPref() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(LS_KEY);
-      if (raw) setCols(migrate(JSON.parse(raw)));
+      if (raw) {
+        const parsed = migrate(JSON.parse(raw));
+        setCols(parsed.length ? parsed : [...DEFAULT_COLUMNS]);
+      }
     } catch {}
   }, []);
 
   const save = useCallback((next: ColumnKey[]) => {
-    setCols(next);
-    try { localStorage.setItem(LS_KEY, JSON.stringify(next)); } catch {}
-    try { window.dispatchEvent(new CustomEvent('lead_cols_changed', { detail: next })); } catch {}
+    const normalized = next.length ? next : [...DEFAULT_COLUMNS];
+    setCols(normalized);
+    try { localStorage.setItem(LS_KEY, JSON.stringify(normalized)); } catch {}
+    try { window.dispatchEvent(new CustomEvent('lead_cols_changed', { detail: normalized })); } catch {}
   }, []);
 
   useEffect(() => {

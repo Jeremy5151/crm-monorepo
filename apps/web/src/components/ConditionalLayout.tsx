@@ -31,7 +31,11 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) {
-    return <>{children}</>;
+    return (
+      <div className="flex h-screen w-full items-center justify-center text-sm text-gray-500">
+        Redirecting to login…
+      </div>
+    );
   }
 
   return (

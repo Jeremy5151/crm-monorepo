@@ -50,7 +50,7 @@ export default function LoginPage() {
       
       // Full page reload to ensure fresh context
       setTimeout(() => {
-        window.location.href = '/';
+        window.location.href = '/leads';
       }, 500);
     } catch (error: any) {
       showError('Login failed', error.message);

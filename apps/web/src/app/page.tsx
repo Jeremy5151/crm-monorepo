@@ -274,7 +274,7 @@ export default function LeadsPage() {
     setConfirmDialog({
       isOpen: true,
       title: t('leads.delete_confirm_title'),
-      message: t('leads.delete_confirm', { count: selectedIds.length }),
+      message: `${t('leads.delete_confirm')} (${selectedIds.length})`,
       type: 'danger',
       onConfirm: async () => {
         setConfirmDialog(prev => ({ ...prev, isOpen: false }));
@@ -282,7 +282,7 @@ export default function LeadsPage() {
           await apiPost('/v1/leads/bulk-delete', { ids: selectedIds });
           setSelected(new Set());
           await load();
-          showSuccess(t('leads.delete_success', { count: selectedIds.length }));
+          showSuccess(`${t('leads.delete_success')} (${selectedIds.length})`);
         } catch (error: any) {
           showError(t('leads.delete_error'), error?.message || String(error));
         }
@@ -373,7 +373,7 @@ export default function LeadsPage() {
     setConfirmDialog({
       isOpen: true,
       title: t('leads.clone_confirm_title'),
-      message: t('leads.clone_confirm', { count: selectedIds.length }),
+      message: `${t('leads.clone_confirm')} (${selectedIds.length})`,
       type: 'warning',
       onConfirm: async () => {
         setConfirmDialog(prev => ({ ...prev, isOpen: false }));
@@ -381,7 +381,7 @@ export default function LeadsPage() {
           await apiPost('/v1/leads/bulk-clone', { ids: selectedIds });
           setSelected(new Set());
           await load();
-          showSuccess(t('leads.clone_success', { count: selectedIds.length }));
+          showSuccess(`${t('leads.clone_success')} (${selectedIds.length})`);
         } catch (error: any) {
           showError(t('leads.clone_error'), error?.message || String(error));
         }

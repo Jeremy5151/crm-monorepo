@@ -22,8 +22,15 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  // Не показываем навигацию пока загружается пользователь
-  if (loading || !user) {
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center text-sm text-gray-500">
+        Checking session…
+      </div>
+    );
+  }
+
+  if (!user) {
     return <>{children}</>;
   }
 

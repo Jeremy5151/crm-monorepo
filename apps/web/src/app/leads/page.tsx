@@ -237,7 +237,7 @@ function LeadsPageContent() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="leads-page space-y-4">
       <LeadsFilterBar columns={cols} onColumns={setCols} leads={items} />
 
       <div className="card overflow-hidden">

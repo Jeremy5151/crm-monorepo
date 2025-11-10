@@ -56,10 +56,13 @@
   --text-primary: #1F2933;
   --text-secondary: #505F79;
   --text-tertiary: #8993A4;
+  --ink: #1F2933;
+  --ink-muted: #6B7280;
   
   /* Границы */
   --border-color: #EBEDEF;
   --border-light: #F4F5F7;
+  --border: #EBEDEF;
   
   /* Фон */
   --bg-page: #FAFBFC;

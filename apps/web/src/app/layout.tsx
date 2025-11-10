@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import './globals.css';
 import Providers from './Providers';
 import { ConditionalLayout } from '@/components/ConditionalLayout';
 

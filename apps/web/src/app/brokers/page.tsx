@@ -103,8 +103,10 @@ export default function BrokersPage() {
         {
           id: 'easyai-market',
           name: 'EasyAI Market',
-          icon: '',
+          version: '1.0.0',
           description: 'EasyAI Market integration',
+          category: 'CRM',
+          icon: '',
           tags: ['affiliate', 'leads']
         }
       ]);

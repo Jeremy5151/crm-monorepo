@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import LeadsFilterBar from '@/components/LeadsFilterBar';
 import { useColumnsPref } from '@/hooks/useColumnsPref';
 import { useQueryState } from '@/lib/useQueryState';
@@ -61,7 +61,7 @@ const FIRST_DIR: Record<ColumnKey, Dir> = {
   status: 'asc',
 } as const;
 
-export default function LeadsPage() {
+function LeadsPageContent() {
   const { cols, setCols } = useColumnsPref(); 
   const { params } = useQueryState();
   const q = params.get('q') ?? '';
@@ -395,5 +395,13 @@ export default function LeadsPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function LeadsPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-center text-sm text-gray-500">Загрузка…</div>}>
+      <LeadsPageContent />
+    </Suspense>
   );
 }

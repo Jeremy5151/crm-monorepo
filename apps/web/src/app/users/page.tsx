@@ -216,13 +216,13 @@ export default function UsersPage() {
     setConfirmDialog({
       isOpen: true,
       title: t('users.delete_confirm_title'),
-      message: t('users.delete_confirm_message', { name: user.name }),
+      message: `${t('users.delete_confirm_message')} ${user.name}`,
       type: 'danger',
       onConfirm: async () => {
         setConfirmDialog(prev => ({ ...prev, isOpen: false }));
         try {
           await apiDelete(`/v1/users/${user.id}`);
-          showSuccess(t('users.delete_success', { name: user.name }));
+          showSuccess(`${t('users.delete_success')} ${user.name}`);
           loadUsers();
         } catch (error: any) {
           showError(t('users.delete_error'), error?.message || String(error));
@@ -275,7 +275,7 @@ export default function UsersPage() {
     setConfirmDialog({
       isOpen: true,
       title: t('users.regenerate_key_title'),
-      message: t('users.regenerate_key_message', { name: user.name }),
+      message: `${t('users.regenerate_key_message')} ${user.name}`,
       type: 'warning',
       onConfirm: async () => {
         setConfirmDialog(prev => ({ ...prev, isOpen: false }));

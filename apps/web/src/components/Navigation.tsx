@@ -28,7 +28,7 @@ export function Navigation() {
   ];
 
   // Показываем только пункты соответствующие роли пользователя
-  const navItems = allNavItems.filter(item => item.roles.includes(user.role));
+  const navItems = user ? allNavItems.filter(item => item.roles.includes(user.role)) : [];
 
   // Закрывать меню при клике снаружи
   useEffect(() => {

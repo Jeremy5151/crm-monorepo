@@ -5,17 +5,23 @@ import { apiGet, apiPatch } from '@/lib/api';
 import { useTimezone } from '@/contexts/TimezoneContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import type { Language } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { CustomSelect } from '@/components/CustomSelect';
 
 export default function SettingsPage() {
   const { language, setLanguage, t } = useLanguage();
   const { showSuccess, showError } = useToast();
-  const [settings, setSettings] = useState({ 
-    timezone: 'UTC', 
-    theme: 'light', 
-    language: language,
-    accentColor: '#FFD666'
+  const [settings, setSettings] = useState<{
+    timezone: string;
+    theme: string;
+    language: Language;
+    accentColor: string;
+  }>({
+    timezone: 'UTC',
+    theme: 'light',
+    language,
+    accentColor: '#FFD666',
   });
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -95,9 +101,9 @@ export default function SettingsPage() {
       
       // Затем загружаем актуальные данные с сервера
       const data = await apiGet('/v1/settings');
-      setSettings({ 
-        ...data, 
-        language: language, // Use current language from context
+      setSettings({
+        ...data,
+        language, // Use current language from context
         // Убеждаемся, что accentColor не undefined
         accentColor: data.accentColor || '#FFD666'
       });
@@ -136,7 +142,7 @@ export default function SettingsPage() {
       
       // Обновляем локальные контексты
       setTheme(settings.theme as any);
-      setLanguage(settings.language as any);
+      setLanguage(settings.language);
       
       // Принудительно обновляем часовой пояс во всех компонентах
       await forceRefresh();
@@ -298,7 +304,7 @@ export default function SettingsPage() {
           <div className="max-w-md">
             <CustomSelect
               value={settings.language}
-              onChange={(value) => setSettings(s => ({ ...s, language: value }))}
+              onChange={(value) => setSettings(s => ({ ...s, language: value as Language }))}
               options={[
                 { value: 'ru', label: 'Русский' },
                 { value: 'en', label: 'English' }
